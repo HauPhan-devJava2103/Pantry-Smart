@@ -1,0 +1,34 @@
+<vector xmlns:android="http://schemas.android.com/apk/res/android"
+    android:width="24dp"
+    android:height="24dp"
+    android:viewportWidth="24"
+    android:viewportHeight="24">
+    <!-- Refrigerator icon -->
+    <path
+        android:fillColor="#00000000"
+        android:strokeColor="#99A1AF"
+        android:strokeWidth="1.8"
+        android:strokeLineCap="round"
+        android:strokeLineJoin="round"
+        android:pathData="M6,2 L18,2 C19.1,2 20,2.9 20,4 L20,20 C20,21.1 19.1,22 18,22 L6,22 C4.9,22 4,21.1 4,20 L4,4 C4,2.9 4.9,2 6,2z" />
+    <!-- Freezer divider -->
+    <path
+        android:fillColor="#00000000"
+        android:strokeColor="#99A1AF"
+        android:strokeWidth="1.8"
+        android:pathData="M4,10 L20,10" />
+    <!-- Handle top -->
+    <path
+        android:fillColor="#00000000"
+        android:strokeColor="#99A1AF"
+        android:strokeWidth="1.8"
+        android:strokeLineCap="round"
+        android:pathData="M15,6 L15,8" />
+    <!-- Handle bottom -->
+    <path
+        android:fillColor="#00000000"
+        android:strokeColor="#99A1AF"
+        android:strokeWidth="1.8"
+        android:strokeLineCap="round"
+        android:pathData="M15,14 L15,16" />
+</vector>

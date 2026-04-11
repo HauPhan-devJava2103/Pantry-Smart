@@ -1,0 +1,7 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!-- Door gasket: dark rubber seal between doors -->
+<shape xmlns:android="http://schemas.android.com/apk/res/android"
+    android:shape="rectangle">
+    <solid android:color="#3A3F47" />
+    <corners android:radius="1dp" />
+</shape>

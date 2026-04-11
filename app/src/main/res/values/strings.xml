@@ -1,3 +1,37 @@
 <resources>
     <string name="app_name">PantrySmart</string>
+    <string name="greeting_morning">Chào buổi sáng!</string>
+    <string name="greeting_afternoon">Chào buổi chiều!</string>
+    <string name="greeting_evening">Chào buổi tối!</string>
+    <string name="pantry_item_count">Tủ lạnh có %1$d món</string>
+
+    <!-- Navigation tabs -->
+    <string name="tab_fridge">Tủ lạnh</string>
+    <string name="tab_suggest">Gợi ý</string>
+    <string name="tab_budget">Ngân sách</string>
+
+    <!-- Stats row (Figma MainContent) -->
+    <string name="stat_total">Tổng món</string>
+    <string name="stat_expiring">Sắp hết hạn</string>
+    <string name="stat_expired">Đã hết hạn</string>
+
+    <!-- Zone filter chips -->
+    <string name="filter_all">📋 Tất cả</string>
+    <string name="filter_main">🧊 Ngăn chính</string>
+    <string name="filter_freezer">❄️ Ngăn đông</string>
+
+    <!-- Sort label -->
+    <string name="sort_by_expiry">Sắp xếp theo hạn dùng</string>
+
+    <!-- Alert banner -->
+    <string name="alert_expiry_title">%1$d món sắp hết hạn trong 2 ngày</string>
+
+    <!-- Empty state -->
+    <string name="empty_fridge">Tủ lạnh trống! Hãy thêm thực phẩm 🛒</string>
+
+    <!-- FAB -->
+    <string name="fab_add_item">Thêm thực phẩm</string>
+
+    <!-- Item count -->
+    <string name="item_count_format">%1$d món</string>
 </resources>

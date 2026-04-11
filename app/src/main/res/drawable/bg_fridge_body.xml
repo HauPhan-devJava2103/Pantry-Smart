@@ -1,0 +1,23 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!-- Realistic fridge outer body: dark metallic with subtle gradient + shadow -->
+<layer-list xmlns:android="http://schemas.android.com/apk/res/android">
+    <!-- Shadow base -->
+    <item android:bottom="2dp" android:left="2dp" android:right="2dp">
+        <shape android:shape="rectangle">
+            <solid android:color="#33000000" />
+            <corners android:radius="20dp" />
+        </shape>
+    </item>
+    <!-- Body -->
+    <item android:bottom="4dp">
+        <shape android:shape="rectangle">
+            <gradient
+                android:startColor="#D8DDE3"
+                android:centerColor="#E8ECF0"
+                android:endColor="#CDD3DA"
+                android:angle="135" />
+            <corners android:radius="20dp" />
+            <stroke android:width="1dp" android:color="#B8BFC7" />
+        </shape>
+    </item>
+</layer-list>

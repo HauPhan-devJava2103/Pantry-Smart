@@ -1,0 +1,755 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!-- Fragment "Tủ Lạnh" -->
+<ScrollView xmlns:android="http://schemas.android.com/apk/res/android"
+    android:layout_width="match_parent"
+    android:layout_height="match_parent"
+    android:clipToPadding="false"
+    android:scrollbars="none">
+
+    <LinearLayout
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:orientation="vertical"
+        android:paddingBottom="16dp">
+
+
+        <!-- REALISTIC FRIDGE VISUAL       -->
+        <LinearLayout
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:layout_marginStart="28dp"
+            android:layout_marginEnd="28dp"
+            android:layout_marginTop="14dp"
+            android:orientation="vertical"
+            android:gravity="center_horizontal">
+
+            <!--  Fridge Body (Metallic Outer Shell)  -->
+            <LinearLayout
+                android:id="@+id/fridgeVisual"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:background="@drawable/bg_fridge_body"
+                android:elevation="8dp"
+                android:orientation="vertical"
+                android:paddingStart="6dp"
+                android:paddingEnd="6dp"
+                android:paddingTop="6dp"
+                android:paddingBottom="8dp">
+
+                <!--  Top Cooling Vent Grille  -->
+                <LinearLayout
+                    android:layout_width="match_parent"
+                    android:layout_height="6dp"
+                    android:layout_marginStart="30dp"
+                    android:layout_marginEnd="30dp"
+                    android:layout_marginBottom="6dp"
+                    android:gravity="center"
+                    android:orientation="horizontal">
+
+                    <View android:layout_width="0dp" android:layout_height="2dp"
+                        android:layout_weight="1" android:layout_marginEnd="3dp"
+                        android:background="#15000000" />
+                    <View android:layout_width="0dp" android:layout_height="2dp"
+                        android:layout_weight="1" android:layout_marginEnd="3dp"
+                        android:background="#15000000" />
+                    <View android:layout_width="0dp" android:layout_height="2dp"
+                        android:layout_weight="1" android:layout_marginEnd="3dp"
+                        android:background="#15000000" />
+                    <View android:layout_width="0dp" android:layout_height="2dp"
+                        android:layout_weight="1" android:layout_marginEnd="3dp"
+                        android:background="#15000000" />
+                    <View android:layout_width="0dp" android:layout_height="2dp"
+                        android:layout_weight="1" android:layout_marginEnd="3dp"
+                        android:background="#15000000" />
+                    <View android:layout_width="0dp" android:layout_height="2dp"
+                        android:layout_weight="1" android:layout_marginEnd="3dp"
+                        android:background="#15000000" />
+                    <View android:layout_width="0dp" android:layout_height="2dp"
+                        android:layout_weight="1" android:layout_marginEnd="3dp"
+                        android:background="#15000000" />
+                    <View android:layout_width="0dp" android:layout_height="2dp"
+                        android:layout_weight="1" android:layout_marginEnd="3dp"
+                        android:background="#15000000" />
+                    <View android:layout_width="0dp" android:layout_height="2dp"
+                        android:layout_weight="1" android:layout_marginEnd="3dp"
+                        android:background="#15000000" />
+                    <View android:layout_width="0dp" android:layout_height="2dp"
+                        android:layout_weight="1"
+                        android:background="#15000000" />
+                </LinearLayout>
+
+                <!-- FREEZER DOOR (Ngăn đông)             -->
+                <LinearLayout
+                    android:id="@+id/doorFreezer"
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:orientation="horizontal"
+                    android:gravity="center_vertical">
+
+                    <!-- Left: Door Hinge -->
+                    <View
+                        android:layout_width="6dp"
+                        android:layout_height="155dp"
+                        android:background="@drawable/bg_door_hinge" />
+
+                    <!-- Center: Door Face -->
+                    <FrameLayout
+                        android:layout_width="0dp"
+                        android:layout_height="155dp"
+                        android:layout_weight="1">
+
+                        <!-- Door surface -->
+                        <LinearLayout
+                            android:layout_width="match_parent"
+                            android:layout_height="match_parent"
+                            android:background="@drawable/bg_freezer_door"
+                            android:elevation="3dp"
+                            android:gravity="center"
+                            android:orientation="vertical"
+                            android:paddingTop="8dp"
+                            android:paddingBottom="8dp">
+
+                            <!-- Temperature Display Panel (top-left) -->
+                            <LinearLayout
+                                android:layout_width="match_parent"
+                                android:layout_height="wrap_content"
+                                android:orientation="horizontal"
+                                android:gravity="start|center_vertical"
+                                android:paddingStart="12dp"
+                                android:paddingEnd="12dp"
+                                android:layout_marginBottom="6dp">
+
+                                <!-- LED indicator -->
+                                <View
+                                    android:layout_width="10dp"
+                                    android:layout_height="10dp"
+                                    android:background="@drawable/bg_led_green"
+                                    android:layout_marginEnd="6dp" />
+
+                                <!-- Temp panel -->
+                                <LinearLayout
+                                    android:layout_width="wrap_content"
+                                    android:layout_height="22dp"
+                                    android:background="@drawable/bg_temp_display"
+                                    android:gravity="center"
+                                    android:paddingStart="8dp"
+                                    android:paddingEnd="8dp"
+                                    android:orientation="horizontal">
+
+                                    <TextView
+                                        android:layout_width="wrap_content"
+                                        android:layout_height="wrap_content"
+                                        android:text="-18°C"
+                                        android:textColor="#7DD3FC"
+                                        android:textSize="10sp"
+                                        android:fontFamily="sans-serif-medium" />
+                                </LinearLayout>
+                            </LinearLayout>
+
+                            <!-- Compartment Icon -->
+                            <TextView
+                                android:layout_width="wrap_content"
+                                android:layout_height="wrap_content"
+                                android:text="❄️"
+                                android:textSize="30sp"
+                                android:layout_marginBottom="2dp" />
+
+                            <!-- Title -->
+                            <TextView
+                                android:layout_width="wrap_content"
+                                android:layout_height="wrap_content"
+                                android:text="NGĂN ĐÔNG"
+                                android:textColor="#3A7AB5"
+                                android:textSize="10sp"
+                                android:fontFamily="sans-serif-medium"
+                                android:letterSpacing="0.08"
+                                android:layout_marginBottom="6dp" />
+
+                            <!-- Badges -->
+                            <LinearLayout
+                                android:layout_width="wrap_content"
+                                android:layout_height="wrap_content"
+                                android:gravity="center"
+                                android:orientation="horizontal">
+
+                                <TextView
+                                    android:id="@+id/badgeFreezerCount"
+                                    android:layout_width="wrap_content"
+                                    android:layout_height="19dp"
+                                    android:background="@drawable/bg_badge_item_count"
+                                    android:gravity="center"
+                                    android:paddingStart="10dp"
+                                    android:paddingEnd="10dp"
+                                    android:text="0 món"
+                                    android:textColor="#059669"
+                                    android:textSize="10sp"
+                                    android:fontFamily="sans-serif-medium"
+                                    android:layout_marginEnd="5dp" />
+
+                                <TextView
+                                    android:id="@+id/badgeFreezerWarning"
+                                    android:layout_width="wrap_content"
+                                    android:layout_height="19dp"
+                                    android:background="@drawable/bg_badge_warning_count"
+                                    android:gravity="center"
+                                    android:paddingStart="7dp"
+                                    android:paddingEnd="7dp"
+                                    android:textColor="#EA580C"
+                                    android:textSize="10sp"
+                                    android:fontFamily="sans-serif-medium"
+                                    android:visibility="gone" />
+                            </LinearLayout>
+
+                            <!-- Hint -->
+                            <TextView
+                                android:layout_width="wrap_content"
+                                android:layout_height="wrap_content"
+                                android:text="Nhấn để mở"
+                                android:textColor="#B0B8C4"
+                                android:textSize="9sp"
+                                android:layout_marginTop="6dp" />
+                        </LinearLayout>
+                    </FrameLayout>
+
+                    <!-- Right: Door Handle -->
+                    <LinearLayout
+                        android:layout_width="18dp"
+                        android:layout_height="155dp"
+                        android:orientation="vertical"
+                        android:gravity="center">
+
+                        <!-- Handle bar -->
+                        <View
+                            android:layout_width="10dp"
+                            android:layout_height="50dp"
+                            android:background="@drawable/bg_door_handle" />
+                    </LinearLayout>
+                </LinearLayout>
+
+                <!-- FREEZER INTERIOR (hidden, shown when door tapped) -->
+                <LinearLayout
+                    android:id="@+id/interiorFreezer"
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:background="@drawable/bg_freezer_interior"
+                    android:orientation="vertical"
+                    android:padding="8dp"
+                    android:visibility="gone">
+
+                    <!-- Interior LED light bar -->
+                    <View
+                        android:layout_width="match_parent"
+                        android:layout_height="3dp"
+                        android:layout_marginStart="16dp"
+                        android:layout_marginEnd="16dp"
+                        android:layout_marginBottom="6dp"
+                        android:background="@drawable/bg_interior_light" />
+
+                    <!-- Header: zone name + close button -->
+                    <LinearLayout
+                        android:layout_width="match_parent"
+                        android:layout_height="wrap_content"
+                        android:orientation="horizontal"
+                        android:gravity="center_vertical"
+                        android:layout_marginBottom="4dp"
+                        android:paddingStart="4dp"
+                        android:paddingEnd="4dp">
+
+                        <TextView
+                            android:layout_width="0dp"
+                            android:layout_height="wrap_content"
+                            android:layout_weight="1"
+                            android:text="❄️ Ngăn đông"
+                            android:textColor="#3A7AB5"
+                            android:textSize="11sp"
+                            android:fontFamily="sans-serif-medium" />
+
+                        <TextView
+                            android:id="@+id/btnCloseFreezer"
+                            android:layout_width="wrap_content"
+                            android:layout_height="24dp"
+                            android:background="@drawable/bg_close_door_btn"
+                            android:gravity="center"
+                            android:paddingStart="10dp"
+                            android:paddingEnd="10dp"
+                            android:text="✕ Đóng cửa"
+                            android:textColor="#6B7280"
+                            android:textSize="9sp"
+                            android:fontFamily="sans-serif-medium" />
+                    </LinearLayout>
+
+                    <!-- Shelf 1 (top shelf) -->
+                    <LinearLayout
+                        android:id="@+id/freezerShelf1"
+                        android:layout_width="match_parent"
+                        android:layout_height="wrap_content"
+                        android:orientation="horizontal"
+                        android:gravity="bottom|center_horizontal"
+                        android:minHeight="52dp"
+                        android:paddingBottom="4dp" />
+
+                    <!-- Glass shelf line -->
+                    <View
+                        android:layout_width="match_parent"
+                        android:layout_height="3dp"
+                        android:layout_marginStart="4dp"
+                        android:layout_marginEnd="4dp"
+                        android:background="@drawable/bg_glass_shelf" />
+
+                    <!-- Shelf 2 (bottom shelf) -->
+                    <LinearLayout
+                        android:id="@+id/freezerShelf2"
+                        android:layout_width="match_parent"
+                        android:layout_height="wrap_content"
+                        android:orientation="horizontal"
+                        android:gravity="bottom|center_horizontal"
+                        android:minHeight="52dp"
+                        android:paddingTop="4dp"
+                        android:paddingBottom="4dp" />
+
+                    <!-- Glass shelf line -->
+                    <View
+                        android:layout_width="match_parent"
+                        android:layout_height="3dp"
+                        android:layout_marginStart="4dp"
+                        android:layout_marginEnd="4dp"
+                        android:background="@drawable/bg_glass_shelf" />
+
+                    <!-- Empty state hint -->
+                    <TextView
+                        android:id="@+id/tvFreezerEmpty"
+                        android:layout_width="match_parent"
+                        android:layout_height="wrap_content"
+                        android:gravity="center"
+                        android:paddingTop="6dp"
+                        android:text="Ngăn đông trống"
+                        android:textColor="#9CA3AF"
+                        android:textSize="10sp"
+                        android:visibility="gone" />
+                </LinearLayout>
+
+                <!--  Door Gasket / Seal  -->
+                <View
+                    android:layout_width="match_parent"
+                    android:layout_height="3dp"
+                    android:layout_marginStart="4dp"
+                    android:layout_marginEnd="4dp"
+                    android:background="@drawable/bg_door_gasket" />
+
+                <!-- MAIN COMPARTMENT DOOR (Ngăn chính)   -->
+                <LinearLayout
+                    android:id="@+id/doorMain"
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:orientation="horizontal"
+                    android:gravity="center_vertical">
+
+                    <!-- Left: Door Hinge -->
+                    <View
+                        android:layout_width="6dp"
+                        android:layout_height="180dp"
+                        android:background="@drawable/bg_door_hinge" />
+
+                    <!-- Center: Door Face -->
+                    <FrameLayout
+                        android:layout_width="0dp"
+                        android:layout_height="180dp"
+                        android:layout_weight="1">
+
+                        <LinearLayout
+                            android:layout_width="match_parent"
+                            android:layout_height="match_parent"
+                            android:background="@drawable/bg_main_door"
+                            android:elevation="3dp"
+                            android:gravity="center"
+                            android:orientation="vertical"
+                            android:paddingTop="10dp"
+                            android:paddingBottom="10dp">
+
+                            <!-- Temperature Display Panel -->
+                            <LinearLayout
+                                android:layout_width="match_parent"
+                                android:layout_height="wrap_content"
+                                android:orientation="horizontal"
+                                android:gravity="start|center_vertical"
+                                android:paddingStart="12dp"
+                                android:paddingEnd="12dp"
+                                android:layout_marginBottom="6dp">
+
+                                <View
+                                    android:layout_width="10dp"
+                                    android:layout_height="10dp"
+                                    android:background="@drawable/bg_led_green"
+                                    android:layout_marginEnd="6dp" />
+
+                                <LinearLayout
+                                    android:layout_width="wrap_content"
+                                    android:layout_height="22dp"
+                                    android:background="@drawable/bg_temp_display"
+                                    android:gravity="center"
+                                    android:paddingStart="8dp"
+                                    android:paddingEnd="8dp"
+                                    android:orientation="horizontal">
+
+                                    <TextView
+                                        android:layout_width="wrap_content"
+                                        android:layout_height="wrap_content"
+                                        android:text="4°C"
+                                        android:textColor="#86EFAC"
+                                        android:textSize="10sp"
+                                        android:fontFamily="sans-serif-medium" />
+                                </LinearLayout>
+                            </LinearLayout>
+
+                            <!-- Compartment Icon -->
+                            <TextView
+                                android:layout_width="wrap_content"
+                                android:layout_height="wrap_content"
+                                android:text="🌡️"
+                                android:textSize="30sp"
+                                android:layout_marginBottom="2dp" />
+
+                            <!-- Title -->
+                            <TextView
+                                android:layout_width="wrap_content"
+                                android:layout_height="wrap_content"
+                                android:text="NGĂN CHÍNH"
+                                android:textColor="#A06828"
+                                android:textSize="10sp"
+                                android:fontFamily="sans-serif-medium"
+                                android:letterSpacing="0.08"
+                                android:layout_marginBottom="6dp" />
+
+                            <!-- Badges -->
+                            <LinearLayout
+                                android:layout_width="wrap_content"
+                                android:layout_height="wrap_content"
+                                android:gravity="center"
+                                android:orientation="horizontal">
+
+                                <TextView
+                                    android:id="@+id/badgeMainCount"
+                                    android:layout_width="wrap_content"
+                                    android:layout_height="19dp"
+                                    android:background="@drawable/bg_badge_item_count"
+                                    android:gravity="center"
+                                    android:paddingStart="10dp"
+                                    android:paddingEnd="10dp"
+                                    android:text="0 món"
+                                    android:textColor="#059669"
+                                    android:textSize="10sp"
+                                    android:fontFamily="sans-serif-medium"
+                                    android:layout_marginEnd="5dp" />
+
+                                <TextView
+                                    android:id="@+id/badgeMainWarning"
+                                    android:layout_width="wrap_content"
+                                    android:layout_height="19dp"
+                                    android:background="@drawable/bg_badge_warning_count"
+                                    android:gravity="center"
+                                    android:paddingStart="7dp"
+                                    android:paddingEnd="7dp"
+                                    android:textColor="#EA580C"
+                                    android:textSize="10sp"
+                                    android:fontFamily="sans-serif-medium"
+                                    android:visibility="gone" />
+                            </LinearLayout>
+
+                            <!-- Hint -->
+                            <TextView
+                                android:layout_width="wrap_content"
+                                android:layout_height="wrap_content"
+                                android:text="Nhấn để mở"
+                                android:textColor="#B0B8C4"
+                                android:textSize="9sp"
+                                android:layout_marginTop="8dp" />
+                        </LinearLayout>
+                    </FrameLayout>
+
+                    <!-- Right: Door Handle -->
+                    <LinearLayout
+                        android:layout_width="18dp"
+                        android:layout_height="180dp"
+                        android:orientation="vertical"
+                        android:gravity="center">
+
+                        <View
+                            android:layout_width="10dp"
+                            android:layout_height="60dp"
+                            android:background="@drawable/bg_door_handle" />
+                    </LinearLayout>
+                </LinearLayout>
+
+                <!-- 🌡️ MAIN INTERIOR (hidden, shown when door tapped) -->
+                <LinearLayout
+                    android:id="@+id/interiorMain"
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:background="@drawable/bg_fridge_interior"
+                    android:orientation="vertical"
+                    android:padding="8dp"
+                    android:visibility="gone">
+
+                    <!-- Interior LED light bar -->
+                    <View
+                        android:layout_width="match_parent"
+                        android:layout_height="3dp"
+                        android:layout_marginStart="16dp"
+                        android:layout_marginEnd="16dp"
+                        android:layout_marginBottom="6dp"
+                        android:background="@drawable/bg_interior_light" />
+
+                    <!-- Header: zone name + close button -->
+                    <LinearLayout
+                        android:layout_width="match_parent"
+                        android:layout_height="wrap_content"
+                        android:orientation="horizontal"
+                        android:gravity="center_vertical"
+                        android:layout_marginBottom="4dp"
+                        android:paddingStart="4dp"
+                        android:paddingEnd="4dp">
+
+                        <TextView
+                            android:layout_width="0dp"
+                            android:layout_height="wrap_content"
+                            android:layout_weight="1"
+                            android:text="🌡️ Ngăn chính"
+                            android:textColor="#A06828"
+                            android:textSize="11sp"
+                            android:fontFamily="sans-serif-medium" />
+
+                        <TextView
+                            android:id="@+id/btnCloseMain"
+                            android:layout_width="wrap_content"
+                            android:layout_height="24dp"
+                            android:background="@drawable/bg_close_door_btn"
+                            android:gravity="center"
+                            android:paddingStart="10dp"
+                            android:paddingEnd="10dp"
+                            android:text="✕ Đóng cửa"
+                            android:textColor="#6B7280"
+                            android:textSize="9sp"
+                            android:fontFamily="sans-serif-medium" />
+                    </LinearLayout>
+
+                    <!-- Shelf 1 (top) -->
+                    <LinearLayout
+                        android:id="@+id/mainShelf1"
+                        android:layout_width="match_parent"
+                        android:layout_height="wrap_content"
+                        android:orientation="horizontal"
+                        android:gravity="bottom|center_horizontal"
+                        android:minHeight="52dp"
+                        android:paddingBottom="4dp" />
+
+                    <View
+                        android:layout_width="match_parent"
+                        android:layout_height="3dp"
+                        android:layout_marginStart="4dp"
+                        android:layout_marginEnd="4dp"
+                        android:background="@drawable/bg_glass_shelf" />
+
+                    <!-- Shelf 2 (middle) -->
+                    <LinearLayout
+                        android:id="@+id/mainShelf2"
+                        android:layout_width="match_parent"
+                        android:layout_height="wrap_content"
+                        android:orientation="horizontal"
+                        android:gravity="bottom|center_horizontal"
+                        android:minHeight="52dp"
+                        android:paddingTop="4dp"
+                        android:paddingBottom="4dp" />
+
+                    <View
+                        android:layout_width="match_parent"
+                        android:layout_height="3dp"
+                        android:layout_marginStart="4dp"
+                        android:layout_marginEnd="4dp"
+                        android:background="@drawable/bg_glass_shelf" />
+
+                    <!-- Shelf 3 (bottom / crisper drawer) -->
+                    <LinearLayout
+                        android:id="@+id/mainShelf3"
+                        android:layout_width="match_parent"
+                        android:layout_height="wrap_content"
+                        android:orientation="horizontal"
+                        android:gravity="bottom|center_horizontal"
+                        android:minHeight="52dp"
+                        android:paddingTop="4dp"
+                        android:paddingBottom="4dp" />
+
+                    <View
+                        android:layout_width="match_parent"
+                        android:layout_height="3dp"
+                        android:layout_marginStart="4dp"
+                        android:layout_marginEnd="4dp"
+                        android:background="@drawable/bg_glass_shelf" />
+
+                    <!-- Empty state -->
+                    <TextView
+                        android:id="@+id/tvMainEmpty"
+                        android:layout_width="match_parent"
+                        android:layout_height="wrap_content"
+                        android:gravity="center"
+                        android:paddingTop="6dp"
+                        android:text="Ngăn chính trống"
+                        android:textColor="#9CA3AF"
+                        android:textSize="10sp"
+                        android:visibility="gone" />
+                </LinearLayout>
+
+                <!--  Brand Logo  -->
+                <TextView
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:gravity="center"
+                    android:layout_marginTop="6dp"
+                    android:text="PANTRYSMART"
+                    android:textColor="#A0A6AE"
+                    android:textSize="8sp"
+                    android:fontFamily="sans-serif-medium"
+                    android:letterSpacing="0.25" />
+
+                <TextView
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:gravity="center"
+                    android:text="Student Fridge™"
+                    android:textColor="#C0C5CC"
+                    android:textSize="6sp"
+                    android:letterSpacing="0.15" />
+
+            </LinearLayout>
+
+            <!--  Fridge Feet  -->
+            <LinearLayout
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:orientation="horizontal"
+                android:gravity="center"
+                android:paddingStart="24dp"
+                android:paddingEnd="24dp">
+
+                <!-- Left foot -->
+                <View
+                    android:layout_width="20dp"
+                    android:layout_height="6dp"
+                    android:background="@drawable/bg_fridge_foot" />
+
+                <View
+                    android:layout_width="0dp"
+                    android:layout_height="1dp"
+                    android:layout_weight="1" />
+
+                <!-- Right foot -->
+                <View
+                    android:layout_width="20dp"
+                    android:layout_height="6dp"
+                    android:background="@drawable/bg_fridge_foot" />
+            </LinearLayout>
+
+            <!-- Shadow under fridge -->
+            <View
+                android:layout_width="240dp"
+                android:layout_height="4dp"
+                android:layout_marginTop="2dp"
+                android:background="#0D000000" />
+        </LinearLayout>
+
+        <!-- Stats Row (Figma nodes: 24:625-639)          -->
+        <LinearLayout
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:layout_marginStart="16dp"
+            android:layout_marginEnd="16dp"
+            android:layout_marginTop="12dp"
+            android:orientation="horizontal"
+            android:baselineAligned="false">
+
+            <LinearLayout
+                android:layout_width="0dp"
+                android:layout_height="69dp"
+                android:layout_weight="1"
+                android:background="@drawable/bg_stat_card_green"
+                android:gravity="center"
+                android:orientation="vertical"
+                android:paddingTop="12dp"
+                android:paddingBottom="12dp"
+                android:layout_marginEnd="6dp">
+
+                <TextView
+                    android:id="@+id/tvStatTotal"
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:text="0"
+                    android:textColor="@color/primary_dark"
+                    android:textSize="20sp"
+                    android:fontFamily="sans-serif-medium" />
+
+                <TextView
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:text="@string/stat_total"
+                    android:textColor="#6A7282"
+                    android:textSize="10sp" />
+            </LinearLayout>
+
+            <LinearLayout
+                android:layout_width="0dp"
+                android:layout_height="69dp"
+                android:layout_weight="1"
+                android:background="@drawable/bg_stat_card_orange"
+                android:gravity="center"
+                android:orientation="vertical"
+                android:paddingTop="12dp"
+                android:paddingBottom="12dp"
+                android:layout_marginEnd="6dp">
+
+                <TextView
+                    android:id="@+id/tvStatExpiring"
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:text="0"
+                    android:textColor="#FF6900"
+                    android:textSize="20sp"
+                    android:fontFamily="sans-serif-medium" />
+
+                <TextView
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:text="@string/stat_expiring"
+                    android:textColor="#6A7282"
+                    android:textSize="10sp" />
+            </LinearLayout>
+
+            <LinearLayout
+                android:layout_width="0dp"
+                android:layout_height="69dp"
+                android:layout_weight="1"
+                android:background="@drawable/bg_stat_card_red"
+                android:gravity="center"
+                android:orientation="vertical"
+                android:paddingTop="12dp"
+                android:paddingBottom="12dp">
+
+                <TextView
+                    android:id="@+id/tvStatExpired"
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:text="0"
+                    android:textColor="#FB2C36"
+                    android:textSize="20sp"
+                    android:fontFamily="sans-serif-medium" />
+
+                <TextView
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:text="@string/stat_expired"
+                    android:textColor="#6A7282"
+                    android:textSize="10sp" />
+            </LinearLayout>
+        </LinearLayout>
+
+
+    </LinearLayout>
+</ScrollView>

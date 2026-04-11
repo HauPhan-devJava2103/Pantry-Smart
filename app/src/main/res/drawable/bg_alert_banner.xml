@@ -1,0 +1,8 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!-- ExpiryAlertBanner background from Figma node 24:927 -->
+<shape xmlns:android="http://schemas.android.com/apk/res/android"
+    android:shape="rectangle">
+    <solid android:color="#FFF7ED" />
+    <stroke android:width="1dp" android:color="#FFD6A8" />
+    <corners android:radius="16dp" />
+</shape>

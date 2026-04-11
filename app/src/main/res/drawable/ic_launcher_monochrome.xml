@@ -1,0 +1,58 @@
+<vector xmlns:android="http://schemas.android.com/apk/res/android"
+    android:width="108dp"
+    android:height="108dp"
+    android:viewportWidth="108"
+    android:viewportHeight="108">
+
+    <!-- Monochrome version - simplified refrigerator with leaf -->
+    <!-- Uses single color (black) - Android will tint this -->
+
+    <!-- Refrigerator body -->
+    <path
+        android:fillColor="#000000"
+        android:pathData="M38,26 L70,26 C72.2,26 74,27.8 74,30 L74,82 C74,84.2 72.2,86 70,86 L38,86 C35.8,86 34,84.2 34,82 L34,30 C34,27.8 35.8,26 38,26z" />
+
+    <!-- Freezer/fridge divider (cut-out) -->
+    <path
+        android:fillColor="#FFFFFF"
+        android:pathData="M34,45.5 L74,45.5 L74,48.5 L34,48.5z" />
+
+    <!-- Freezer handle (cut-out) -->
+    <path
+        android:fillColor="#FFFFFF"
+        android:pathData="M63,33 L67,33 L67,43 L63,43z" />
+
+    <!-- Fridge handle (cut-out) -->
+    <path
+        android:fillColor="#FFFFFF"
+        android:pathData="M63,51 L67,51 L67,65 L63,65z" />
+
+    <!-- Shelf lines (cut-out) -->
+    <path
+        android:fillColor="#FFFFFF"
+        android:pathData="M38,57 L60,57 L60,58.5 L38,58.5z" />
+    <path
+        android:fillColor="#FFFFFF"
+        android:pathData="M38,67 L60,67 L60,68.5 L38,68.5z" />
+
+    <!-- Leaf accent -->
+    <path
+        android:fillColor="#000000"
+        android:pathData="M76,24 C76,24 82,20 86,24 C90,28 86,34 86,34 C86,34 80,38 76,34 C72,30 76,24 76,24z" />
+
+    <!-- Leaf vein (cut-out) -->
+    <path
+        android:pathData="M77.5,25.5 L84.5,32.5"
+        android:strokeWidth="1.2"
+        android:strokeColor="#FFFFFF"
+        android:fillColor="#00000000"
+        android:strokeLineCap="round" />
+
+    <!-- Sparkle dots -->
+    <path
+        android:fillColor="#000000"
+        android:pathData="M80,18 A1.2,1.2 0,1,1 80,20.4 A1.2,1.2 0,1,1 80,18z" />
+    <path
+        android:fillColor="#000000"
+        android:pathData="M90,28 A0.9,0.9 0,1,1 90,29.8 A0.9,0.9 0,1,1 90,28z" />
+</vector>

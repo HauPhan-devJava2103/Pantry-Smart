@@ -1,0 +1,135 @@
+<?xml version="1.0" encoding="utf-8"?>
+<FrameLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    android:id="@+id/splashRoot"
+    android:layout_width="match_parent"
+    android:layout_height="match_parent"
+    android:background="@drawable/splash_bg_gradient">
+
+    <!-- Vòng trang trí lớn (góc trên bên phải) -->
+    <View
+        android:id="@+id/decorCircleLarge"
+        android:layout_width="180dp"
+        android:layout_height="180dp"
+        android:layout_gravity="end"
+        android:layout_marginTop="-40dp"
+        android:layout_marginEnd="-30dp"
+        android:background="@drawable/splash_decorative_circle" />
+
+    <!-- Vòng trang trí nhỏ -->
+    <View
+        android:id="@+id/decorCircleSmall"
+        android:layout_width="100dp"
+        android:layout_height="100dp"
+        android:layout_gravity="end"
+        android:layout_marginTop="20dp"
+        android:layout_marginEnd="10dp"
+        android:background="@drawable/splash_decorative_circle" />
+
+    <!-- Vòng trang trí góc dưới trái -->
+    <View
+        android:id="@+id/decorCircleBottom"
+        android:layout_width="150dp"
+        android:layout_height="150dp"
+        android:layout_gravity="start|bottom"
+        android:layout_marginStart="-50dp"
+        android:layout_marginBottom="-30dp"
+        android:background="@drawable/splash_decorative_circle" />
+
+    <!-- Nội dung chính -->
+    <LinearLayout
+        android:id="@+id/splashContent"
+        android:layout_width="387dp"
+        android:layout_height="324dp"
+        android:layout_gravity="center"
+        android:gravity="center"
+        android:orientation="vertical">
+
+        <!-- Icon tủ lạnh -->
+
+        <!-- Tên ứng dụng -->
+        <FrameLayout
+            android:layout_width="183dp"
+            android:layout_height="180dp"
+            android:layout_gravity="center"
+            android:background="@drawable/splash_bg_circle">
+
+            <ImageView
+                android:id="@+id/imgSplashIcon"
+                android:layout_width="233dp"
+                android:layout_height="match_parent"
+                android:padding="24dp"
+                android:scaleType="fitCenter"
+                android:src="@drawable/refrigerator" />
+        </FrameLayout>
+
+        <TextView
+            android:id="@+id/tvAppName"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_marginTop="24dp"
+            android:fontFamily="sans-serif-medium"
+            android:letterSpacing="0.02"
+            android:text="Tủ Lạnh Sinh Viên"
+            android:textColor="@color/white"
+            android:textSize="28sp"
+            android:textStyle="bold" />
+
+        <!-- Tagline -->
+        <TextView
+            android:id="@+id/tvTagline"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_marginTop="8dp"
+            android:fontFamily="sans-serif-light"
+            android:text="Quản lý thực phẩm &amp; ngân sách ăn uống"
+            android:textColor="@color/primary_light"
+            android:textSize="14sp" />
+
+    </LinearLayout>
+
+    <!-- Phần dưới cùng -->
+    <LinearLayout
+        android:id="@+id/splashBottom"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:layout_gravity="bottom|center_horizontal"
+        android:gravity="center"
+        android:orientation="vertical"
+        android:paddingBottom="56dp"
+        android:paddingLeft="48dp"
+        android:paddingRight="48dp">
+
+        <!-- Thanh loading -->
+        <ProgressBar
+            android:id="@+id/splashProgressBar"
+            style="@android:style/Widget.ProgressBar.Horizontal"
+            android:layout_width="180dp"
+            android:layout_height="4dp"
+            android:max="100"
+            android:progress="0"
+            android:progressDrawable="@drawable/splash_loading_bar" />
+
+        <!-- Text loading -->
+        <TextView
+            android:id="@+id/tvLoading"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_marginTop="12dp"
+            android:fontFamily="sans-serif"
+            android:text="Đang chuẩn bị tủ lạnh..."
+            android:textColor="@color/white_60"
+            android:textSize="11sp" />
+
+        <!-- Phiên bản -->
+        <TextView
+            android:id="@+id/tvVersion"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_marginTop="6dp"
+            android:text="PantrySmart v1.0.0"
+            android:textColor="@color/white_40"
+            android:textSize="10sp" />
+
+    </LinearLayout>
+
+</FrameLayout>

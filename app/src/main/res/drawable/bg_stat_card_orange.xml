@@ -1,0 +1,7 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!-- Stat card: Sắp hết hạn — bg #FFF7ED, rounded 16dp -->
+<shape xmlns:android="http://schemas.android.com/apk/res/android"
+    android:shape="rectangle">
+    <solid android:color="#FFF7ED" />
+    <corners android:radius="16dp" />
+</shape>

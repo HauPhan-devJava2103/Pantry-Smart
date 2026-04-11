@@ -1,5 +1,40 @@
 <?xml version="1.0" encoding="utf-8"?>
 <resources>
+    <!-- ===== Màu cơ bản ===== -->
     <color name="black">#FF000000</color>
     <color name="white">#FFFFFFFF</color>
+
+    <!-- ===== Bảng màu chính (Primary) - Xanh lá PantrySmart ===== -->
+    <color name="primary">#00BC7D</color>
+    <color name="primary_dark">#009966</color>
+    <color name="primary_teal">#00BBA7</color>
+    <color name="primary_light">#D0FAE5</color>
+    <color name="primary_surface">#F0FDF4</color>
+
+    <!-- ===== Bảng màu nền (Background) ===== -->
+    <color name="bg_main">#F5F5F5</color>
+    <color name="bg_card">#FFFFFF</color>
+
+    <!-- ===== Bảng màu chữ (Text) ===== -->
+    <color name="text_primary">#1E2939</color>
+    <color name="text_secondary">#364153</color>
+    <color name="text_body">#4A5565</color>
+    <color name="text_hint">#99A1AF</color>
+    <color name="text_disabled">#666666</color>
+
+    <!-- ===== Màu trắng với độ trong suốt (White Overlay) ===== -->
+    <color name="white_100">#FFFFFF</color>
+    <color name="white_60">#99FFFFFF</color>
+    <color name="white_40">#66FFFFFF</color>
+    <color name="white_30">#4DFFFFFF</color>
+    <color name="white_20">#33FFFFFF</color>
+    <color name="white_10">#1AFFFFFF</color>
+
+    <!-- ===== Màu badge / accent ===== -->
+    <color name="badge_green">#DCFCE7</color>
+    <color name="badge_green_text">#00A63E</color>
+    <color name="badge_yellow">#FEF9C2</color>
+    <color name="badge_yellow_text">#D08700</color>
+    <color name="accent_orange">#F97316</color>
+    <color name="accent_orange_dark">#EA580C</color>
 </resources>

@@ -1,0 +1,32 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!-- Fridge interior: cool dark gradient simulating inside of a fridge with light -->
+<layer-list xmlns:android="http://schemas.android.com/apk/res/android">
+    <!-- Inner wall -->
+    <item>
+        <shape android:shape="rectangle">
+            <gradient
+                android:startColor="#E3EBF5"
+                android:centerColor="#EDF2F8"
+                android:endColor="#DCE6F2"
+                android:angle="270" />
+            <corners android:radius="12dp" />
+        </shape>
+    </item>
+    <!-- Top light glow -->
+    <item android:bottom="150dp">
+        <shape android:shape="rectangle">
+            <gradient
+                android:startColor="#30FFFFFF"
+                android:endColor="#00FFFFFF"
+                android:angle="270" />
+            <corners android:topLeftRadius="12dp" android:topRightRadius="12dp" />
+        </shape>
+    </item>
+    <!-- Inner border (shadow effect) -->
+    <item>
+        <shape android:shape="rectangle">
+            <stroke android:width="1.5dp" android:color="#18000000" />
+            <corners android:radius="12dp" />
+        </shape>
+    </item>
+</layer-list>

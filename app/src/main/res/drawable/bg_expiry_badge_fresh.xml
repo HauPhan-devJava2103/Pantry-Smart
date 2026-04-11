@@ -1,0 +1,7 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!-- ExpiryBadge for fresh items: #DCFCE7, pill shape -->
+<shape xmlns:android="http://schemas.android.com/apk/res/android"
+    android:shape="rectangle">
+    <solid android:color="#DCFCE7" />
+    <corners android:radius="100dp" />
+</shape>

@@ -1,0 +1,23 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!-- Glass shelf: thin line with subtle highlight -->
+<layer-list xmlns:android="http://schemas.android.com/apk/res/android">
+    <!-- Shelf shadow -->
+    <item android:top="2dp">
+        <shape android:shape="rectangle">
+            <solid android:color="#10000000" />
+            <size android:height="1dp" />
+        </shape>
+    </item>
+    <!-- Glass surface -->
+    <item>
+        <shape android:shape="rectangle">
+            <gradient
+                android:startColor="#40B8D4ED"
+                android:centerColor="#70D0E5F5"
+                android:endColor="#40B8D4ED"
+                android:angle="0" />
+            <size android:height="2dp" />
+            <corners android:radius="1dp" />
+        </shape>
+    </item>
+</layer-list>
