@@ -3,16 +3,23 @@ package hcmute.edu.vn.pantrysmart.data.local.entity;
 import androidx.room.ColumnInfo;
 import androidx.room.Entity;
 import androidx.room.ForeignKey;
+import androidx.room.Index;
 import androidx.room.PrimaryKey;
 
 /**
  * Chi tiết nguyên liệu đã trừ khi nấu ăn.
  * Ghi lại: lấy bao nhiêu, từ item nào trong tủ lạnh.
  */
-@Entity(tableName = "cooking_log_items", foreignKeys = {
-        @ForeignKey(entity = CookingLog.class, parentColumns = "id", childColumns = "cooking_log_id", onDelete = ForeignKey.CASCADE),
-        @ForeignKey(entity = PantryItem.class, parentColumns = "id", childColumns = "pantry_item_id", onDelete = ForeignKey.SET_NULL)
-})
+@Entity(tableName = "cooking_log_items",
+        foreignKeys = {
+                @ForeignKey(entity = CookingLog.class, parentColumns = "id", childColumns = "cooking_log_id", onDelete = ForeignKey.CASCADE),
+                @ForeignKey(entity = PantryItem.class, parentColumns = "id", childColumns = "pantry_item_id", onDelete = ForeignKey.SET_NULL)
+        },
+        indices = {
+                @Index(value = "cooking_log_id"),
+                @Index(value = "pantry_item_id")
+        }
+)
 public class CookingLogItem {
 
     @PrimaryKey(autoGenerate = true)

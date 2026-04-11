@@ -1,12 +1,17 @@
 package hcmute.edu.vn.pantrysmart.fragment;
 
+import android.app.Dialog;
 import android.graphics.Color;
+import android.graphics.drawable.ColorDrawable;
 import android.os.Bundle;
 import android.view.Gravity;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
+import android.view.Window;
 import android.view.animation.AccelerateDecelerateInterpolator;
+import android.widget.FrameLayout;
+import android.widget.ImageView;
 import android.widget.LinearLayout;
 import android.widget.TextView;
 import android.widget.Toast;
@@ -14,6 +19,10 @@ import android.widget.Toast;
 import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
 import androidx.fragment.app.Fragment;
+import androidx.recyclerview.widget.LinearLayoutManager;
+import androidx.recyclerview.widget.RecyclerView;
+
+import hcmute.edu.vn.pantrysmart.adapter.PantryItemAdapter;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -48,6 +57,7 @@ public class FridgeFragment extends Fragment {
     private LinearLayout mainShelf1, mainShelf2, mainShelf3;
     private TextView tvFreezerEmpty, tvMainEmpty;
     private TextView btnCloseFreezer, btnCloseMain;
+    private TextView btnViewAllFreezer, btnViewAllMain;
 
     private boolean freezerOpen = false;
     private boolean mainOpen = false;
@@ -99,13 +109,21 @@ public class FridgeFragment extends Fragment {
         btnCloseFreezer = view.findViewById(R.id.btnCloseFreezer);
         btnCloseMain = view.findViewById(R.id.btnCloseMain);
 
+        // View All buttons
+        btnViewAllFreezer = view.findViewById(R.id.btnViewAllFreezer);
+        btnViewAllMain    = view.findViewById(R.id.btnViewAllMain);
+
         // Door tap → open interior
         doorFreezer.setOnClickListener(v -> toggleFreezerDoor());
         doorMain.setOnClickListener(v -> toggleMainDoor());
 
-        // Close buttons ─
+        // Close buttons
         btnCloseFreezer.setOnClickListener(v -> toggleFreezerDoor());
         btnCloseMain.setOnClickListener(v -> toggleMainDoor());
+
+        // View All listeners
+        btnViewAllFreezer.setOnClickListener(v -> showAllItemsDialog(cachedFreezerItems, "Ngăn Đông", "#3A7AB5"));
+        btnViewAllMain.setOnClickListener(v -> showAllItemsDialog(cachedMainItems, "Ngăn Chính", "#A06828"));
 
         loadItems();
     }
@@ -116,14 +134,14 @@ public class FridgeFragment extends Fragment {
         loadItems();
     }
 
-    // Hàm xử lý khi nhấn vào cửa Ngăn Đông: Animation ẩn cửa, hiện nội dung kệ và
-    // ngược lại
+    // Hàm xử lý khi nhấn vào cửa Ngăn Đông: Animation ẩn cửa, hiện nội dung kệ và ngược lại
     private void toggleFreezerDoor() {
         freezerOpen = !freezerOpen;
         if (freezerOpen) {
             animateViewOut(doorFreezer, () -> {
                 doorFreezer.setVisibility(View.GONE);
                 populateShelves(cachedFreezerItems, freezerShelf1, freezerShelf2, null, tvFreezerEmpty);
+                btnViewAllFreezer.setVisibility(!cachedFreezerItems.isEmpty() ? View.VISIBLE : View.GONE);
                 interiorFreezer.setAlpha(0f);
                 interiorFreezer.setVisibility(View.VISIBLE);
                 animateViewIn(interiorFreezer);
@@ -131,6 +149,7 @@ public class FridgeFragment extends Fragment {
         } else {
             animateViewOut(interiorFreezer, () -> {
                 interiorFreezer.setVisibility(View.GONE);
+                btnViewAllFreezer.setVisibility(View.GONE);
                 doorFreezer.setAlpha(0f);
                 doorFreezer.setVisibility(View.VISIBLE);
                 animateViewIn(doorFreezer);
@@ -138,14 +157,14 @@ public class FridgeFragment extends Fragment {
         }
     }
 
-    // Hàm xử lý khi nhấn vào cửa Ngăn Chính: Animation ẩn cửa, hiện nội dung kệ và
-    // ngược lại
+    // Hàm xử lý khi nhấn vào cửa Ngăn Chính: Animation ẩn cửa, hiện nội dung kệ và ngược lại
     private void toggleMainDoor() {
         mainOpen = !mainOpen;
         if (mainOpen) {
             animateViewOut(doorMain, () -> {
                 doorMain.setVisibility(View.GONE);
                 populateShelves(cachedMainItems, mainShelf1, mainShelf2, mainShelf3, tvMainEmpty);
+                btnViewAllMain.setVisibility(!cachedMainItems.isEmpty() ? View.VISIBLE : View.GONE);
                 interiorMain.setAlpha(0f);
                 interiorMain.setVisibility(View.VISIBLE);
                 animateViewIn(interiorMain);
@@ -153,6 +172,7 @@ public class FridgeFragment extends Fragment {
         } else {
             animateViewOut(interiorMain, () -> {
                 interiorMain.setVisibility(View.GONE);
+                btnViewAllMain.setVisibility(View.GONE);
                 doorMain.setAlpha(0f);
                 doorMain.setVisibility(View.VISIBLE);
                 animateViewIn(doorMain);
@@ -160,9 +180,8 @@ public class FridgeFragment extends Fragment {
         }
     }
 
-    // Hàm phân bổ danh sách thực phẩm vào các kệ của tủ lạnh (tối đa 4-5 món mỗi
-    // kệ)
-    private void populateShelves(List<PantryItem> items,
+    // Hàm phân bổ danh sách thực phẩm vào các kệ của tủ lạnh (tối đa 4-5 món mỗi kệ)
+    private int populateShelves(List<PantryItem> items,
             LinearLayout shelf1, LinearLayout shelf2,
             LinearLayout shelf3, TextView emptyView) {
         shelf1.removeAllViews();
@@ -176,11 +195,12 @@ public class FridgeFragment extends Fragment {
             addEmptySlots(shelf2, 4);
             if (shelf3 != null)
                 addEmptySlots(shelf3, 4);
-            return;
+            return 0;
         }
 
         emptyView.setVisibility(View.GONE);
         int maxPerShelf = shelf3 != null ? 5 : 4;
+        int maxTotal    = shelf3 != null ? maxPerShelf * 3 : maxPerShelf * 2;
         long now = System.currentTimeMillis();
 
         for (int i = 0; i < items.size(); i++) {
@@ -211,10 +231,11 @@ public class FridgeFragment extends Fragment {
         fillEmptySlots(shelf2, maxPerShelf);
         if (shelf3 != null)
             fillEmptySlots(shelf3, maxPerShelf);
+
+        return Math.min(items.size(), maxTotal);
     }
 
-    // Hàm tạo view hiển thị thực phẩm (vòng tròn chứa Emoji), đổi màu viền nếu sắp
-    // hết hạn
+    // Hàm tạo view hiển thị thực phẩm (vòng tròn chứa Emoji), đổi màu viền
     private View createFoodCircle(PantryItem item, long now) {
         boolean isExpiring = false;
         if (item.getExpiryDate() != null) {
@@ -270,8 +291,7 @@ public class FridgeFragment extends Fragment {
         }
     }
 
-    // Hàm kiểm tra và lấp đầy chỗ trống bằng các empty slots cho đến khi đủ số
-    // lượng tối đa của kệ
+    // Hàm kiểm tra và lấp đầy chỗ trống bằng các empty slots cho đến khi đủ số lượng tối đa của kệ
     private void fillEmptySlots(LinearLayout shelf, int maxPerShelf) {
         int remaining = maxPerShelf - shelf.getChildCount();
         if (remaining > 0)
@@ -298,8 +318,7 @@ public class FridgeFragment extends Fragment {
                 .start();
     }
 
-    // Hàm tải dữ liệu tổng hợp: đếm số món, số lượng hết hạn, tải danh sách và cập
-    // nhật UI (thống kê + kệ tủ)
+    // Hàm tải dữ liệu tổng hợp: đếm số món, số lượng hết hạn, tải danh sách và cập nhật
     public void loadItems() {
         PantrySmartDatabase.databaseWriteExecutor.execute(() -> {
             int totalMain = pantryDao.countItemsByZone("MAIN");
@@ -357,9 +376,11 @@ public class FridgeFragment extends Fragment {
                 // Refresh shelves if open
                 if (freezerOpen) {
                     populateShelves(cachedFreezerItems, freezerShelf1, freezerShelf2, null, tvFreezerEmpty);
+                    btnViewAllFreezer.setVisibility(!cachedFreezerItems.isEmpty() ? View.VISIBLE : View.GONE);
                 }
                 if (mainOpen) {
                     populateShelves(cachedMainItems, mainShelf1, mainShelf2, mainShelf3, tvMainEmpty);
+                    btnViewAllMain.setVisibility(!cachedMainItems.isEmpty() ? View.VISIBLE : View.GONE);
                 }
 
                 // Stats Row
@@ -387,5 +408,74 @@ public class FridgeFragment extends Fragment {
         if (text == null)
             return "";
         return text.length() > maxLen ? text.substring(0, maxLen) + "…" : text;
+    }
+
+    /**
+     * Hiển thị BottomSheet dialog liệt kê toàn bộ thực phẩm trong ngăn.
+     */
+    private void showAllItemsDialog(List<PantryItem> items, String title, String colorHex) {
+        if (getContext() == null) return;
+
+        Dialog dialog = new Dialog(requireContext());
+        dialog.requestWindowFeature(Window.FEATURE_NO_TITLE);
+
+        View content = getLayoutInflater().inflate(R.layout.dialog_item_list, null);
+        dialog.setContentView(content);
+
+        // Cấu hình window kiểu BottomSheet
+        if (dialog.getWindow() != null) {
+            dialog.getWindow().setBackgroundDrawable(new ColorDrawable(Color.TRANSPARENT));
+            dialog.getWindow().setLayout(
+                    ViewGroup.LayoutParams.MATCH_PARENT,
+                    ViewGroup.LayoutParams.WRAP_CONTENT);
+            dialog.getWindow().setGravity(Gravity.BOTTOM);
+            dialog.getWindow().getAttributes().windowAnimations =
+                    android.R.style.Animation_InputMethod;
+        }
+
+        // Bind header views
+        boolean isFreezer = colorHex.equals("#3A7AB5");
+        TextView dialogTitle     = content.findViewById(R.id.dialogTitle);
+        TextView dialogSubtitle  = content.findViewById(R.id.dialogSubtitle);
+        ImageView dialogZoneIcon = content.findViewById(R.id.dialogZoneIcon);
+        FrameLayout btnClose     = content.findViewById(R.id.dialogBtnClose);
+        RecyclerView recyclerView = content.findViewById(R.id.dialogRecyclerView);
+
+        dialogTitle.setText(isFreezer ? "Ngăn Đông" : "Ngăn Chính");
+        dialogTitle.setTextColor(Color.parseColor(colorHex));
+        dialogSubtitle.setText(items.size() + " thực phẩm");
+        dialogZoneIcon.setImageResource(isFreezer ? R.drawable.ic_zone_freezer : R.drawable.ic_zone_main);
+        btnClose.setOnClickListener(v -> dialog.dismiss());
+
+        // Thiết lập RecyclerView + Adapter
+        PantryItemAdapter adapter = new PantryItemAdapter(requireContext(), items);
+        recyclerView.setLayoutManager(new LinearLayoutManager(requireContext()));
+        recyclerView.setAdapter(adapter);
+        recyclerView.setHasFixedSize(false);
+
+        // Xử lý nút Edit / Delete
+        adapter.setOnItemActionListener(new PantryItemAdapter.OnItemActionListener() {
+            @Override
+            public void onEdit(PantryItem item, int position) {
+                Toast.makeText(requireContext(), "Sửa: " + item.getName(), Toast.LENGTH_SHORT).show();
+                // TODO: mở dialog chỉnh sửa item
+            }
+
+            @Override
+            public void onDelete(PantryItem item, int position) {
+                PantrySmartDatabase.databaseWriteExecutor.execute(() -> {
+                    pantryDao.delete(item);
+                    if (getActivity() != null) {
+                        getActivity().runOnUiThread(() -> {
+                            adapter.removeItem(position);
+                            dialogSubtitle.setText(adapter.getItemCount() + " thực phẩm");
+                            loadItems(); // cập nhật badge + kệ
+                        });
+                    }
+                });
+            }
+        });
+
+        dialog.show();
     }
 }

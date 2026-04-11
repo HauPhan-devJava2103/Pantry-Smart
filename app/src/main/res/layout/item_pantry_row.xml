@@ -1,0 +1,120 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!-- Một dòng thực phẩm trong danh sách BottomSheet dialog -->
+<LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    android:layout_width="match_parent"
+    android:layout_height="wrap_content"
+    android:background="@drawable/bg_item_row_card"
+    android:elevation="1dp"
+    android:gravity="center_vertical"
+    android:orientation="horizontal"
+    android:layout_marginBottom="8dp"
+    android:padding="10dp">
+
+    <!-- Hình ảnh / Emoji placeholder -->
+    <FrameLayout
+        android:layout_width="52dp"
+        android:layout_height="52dp"
+        android:layout_marginEnd="12dp">
+
+        <!-- Ảnh thực phẩm (ẩn mặc định, hiện khi có imagePath) -->
+        <ImageView
+            android:id="@+id/imgFood"
+            android:layout_width="52dp"
+            android:layout_height="52dp"
+            android:scaleType="centerCrop"
+            android:visibility="gone"
+            android:contentDescription="Ảnh thực phẩm" />
+
+        <!-- Emoji fallback (hiện khi không có ảnh) -->
+        <LinearLayout
+            android:id="@+id/layoutEmojiPlaceholder"
+            android:layout_width="52dp"
+            android:layout_height="52dp"
+            android:background="@drawable/bg_item_image_placeholder"
+            android:gravity="center"
+            android:orientation="vertical">
+
+            <TextView
+                android:id="@+id/tvEmoji"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:text="Cà chua"
+                android:textSize="24sp" />
+        </LinearLayout>
+    </FrameLayout>
+
+    <!-- Thông tin giữa: Tên + Số lượng + Category -->
+    <LinearLayout
+        android:layout_width="0dp"
+        android:layout_height="wrap_content"
+        android:layout_weight="1"
+        android:orientation="vertical"
+        android:layout_marginEnd="8dp">
+
+        <!-- Name -->
+        <TextView
+            android:id="@+id/tvItemName"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:ellipsize="end"
+            android:fontFamily="sans-serif-medium"
+            android:maxLines="1"
+            android:text="Cà chua"
+            android:textColor="#1F2937"
+            android:textSize="14sp" />
+
+        <!-- Quantity + Unit -->
+        <TextView
+            android:id="@+id/tvItemQuantity"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_marginTop="2dp"
+            android:text="2 kg"
+            android:textColor="#6B7280"
+            android:textSize="11sp" />
+
+        <!-- Expiry status badge -->
+        <TextView
+            android:id="@+id/tvExpiryBadge"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_marginTop="4dp"
+            android:background="@drawable/bg_status_badge_fresh"
+            android:paddingStart="8dp"
+            android:paddingEnd="8dp"
+            android:paddingTop="2dp"
+            android:paddingBottom="2dp"
+            android:text="Còn 5 ngày"
+            android:textColor="#059669"
+            android:textSize="10sp"
+            android:fontFamily="sans-serif-medium" />
+    </LinearLayout>
+
+    <!-- Phải: Zone, Date và Action Buttons -->
+    <LinearLayout
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:gravity="center_vertical"
+        android:orientation="horizontal">
+        <!-- Sửa -->
+        <ImageButton
+            android:id="@+id/btnEditItem"
+            android:layout_width="32dp"
+            android:layout_height="32dp"
+            android:layout_marginEnd="6dp"
+            android:background="@drawable/bg_circle_edit"
+            android:src="@drawable/ic_action_edit"
+            android:scaleType="centerInside" />
+
+        <!-- Xóa -->
+        <ImageButton
+            android:id="@+id/btnDeleteItem"
+            android:layout_width="32dp"
+            android:layout_height="32dp"
+            android:background="@drawable/bg_circle_delete"
+            android:src="@drawable/ic_action_delete"
+            android:scaleType="centerInside" />
+
+    </LinearLayout>
+
+</LinearLayout>

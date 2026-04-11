@@ -12,6 +12,100 @@
         android:orientation="vertical"
         android:paddingBottom="16dp">
 
+        <!-- Stats Row  -->
+        <LinearLayout
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:layout_marginStart="16dp"
+            android:layout_marginEnd="16dp"
+            android:layout_marginTop="12dp"
+            android:orientation="horizontal"
+            android:baselineAligned="false">
+
+            <LinearLayout
+                android:layout_width="0dp"
+                android:layout_height="69dp"
+                android:layout_weight="1"
+                android:background="@drawable/bg_stat_card_green"
+                android:gravity="center"
+                android:orientation="vertical"
+                android:paddingTop="12dp"
+                android:paddingBottom="12dp"
+                android:layout_marginEnd="6dp">
+
+                <TextView
+                    android:id="@+id/tvStatTotal"
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:text="0"
+                    android:textColor="@color/primary_dark"
+                    android:textSize="20sp"
+                    android:fontFamily="sans-serif-medium" />
+
+                <TextView
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:text="@string/stat_total"
+                    android:textColor="#6A7282"
+                    android:textSize="10sp" />
+            </LinearLayout>
+
+            <LinearLayout
+                android:layout_width="0dp"
+                android:layout_height="69dp"
+                android:layout_weight="1"
+                android:background="@drawable/bg_stat_card_orange"
+                android:gravity="center"
+                android:orientation="vertical"
+                android:paddingTop="12dp"
+                android:paddingBottom="12dp"
+                android:layout_marginEnd="6dp">
+
+                <TextView
+                    android:id="@+id/tvStatExpiring"
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:text="0"
+                    android:textColor="#FF6900"
+                    android:textSize="20sp"
+                    android:fontFamily="sans-serif-medium" />
+
+                <TextView
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:text="@string/stat_expiring"
+                    android:textColor="#6A7282"
+                    android:textSize="10sp" />
+            </LinearLayout>
+
+            <LinearLayout
+                android:layout_width="0dp"
+                android:layout_height="69dp"
+                android:layout_weight="1"
+                android:background="@drawable/bg_stat_card_red"
+                android:gravity="center"
+                android:orientation="vertical"
+                android:paddingTop="12dp"
+                android:paddingBottom="12dp">
+
+                <TextView
+                    android:id="@+id/tvStatExpired"
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:text="0"
+                    android:textColor="#FB2C36"
+                    android:textSize="20sp"
+                    android:fontFamily="sans-serif-medium" />
+
+                <TextView
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:text="@string/stat_expired"
+                    android:textColor="#6A7282"
+                    android:textSize="10sp" />
+            </LinearLayout>
+        </LinearLayout>
+
 
         <!-- REALISTIC FRIDGE VISUAL       -->
         <LinearLayout
@@ -147,12 +241,11 @@
                             </LinearLayout>
 
                             <!-- Compartment Icon -->
-                            <TextView
-                                android:layout_width="wrap_content"
-                                android:layout_height="wrap_content"
-                                android:text="❄️"
-                                android:textSize="30sp"
-                                android:layout_marginBottom="2dp" />
+                            <ImageView
+                                android:layout_width="36dp"
+                                android:layout_height="36dp"
+                                android:src="@drawable/ic_zone_freezer"
+                                android:layout_marginBottom="4dp" />
 
                             <!-- Title -->
                             <TextView
@@ -255,11 +348,17 @@
                         android:paddingStart="4dp"
                         android:paddingEnd="4dp">
 
+                        <ImageView
+                            android:layout_width="14dp"
+                            android:layout_height="14dp"
+                            android:src="@drawable/ic_zone_freezer"
+                            android:layout_marginEnd="6dp" />
+
                         <TextView
                             android:layout_width="0dp"
                             android:layout_height="wrap_content"
                             android:layout_weight="1"
-                            android:text="❄️ Ngăn đông"
+                            android:text="Ngăn đông"
                             android:textColor="#3A7AB5"
                             android:textSize="11sp"
                             android:fontFamily="sans-serif-medium" />
@@ -325,6 +424,20 @@
                         android:text="Ngăn đông trống"
                         android:textColor="#9CA3AF"
                         android:textSize="10sp"
+                        android:visibility="gone" />
+
+                    <!-- Xem tất cả -->
+                    <TextView
+                        android:id="@+id/btnViewAllFreezer"
+                        android:layout_width="match_parent"
+                        android:layout_height="30dp"
+                        android:layout_marginTop="6dp"
+                        android:background="@drawable/bg_view_all_btn"
+                        android:gravity="center"
+                        android:text="Xem tất cả →"
+                        android:textColor="#3A7AB5"
+                        android:textSize="10sp"
+                        android:fontFamily="sans-serif-medium"
                         android:visibility="gone" />
                 </LinearLayout>
 
@@ -402,12 +515,11 @@
                             </LinearLayout>
 
                             <!-- Compartment Icon -->
-                            <TextView
-                                android:layout_width="wrap_content"
-                                android:layout_height="wrap_content"
-                                android:text="🌡️"
-                                android:textSize="30sp"
-                                android:layout_marginBottom="2dp" />
+                            <ImageView
+                                android:layout_width="36dp"
+                                android:layout_height="36dp"
+                                android:src="@drawable/ic_zone_main"
+                                android:layout_marginBottom="4dp" />
 
                             <!-- Title -->
                             <TextView
@@ -509,11 +621,17 @@
                         android:paddingStart="4dp"
                         android:paddingEnd="4dp">
 
+                        <ImageView
+                            android:layout_width="14dp"
+                            android:layout_height="14dp"
+                            android:src="@drawable/ic_zone_main"
+                            android:layout_marginEnd="6dp" />
+
                         <TextView
                             android:layout_width="0dp"
                             android:layout_height="wrap_content"
                             android:layout_weight="1"
-                            android:text="🌡️ Ngăn chính"
+                            android:text="Ngăn chính"
                             android:textColor="#A06828"
                             android:textSize="11sp"
                             android:fontFamily="sans-serif-medium" />
@@ -596,6 +714,20 @@
                         android:textColor="#9CA3AF"
                         android:textSize="10sp"
                         android:visibility="gone" />
+
+                    <!-- Xem tất cả -->
+                    <TextView
+                        android:id="@+id/btnViewAllMain"
+                        android:layout_width="match_parent"
+                        android:layout_height="30dp"
+                        android:layout_marginTop="6dp"
+                        android:background="@drawable/bg_view_all_btn"
+                        android:gravity="center"
+                        android:text="Xem tất cả →"
+                        android:textColor="#A06828"
+                        android:textSize="10sp"
+                        android:fontFamily="sans-serif-medium"
+                        android:visibility="gone" />
                 </LinearLayout>
 
                 <!--  Brand Logo  -->
@@ -655,101 +787,5 @@
                 android:layout_marginTop="2dp"
                 android:background="#0D000000" />
         </LinearLayout>
-
-        <!-- Stats Row (Figma nodes: 24:625-639)          -->
-        <LinearLayout
-            android:layout_width="match_parent"
-            android:layout_height="wrap_content"
-            android:layout_marginStart="16dp"
-            android:layout_marginEnd="16dp"
-            android:layout_marginTop="12dp"
-            android:orientation="horizontal"
-            android:baselineAligned="false">
-
-            <LinearLayout
-                android:layout_width="0dp"
-                android:layout_height="69dp"
-                android:layout_weight="1"
-                android:background="@drawable/bg_stat_card_green"
-                android:gravity="center"
-                android:orientation="vertical"
-                android:paddingTop="12dp"
-                android:paddingBottom="12dp"
-                android:layout_marginEnd="6dp">
-
-                <TextView
-                    android:id="@+id/tvStatTotal"
-                    android:layout_width="wrap_content"
-                    android:layout_height="wrap_content"
-                    android:text="0"
-                    android:textColor="@color/primary_dark"
-                    android:textSize="20sp"
-                    android:fontFamily="sans-serif-medium" />
-
-                <TextView
-                    android:layout_width="wrap_content"
-                    android:layout_height="wrap_content"
-                    android:text="@string/stat_total"
-                    android:textColor="#6A7282"
-                    android:textSize="10sp" />
-            </LinearLayout>
-
-            <LinearLayout
-                android:layout_width="0dp"
-                android:layout_height="69dp"
-                android:layout_weight="1"
-                android:background="@drawable/bg_stat_card_orange"
-                android:gravity="center"
-                android:orientation="vertical"
-                android:paddingTop="12dp"
-                android:paddingBottom="12dp"
-                android:layout_marginEnd="6dp">
-
-                <TextView
-                    android:id="@+id/tvStatExpiring"
-                    android:layout_width="wrap_content"
-                    android:layout_height="wrap_content"
-                    android:text="0"
-                    android:textColor="#FF6900"
-                    android:textSize="20sp"
-                    android:fontFamily="sans-serif-medium" />
-
-                <TextView
-                    android:layout_width="wrap_content"
-                    android:layout_height="wrap_content"
-                    android:text="@string/stat_expiring"
-                    android:textColor="#6A7282"
-                    android:textSize="10sp" />
-            </LinearLayout>
-
-            <LinearLayout
-                android:layout_width="0dp"
-                android:layout_height="69dp"
-                android:layout_weight="1"
-                android:background="@drawable/bg_stat_card_red"
-                android:gravity="center"
-                android:orientation="vertical"
-                android:paddingTop="12dp"
-                android:paddingBottom="12dp">
-
-                <TextView
-                    android:id="@+id/tvStatExpired"
-                    android:layout_width="wrap_content"
-                    android:layout_height="wrap_content"
-                    android:text="0"
-                    android:textColor="#FB2C36"
-                    android:textSize="20sp"
-                    android:fontFamily="sans-serif-medium" />
-
-                <TextView
-                    android:layout_width="wrap_content"
-                    android:layout_height="wrap_content"
-                    android:text="@string/stat_expired"
-                    android:textColor="#6A7282"
-                    android:textSize="10sp" />
-            </LinearLayout>
-        </LinearLayout>
-
-
     </LinearLayout>
 </ScrollView>

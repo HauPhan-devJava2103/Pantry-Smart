@@ -3,13 +3,20 @@ package hcmute.edu.vn.pantrysmart.data.local.entity;
 import androidx.room.ColumnInfo;
 import androidx.room.Entity;
 import androidx.room.ForeignKey;
+import androidx.room.Index;
 import androidx.room.PrimaryKey;
 
 // Giao dịch chi tiêu
-@Entity(tableName = "expenses", foreignKeys = {
-        @ForeignKey(entity = Budget.class, parentColumns = "id", childColumns = "budget_id", onDelete = ForeignKey.SET_NULL),
-        @ForeignKey(entity = ExpenseCategory.class, parentColumns = "category_key", childColumns = "category_key", onDelete = ForeignKey.SET_NULL)
-})
+@Entity(tableName = "expenses",
+        foreignKeys = {
+                @ForeignKey(entity = Budget.class, parentColumns = "id", childColumns = "budget_id", onDelete = ForeignKey.SET_NULL),
+                @ForeignKey(entity = ExpenseCategory.class, parentColumns = "category_key", childColumns = "category_key", onDelete = ForeignKey.SET_NULL)
+        },
+        indices = {
+                @Index(value = "budget_id"),
+                @Index(value = "category_key")
+        }
+)
 public class Expense {
 
     @PrimaryKey(autoGenerate = true)
