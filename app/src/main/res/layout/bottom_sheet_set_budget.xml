@@ -1,0 +1,261 @@
+<?xml version="1.0" encoding="utf-8"?>
+<LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
+    android:layout_width="match_parent"
+    android:layout_height="wrap_content"
+    android:orientation="vertical"
+    android:background="@drawable/bg_sheet_rounded"
+    android:paddingBottom="24dp">
+
+    <!-- Handle -->
+    <View
+        android:layout_width="48dp"
+        android:layout_height="4dp"
+        android:layout_gravity="center_horizontal"
+        android:layout_marginTop="20dp"
+        android:background="@drawable/bg_sheet_handle" />
+
+    <!-- Title -->
+    <TextView
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_marginStart="20dp"
+        android:layout_marginTop="16dp"
+        android:text="Thiết lập ngân sách"
+        android:fontFamily="sans-serif-medium"
+        android:textColor="#1E2939"
+        android:textSize="18sp" />
+
+    <!-- Subtitle tháng hiện tại -->
+    <TextView
+        android:id="@+id/tvBudgetMonthLabel"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_marginStart="20dp"
+        android:layout_marginTop="4dp"
+        android:text="Tháng 4 / 2026"
+        android:textColor="#99A1AF"
+        android:textSize="13sp" />
+
+    <LinearLayout
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:orientation="vertical"
+        android:paddingHorizontal="20dp"
+        android:layout_marginTop="20dp">
+
+        <!-- ===== NGÂN SÁCH THÁNG ===== -->
+        <TextView
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:text="Ngân sách tháng"
+            android:textColor="#99A1AF"
+            android:textSize="12sp" />
+
+        <EditText
+            android:id="@+id/etMonthlyLimit"
+            android:layout_width="match_parent"
+            android:layout_height="42dp"
+            android:layout_marginTop="6dp"
+            android:background="@drawable/bg_edittext_expense"
+            android:hint="Nhập số tiền (VND)"
+            android:textColorHint="#800A0A0A"
+            android:textColor="#1E2939"
+            android:textSize="14sp"
+            android:paddingHorizontal="12dp"
+            android:inputType="numberDecimal" />
+
+        <!-- Quick chips cho tháng -->
+        <HorizontalScrollView
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:layout_marginTop="8dp"
+            android:scrollbars="none">
+
+            <LinearLayout
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:orientation="horizontal">
+
+                <TextView
+                    android:id="@+id/mChip1tr"
+                    android:layout_width="wrap_content"
+                    android:layout_height="24dp"
+                    android:background="@drawable/bg_chip_expense"
+                    android:text="1 triệu"
+                    android:textColor="#4A5565"
+                    android:textSize="12sp"
+                    android:fontFamily="sans-serif-medium"
+                    android:gravity="center"
+                    android:paddingHorizontal="12dp" />
+
+                <TextView
+                    android:id="@+id/mChip2tr"
+                    android:layout_width="wrap_content"
+                    android:layout_height="24dp"
+                    android:background="@drawable/bg_chip_expense"
+                    android:layout_marginStart="6dp"
+                    android:text="2 triệu"
+                    android:textColor="#4A5565"
+                    android:textSize="12sp"
+                    android:fontFamily="sans-serif-medium"
+                    android:gravity="center"
+                    android:paddingHorizontal="12dp" />
+
+                <TextView
+                    android:id="@+id/mChip3tr"
+                    android:layout_width="wrap_content"
+                    android:layout_height="24dp"
+                    android:background="@drawable/bg_chip_expense"
+                    android:layout_marginStart="6dp"
+                    android:text="3 triệu"
+                    android:textColor="#4A5565"
+                    android:textSize="12sp"
+                    android:fontFamily="sans-serif-medium"
+                    android:gravity="center"
+                    android:paddingHorizontal="12dp" />
+
+                <TextView
+                    android:id="@+id/mChip5tr"
+                    android:layout_width="wrap_content"
+                    android:layout_height="24dp"
+                    android:background="@drawable/bg_chip_expense"
+                    android:layout_marginStart="6dp"
+                    android:text="5 triệu"
+                    android:textColor="#4A5565"
+                    android:textSize="12sp"
+                    android:fontFamily="sans-serif-medium"
+                    android:gravity="center"
+                    android:paddingHorizontal="12dp" />
+
+                <TextView
+                    android:id="@+id/mChip10tr"
+                    android:layout_width="wrap_content"
+                    android:layout_height="24dp"
+                    android:background="@drawable/bg_chip_expense"
+                    android:layout_marginStart="6dp"
+                    android:text="10 triệu"
+                    android:textColor="#4A5565"
+                    android:textSize="12sp"
+                    android:fontFamily="sans-serif-medium"
+                    android:gravity="center"
+                    android:paddingHorizontal="12dp" />
+            </LinearLayout>
+        </HorizontalScrollView>
+
+        <!-- ===== NGÂN SÁCH TUẦN ===== -->
+        <TextView
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_marginTop="16dp"
+            android:text="Ngân sách tuần (tuỳ chọn)"
+            android:textColor="#99A1AF"
+            android:textSize="12sp" />
+
+        <EditText
+            android:id="@+id/etWeeklyLimit"
+            android:layout_width="match_parent"
+            android:layout_height="42dp"
+            android:layout_marginTop="6dp"
+            android:background="@drawable/bg_edittext_expense"
+            android:hint="Nhập số tiền (VND)"
+            android:textColorHint="#800A0A0A"
+            android:textColor="#1E2939"
+            android:textSize="14sp"
+            android:paddingHorizontal="12dp"
+            android:inputType="numberDecimal" />
+
+        <!-- Quick chips cho tuần -->
+        <HorizontalScrollView
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:layout_marginTop="8dp"
+            android:scrollbars="none">
+
+            <LinearLayout
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:orientation="horizontal">
+
+                <TextView
+                    android:id="@+id/wChip200k"
+                    android:layout_width="wrap_content"
+                    android:layout_height="24dp"
+                    android:background="@drawable/bg_chip_expense"
+                    android:text="200k"
+                    android:textColor="#4A5565"
+                    android:textSize="12sp"
+                    android:fontFamily="sans-serif-medium"
+                    android:gravity="center"
+                    android:paddingHorizontal="12dp" />
+
+                <TextView
+                    android:id="@+id/wChip300k"
+                    android:layout_width="wrap_content"
+                    android:layout_height="24dp"
+                    android:background="@drawable/bg_chip_expense"
+                    android:layout_marginStart="6dp"
+                    android:text="300k"
+                    android:textColor="#4A5565"
+                    android:textSize="12sp"
+                    android:fontFamily="sans-serif-medium"
+                    android:gravity="center"
+                    android:paddingHorizontal="12dp" />
+
+                <TextView
+                    android:id="@+id/wChip500k"
+                    android:layout_width="wrap_content"
+                    android:layout_height="24dp"
+                    android:background="@drawable/bg_chip_expense"
+                    android:layout_marginStart="6dp"
+                    android:text="500k"
+                    android:textColor="#4A5565"
+                    android:textSize="12sp"
+                    android:fontFamily="sans-serif-medium"
+                    android:gravity="center"
+                    android:paddingHorizontal="12dp" />
+
+                <TextView
+                    android:id="@+id/wChip750k"
+                    android:layout_width="wrap_content"
+                    android:layout_height="24dp"
+                    android:background="@drawable/bg_chip_expense"
+                    android:layout_marginStart="6dp"
+                    android:text="750k"
+                    android:textColor="#4A5565"
+                    android:textSize="12sp"
+                    android:fontFamily="sans-serif-medium"
+                    android:gravity="center"
+                    android:paddingHorizontal="12dp" />
+
+                <TextView
+                    android:id="@+id/wChip1tr"
+                    android:layout_width="wrap_content"
+                    android:layout_height="24dp"
+                    android:background="@drawable/bg_chip_expense"
+                    android:layout_marginStart="6dp"
+                    android:text="1 triệu"
+                    android:textColor="#4A5565"
+                    android:textSize="12sp"
+                    android:fontFamily="sans-serif-medium"
+                    android:gravity="center"
+                    android:paddingHorizontal="12dp" />
+            </LinearLayout>
+        </HorizontalScrollView>
+
+        <!-- Save button -->
+        <Button
+            android:id="@+id/btnSaveBudget"
+            android:layout_width="match_parent"
+            android:layout_height="52dp"
+            android:layout_marginTop="24dp"
+            android:background="@drawable/bg_button_gradient"
+            android:text="Lưu ngân sách"
+            android:textColor="#FFFFFF"
+            android:textSize="16sp"
+            android:fontFamily="sans-serif-medium"
+            android:textAllCaps="false"
+            app:backgroundTint="@null" />
+
+    </LinearLayout>
+</LinearLayout>

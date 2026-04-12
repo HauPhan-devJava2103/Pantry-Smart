@@ -20,7 +20,9 @@ import java.util.concurrent.TimeUnit;
 import hcmute.edu.vn.pantrysmart.data.local.PantrySmartDatabase;
 import hcmute.edu.vn.pantrysmart.data.local.dao.PantryItemDao;
 import hcmute.edu.vn.pantrysmart.data.local.entity.PantryItem;
+import hcmute.edu.vn.pantrysmart.fragment.BudgetFragment;
 import hcmute.edu.vn.pantrysmart.fragment.FridgeFragment;
+
 
 /**
  * MainActivity — Navigation Shell.
@@ -41,6 +43,7 @@ public class MainActivity extends AppCompatActivity {
     // Current Fragment & Tab
     private int currentTab = 0;
     private FridgeFragment fridgeFragment;
+    private BudgetFragment budgetFragment;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -103,25 +106,38 @@ public class MainActivity extends AppCompatActivity {
         currentTab = tabIndex;
         setActiveTab(tabIndex);
 
-        Fragment fragment;
+        // Ẩn FAB thêm thực phẩm khi ở tab Ngân sách (tab 2 có FAB riêng)
+        View fabAddItem = findViewById(R.id.fabAddItem);
+        if (fabAddItem != null) {
+            fabAddItem.setVisibility(tabIndex == 2 ? View.GONE : View.VISIBLE);
+        }
+
+        Fragment fragment = null;
+
         switch (tabIndex) {
             case 1:
                 // TODO: Create SuggestFragment
+                Toast.makeText(this, "Gợi ý công thức - Sắp ra mắt", Toast.LENGTH_SHORT).show();
                 return;
             case 2:
                 // TODO: Create BudgetFragment
-                return;
+                if (budgetFragment == null) {
+                    budgetFragment = new BudgetFragment();
+                }
+                fragment = budgetFragment;
+                break;
             default:
                 if (fridgeFragment == null)
                     fridgeFragment = new FridgeFragment();
                 fragment = fridgeFragment;
                 break;
         }
-
-        getSupportFragmentManager()
-                .beginTransaction()
-                .replace(R.id.fragmentContainer, fragment)
-                .commit();
+        if (fragment != null) {
+            getSupportFragmentManager()
+                    .beginTransaction()
+                    .replace(R.id.fragmentContainer, fragment)
+                    .commit();
+        }
     }
 
     /**

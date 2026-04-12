@@ -1,0 +1,54 @@
+<?xml version="1.0" encoding="utf-8"?>
+<LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
+    xmlns:tools="http://schemas.android.com/tools"
+    android:layout_width="match_parent"
+    android:layout_height="wrap_content"
+    android:orientation="vertical"
+    android:paddingBottom="10dp">
+
+    <LinearLayout
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:orientation="horizontal"
+        android:gravity="center_vertical"
+        android:layout_marginBottom="4dp">
+
+        <TextView
+            android:id="@+id/tvCategoryEmoji"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:textSize="12sp"
+            tools:text="🛒" />
+
+        <TextView
+            android:id="@+id/tvCategoryName"
+            android:layout_width="0dp"
+            android:layout_height="wrap_content"
+            android:layout_weight="1"
+            android:layout_marginStart="6dp"
+            android:fontFamily="sans-serif"
+            android:textColor="#4A5565"
+            android:textSize="12sp"
+            tools:text="Mua sắm" />
+
+        <TextView
+            android:id="@+id/tvCategorySpent"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:fontFamily="sans-serif-medium"
+            android:textColor="#364153"
+            android:textSize="12sp"
+            tools:text="295.000đ" />
+    </LinearLayout>
+
+    <com.google.android.material.progressindicator.LinearProgressIndicator
+        android:id="@+id/progressBarCategory"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        app:indicatorColor="#00BC7D"
+        app:trackColor="#F3F4F6"
+        app:trackCornerRadius="3dp"
+        app:trackThickness="6dp"
+        tools:progress="30" />
+</LinearLayout>

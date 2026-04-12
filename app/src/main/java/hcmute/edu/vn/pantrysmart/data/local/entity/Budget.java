@@ -14,6 +14,8 @@ public class Budget {
     // Ngân sách tối đa theo tháng
     @ColumnInfo(name = "monthly_limit")
     private double monthlyLimit;
+    @ColumnInfo(name = "weekly_limit")
+    private double weeklyLimit;
 
     // Tháng
     @ColumnInfo(name = "month")
@@ -41,6 +43,9 @@ public class Budget {
     public void setMonthlyLimit(double monthlyLimit) {
         this.monthlyLimit = monthlyLimit;
     }
+
+    public double getWeeklyLimit() { return weeklyLimit; }
+    public void setWeeklyLimit(double weeklyLimit) { this.weeklyLimit = weeklyLimit; }
 
     public int getMonth() {
         return month;
