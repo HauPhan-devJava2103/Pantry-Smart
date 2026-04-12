@@ -14,6 +14,7 @@ import java.util.List;
 import java.util.Locale;
 
 import hcmute.edu.vn.pantrysmart.R;
+import hcmute.edu.vn.pantrysmart.config.FoodEmojiConfig;
 import hcmute.edu.vn.pantrysmart.data.local.dao.ExpenseDao;
 import hcmute.edu.vn.pantrysmart.data.local.entity.ExpenseCategory;
 
@@ -68,7 +69,7 @@ public class BudgetCategoryAdapter extends RecyclerView.Adapter<BudgetCategoryAd
             }
         }
 
-        holder.tvEmoji.setText(cat.getEmoji() != null ? cat.getEmoji() : "📦");
+        holder.tvEmoji.setText(FoodEmojiConfig.safeEmoji(cat.getEmoji()));
         holder.tvName.setText(cat.getLabel());
         holder.tvSpent.setText(formatCurrency(spent));
 

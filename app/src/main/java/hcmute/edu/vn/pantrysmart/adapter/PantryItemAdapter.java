@@ -19,6 +19,7 @@ import java.util.List;
 import java.util.concurrent.TimeUnit;
 
 import hcmute.edu.vn.pantrysmart.R;
+import hcmute.edu.vn.pantrysmart.config.FoodEmojiConfig;
 import hcmute.edu.vn.pantrysmart.data.local.entity.PantryItem;
 
 /**
@@ -72,7 +73,7 @@ public class PantryItemAdapter extends RecyclerView.Adapter<PantryItemAdapter.Vi
         } else {
             holder.imgFood.setVisibility(View.GONE);
             holder.layoutEmojiHolder.setVisibility(View.VISIBLE);
-            holder.tvEmoji.setText(item.getEmoji() != null ? item.getEmoji() : "📦");
+            holder.tvEmoji.setText(FoodEmojiConfig.safeEmoji(item.getEmoji()));
         }
 
         // Tên + Số lượng

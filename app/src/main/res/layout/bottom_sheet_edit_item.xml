@@ -1,0 +1,475 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!--
+    Bottom Sheet Dialog: Chỉnh sửa thực phẩm
+    Thiết kế khớp Figma node 24:2317
+    Gồm: Emoji + Tên, Số lượng + Đơn vị, Hạn sử dụng, Danh mục (chips), Ngăn chứa, Nút Lưu
+-->
+<LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    android:layout_width="match_parent"
+    android:layout_height="wrap_content"
+    android:orientation="vertical"
+    android:background="@drawable/bg_dialog_bottom_sheet"
+    android:paddingBottom="24dp">
+
+    <!--  Handle Bar  -->
+    <View
+        android:layout_width="48dp"
+        android:layout_height="4dp"
+        android:layout_gravity="center_horizontal"
+        android:layout_marginTop="12dp"
+        android:background="@drawable/bg_dialog_handle" />
+
+    <!--  Header: Tiêu đề + Nút Close  -->
+    <LinearLayout
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:orientation="horizontal"
+        android:gravity="center_vertical"
+        android:paddingStart="20dp"
+        android:paddingEnd="20dp"
+        android:paddingTop="16dp"
+        android:paddingBottom="20dp">
+
+        <TextView
+            android:id="@+id/tvEditSheetTitle"
+            android:layout_width="0dp"
+            android:layout_height="wrap_content"
+            android:layout_weight="1"
+            android:text="✏️ Chỉnh sửa thực phẩm"
+            android:textSize="18sp"
+            android:textStyle="bold"
+            android:textColor="#1E2939"
+            android:fontFamily="sans-serif-medium" />
+
+        <FrameLayout
+            android:id="@+id/btnCloseEditSheet"
+            android:layout_width="28dp"
+            android:layout_height="28dp"
+            android:background="@drawable/bg_edit_close_btn"
+            android:clickable="true"
+            android:focusable="true">
+
+            <TextView
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:layout_gravity="center"
+                android:text="✕"
+                android:textSize="14sp"
+                android:textColor="#6B7280" />
+        </FrameLayout>
+    </LinearLayout>
+
+    <!--  Nội dung Form — ScrollView tránh tràn khi bàn phím hiện -->
+    <ScrollView
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:scrollbars="none">
+
+        <LinearLayout
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:orientation="vertical"
+            android:paddingStart="20dp"
+            android:paddingEnd="20dp">
+
+            <!--  Row 1: Emoji + Tên thực phẩm  -->
+            <LinearLayout
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:orientation="horizontal"
+                android:gravity="center_vertical">
+
+                <!-- Ô Emoji (tap để đổi) -->
+                <FrameLayout
+                    android:id="@+id/btnSelectEmoji"
+                    android:layout_width="56dp"
+                    android:layout_height="50dp"
+                    android:background="@drawable/bg_edit_input_field"
+                    android:clickable="true"
+                    android:focusable="true">
+
+                    <TextView
+                        android:id="@+id/tvSelectedEmoji"
+                        android:layout_width="wrap_content"
+                        android:layout_height="wrap_content"
+                        android:layout_gravity="center"
+                        android:text="🍗"
+                        android:textSize="24sp" />
+                </FrameLayout>
+
+                <View
+                    android:layout_width="8dp"
+                    android:layout_height="0dp" />
+
+                <!-- Tên thực phẩm -->
+                <EditText
+                    android:id="@+id/etItemName"
+                    android:layout_width="0dp"
+                    android:layout_height="50dp"
+                    android:layout_weight="1"
+                    android:background="@drawable/bg_edit_input_field"
+                    android:paddingStart="12dp"
+                    android:paddingEnd="12dp"
+                    android:hint="Tên thực phẩm"
+                    android:textSize="14sp"
+                    android:textColor="#0A0A0A"
+                    android:textColorHint="#80000000"
+                    android:fontFamily="sans-serif"
+                    android:inputType="text"
+                    android:maxLines="1"
+                    android:importantForAutofill="no" />
+            </LinearLayout>
+
+            <!--  Row 2: Số lượng + Đơn vị  -->
+            <LinearLayout
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:orientation="horizontal"
+                android:layout_marginTop="12dp">
+
+                <!-- Số lượng -->
+                <LinearLayout
+                    android:layout_width="0dp"
+                    android:layout_height="wrap_content"
+                    android:layout_weight="1"
+                    android:orientation="vertical">
+
+                    <TextView
+                        android:layout_width="wrap_content"
+                        android:layout_height="wrap_content"
+                        android:text="Số lượng"
+                        android:textSize="12sp"
+                        android:textColor="#99A1AF"
+                        android:fontFamily="sans-serif-medium"
+                        android:layout_marginBottom="4dp" />
+
+                    <EditText
+                        android:id="@+id/etItemQuantity"
+                        android:layout_width="match_parent"
+                        android:layout_height="40dp"
+                        android:background="@drawable/bg_edit_input_field"
+                        android:paddingStart="12dp"
+                        android:paddingEnd="12dp"
+                        android:hint="0"
+                        android:textSize="14sp"
+                        android:textColor="#0A0A0A"
+                        android:textColorHint="#80000000"
+                        android:fontFamily="sans-serif"
+                        android:inputType="numberDecimal"
+                        android:maxLines="1"
+                        android:importantForAutofill="no" />
+                </LinearLayout>
+
+                <View
+                    android:layout_width="8dp"
+                    android:layout_height="0dp" />
+
+                <!-- Đơn vị -->
+                <LinearLayout
+                    android:layout_width="0dp"
+                    android:layout_height="wrap_content"
+                    android:layout_weight="1"
+                    android:orientation="vertical">
+
+                    <TextView
+                        android:layout_width="wrap_content"
+                        android:layout_height="wrap_content"
+                        android:text="Đơn vị"
+                        android:textSize="12sp"
+                        android:textColor="#99A1AF"
+                        android:fontFamily="sans-serif-medium"
+                        android:layout_marginBottom="4dp" />
+
+                    <EditText
+                        android:id="@+id/etItemUnit"
+                        android:layout_width="match_parent"
+                        android:layout_height="40dp"
+                        android:background="@drawable/bg_edit_input_field"
+                        android:paddingStart="12dp"
+                        android:paddingEnd="12dp"
+                        android:hint="gram"
+                        android:textSize="14sp"
+                        android:textColor="#0A0A0A"
+                        android:textColorHint="#80000000"
+                        android:fontFamily="sans-serif"
+                        android:inputType="text"
+                        android:maxLines="1"
+                        android:importantForAutofill="no" />
+                </LinearLayout>
+            </LinearLayout>
+
+            <!--  Row 3: Hạn sử dụng  -->
+            <LinearLayout
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:orientation="vertical"
+                android:layout_marginTop="12dp">
+
+                <TextView
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:text="Hạn sử dụng"
+                    android:textSize="12sp"
+                    android:textColor="#99A1AF"
+                    android:fontFamily="sans-serif-medium"
+                    android:layout_marginBottom="4dp" />
+
+                <TextView
+                    android:id="@+id/tvExpiryDate"
+                    android:layout_width="match_parent"
+                    android:layout_height="40dp"
+                    android:background="@drawable/bg_edit_input_field"
+                    android:paddingStart="12dp"
+                    android:paddingEnd="12dp"
+                    android:gravity="center_vertical"
+                    android:hint="Chọn ngày"
+                    android:textSize="14sp"
+                    android:textColor="#0A0A0A"
+                    android:textColorHint="#80000000"
+                    android:fontFamily="sans-serif"
+                    android:clickable="true"
+                    android:focusable="true" />
+            </LinearLayout>
+
+            <!--  Row 4: Danh mục (FlowLayout bằng FlexboxLayout hoặc Wrapping Chips)  -->
+            <LinearLayout
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:orientation="vertical"
+                android:layout_marginTop="12dp">
+
+                <TextView
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:text="Danh mục"
+                    android:textSize="12sp"
+                    android:textColor="#99A1AF"
+                    android:fontFamily="sans-serif-medium"
+                    android:layout_marginBottom="8dp" />
+
+                <!-- Hàng 1: Sữa & Trứng, Rau củ, Trái cây -->
+                <LinearLayout
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:orientation="horizontal"
+                    android:layout_marginBottom="6dp">
+
+                    <TextView
+                        android:id="@+id/chipDairy"
+                        android:layout_width="wrap_content"
+                        android:layout_height="28dp"
+                        android:background="@drawable/bg_edit_category_chip"
+                        android:paddingStart="12dp"
+                        android:paddingEnd="12dp"
+                        android:gravity="center"
+                        android:text="🥛 Sữa \u0026 Trứng"
+                        android:textSize="12sp"
+                        android:textColor="#4A5565"
+                        android:fontFamily="sans-serif-medium"
+                        android:layout_marginEnd="6dp"
+                        android:clickable="true"
+                        android:focusable="true" />
+
+                    <TextView
+                        android:id="@+id/chipVegetable"
+                        android:layout_width="wrap_content"
+                        android:layout_height="28dp"
+                        android:background="@drawable/bg_edit_category_chip"
+                        android:paddingStart="12dp"
+                        android:paddingEnd="12dp"
+                        android:gravity="center"
+                        android:text="🥦 Rau củ"
+                        android:textSize="12sp"
+                        android:textColor="#4A5565"
+                        android:fontFamily="sans-serif-medium"
+                        android:layout_marginEnd="6dp"
+                        android:clickable="true"
+                        android:focusable="true" />
+
+                    <TextView
+                        android:id="@+id/chipFruit"
+                        android:layout_width="wrap_content"
+                        android:layout_height="28dp"
+                        android:background="@drawable/bg_edit_category_chip"
+                        android:paddingStart="12dp"
+                        android:paddingEnd="12dp"
+                        android:gravity="center"
+                        android:text="🍎 Trái cây"
+                        android:textSize="12sp"
+                        android:textColor="#4A5565"
+                        android:fontFamily="sans-serif-medium"
+                        android:clickable="true"
+                        android:focusable="true" />
+                </LinearLayout>
+
+                <!-- Hàng 2: Thịt, Hải sản, Đồ uống, Gia vị -->
+                <LinearLayout
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:orientation="horizontal"
+                    android:layout_marginBottom="6dp">
+
+                    <TextView
+                        android:id="@+id/chipMeat"
+                        android:layout_width="wrap_content"
+                        android:layout_height="28dp"
+                        android:background="@drawable/bg_edit_category_chip"
+                        android:paddingStart="12dp"
+                        android:paddingEnd="12dp"
+                        android:gravity="center"
+                        android:text="🥩 Thịt"
+                        android:textSize="12sp"
+                        android:textColor="#4A5565"
+                        android:fontFamily="sans-serif-medium"
+                        android:layout_marginEnd="6dp"
+                        android:clickable="true"
+                        android:focusable="true" />
+
+                    <TextView
+                        android:id="@+id/chipSeafood"
+                        android:layout_width="wrap_content"
+                        android:layout_height="28dp"
+                        android:background="@drawable/bg_edit_category_chip"
+                        android:paddingStart="12dp"
+                        android:paddingEnd="12dp"
+                        android:gravity="center"
+                        android:text="🦐 Hải sản"
+                        android:textSize="12sp"
+                        android:textColor="#4A5565"
+                        android:fontFamily="sans-serif-medium"
+                        android:layout_marginEnd="6dp"
+                        android:clickable="true"
+                        android:focusable="true" />
+
+                    <TextView
+                        android:id="@+id/chipDrink"
+                        android:layout_width="wrap_content"
+                        android:layout_height="28dp"
+                        android:background="@drawable/bg_edit_category_chip"
+                        android:paddingStart="12dp"
+                        android:paddingEnd="12dp"
+                        android:gravity="center"
+                        android:text="🧃 Đồ uống"
+                        android:textSize="12sp"
+                        android:textColor="#4A5565"
+                        android:fontFamily="sans-serif-medium"
+                        android:layout_marginEnd="6dp"
+                        android:clickable="true"
+                        android:focusable="true" />
+
+                </LinearLayout>
+
+                <!-- Hàng 3: Gia vị, Khác -->
+                <LinearLayout
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:orientation="horizontal">
+
+                    <TextView
+                        android:id="@+id/chipSpice"
+                        android:layout_width="wrap_content"
+                        android:layout_height="28dp"
+                        android:background="@drawable/bg_edit_category_chip"
+                        android:paddingStart="12dp"
+                        android:paddingEnd="12dp"
+                        android:gravity="center"
+                        android:text="🧂 Gia vị"
+                        android:textSize="12sp"
+                        android:textColor="#4A5565"
+                        android:fontFamily="sans-serif-medium"
+                        android:layout_marginEnd="6dp"
+                        android:clickable="true"
+                        android:focusable="true" />
+
+                    <TextView
+                        android:id="@+id/chipOther"
+                        android:layout_width="wrap_content"
+                        android:layout_height="28dp"
+                        android:background="@drawable/bg_edit_category_chip"
+                        android:paddingStart="12dp"
+                        android:paddingEnd="12dp"
+                        android:gravity="center"
+                        android:text="📦 Khác"
+                        android:textSize="12sp"
+                        android:textColor="#4A5565"
+                        android:fontFamily="sans-serif-medium"
+                        android:clickable="true"
+                        android:focusable="true" />
+                </LinearLayout>
+            </LinearLayout>
+
+            <!--  Row 5: Ngăn chứa (MAIN / FREEZER)  -->
+            <LinearLayout
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:orientation="vertical"
+                android:layout_marginTop="12dp">
+
+                <TextView
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:text="Ngăn chứa"
+                    android:textSize="12sp"
+                    android:textColor="#99A1AF"
+                    android:fontFamily="sans-serif-medium"
+                    android:layout_marginBottom="8dp" />
+
+                <LinearLayout
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:orientation="horizontal">
+
+                    <TextView
+                        android:id="@+id/btnZoneMain"
+                        android:layout_width="0dp"
+                        android:layout_height="44dp"
+                        android:layout_weight="1"
+                        android:background="@drawable/bg_edit_zone_inactive"
+                        android:gravity="center"
+                        android:text="🧊 Ngăn chính"
+                        android:textSize="14sp"
+                        android:textColor="#4A5565"
+                        android:fontFamily="sans-serif-medium"
+                        android:clickable="true"
+                        android:focusable="true" />
+
+                    <View
+                        android:layout_width="8dp"
+                        android:layout_height="0dp" />
+
+                    <TextView
+                        android:id="@+id/btnZoneFreezer"
+                        android:layout_width="0dp"
+                        android:layout_height="44dp"
+                        android:layout_weight="1"
+                        android:background="@drawable/bg_edit_zone_active"
+                        android:gravity="center"
+                        android:text="❄️ Ngăn đông"
+                        android:textSize="14sp"
+                        android:textColor="@android:color/white"
+                        android:fontFamily="sans-serif-medium"
+                        android:clickable="true"
+                        android:focusable="true" />
+                </LinearLayout>
+            </LinearLayout>
+
+            <!--  Nút Lưu thay đổi  -->
+            <TextView
+                android:id="@+id/btnSaveEdit"
+                android:layout_width="match_parent"
+                android:layout_height="52dp"
+                android:layout_marginTop="20dp"
+                android:background="@drawable/bg_edit_sheet_button_save"
+                android:gravity="center"
+                android:text="✓  Lưu thay đổi"
+                android:textSize="16sp"
+                android:textColor="@android:color/white"
+                android:fontFamily="sans-serif-medium"
+                android:elevation="8dp"
+                android:clickable="true"
+                android:focusable="true" />
+
+        </LinearLayout>
+    </ScrollView>
+
+</LinearLayout>

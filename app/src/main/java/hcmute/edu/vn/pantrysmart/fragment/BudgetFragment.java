@@ -56,28 +56,28 @@ import hcmute.edu.vn.pantrysmart.data.local.entity.ExpenseCategory;
 public class BudgetFragment extends Fragment {
 
     // ===== Views =====
-    private TextView          tvTotalBudget, tvTotalExpense, tvRemaining;
-    private TextView          tvSpentToday, tvTransactionCount;
-    private ProgressBar       progressBarMonthly;
+    private TextView tvTotalBudget, tvTotalExpense, tvRemaining;
+    private TextView tvSpentToday, tvTransactionCount;
+    private ProgressBar progressBarMonthly;
     private FloatingActionButton fabAddExpense;
-    private FrameLayout       btnEditBudget;
-    private RecyclerView      rvRecentTransactions, rvCategoriesHorizontal;
-    private BarChart          barChart;
-    private View              rootView;
+    private FrameLayout btnEditBudget;
+    private RecyclerView rvRecentTransactions, rvCategoriesHorizontal;
+    private BarChart barChart;
+    private View rootView;
 
     // ===== Data =====
-    private PantrySmartDatabase   database;
-    private BudgetDao             budgetDao;
-    private ExpenseDao            expenseDao;
-    private ExecutorService       executorService;
-    private int                   currentMonth, currentYear;
+    private PantrySmartDatabase database;
+    private BudgetDao budgetDao;
+    private ExpenseDao expenseDao;
+    private ExecutorService executorService;
+    private int currentMonth, currentYear;
 
     // Category lookup map: key → ExpenseCategory
     private Map<String, ExpenseCategory> categoryMap = new HashMap<>();
 
     // Adapters
     private RecentTransactionAdapter transactionAdapter;
-    private BudgetCategoryAdapter    categoryAdapter;
+    private BudgetCategoryAdapter categoryAdapter;
 
     // Warning flag: tránh hiện nhiều cảnh báo cùng lúc trong 1 lần load
     private boolean hasShownWarning = false;
@@ -86,8 +86,8 @@ public class BudgetFragment extends Fragment {
     @Nullable
     @Override
     public View onCreateView(@NonNull LayoutInflater inflater,
-                             @Nullable ViewGroup container,
-                             @Nullable Bundle savedInstanceState) {
+            @Nullable ViewGroup container,
+            @Nullable Bundle savedInstanceState) {
         rootView = inflater.inflate(R.layout.fragment_budget, container, false);
         return rootView;
     }
@@ -97,47 +97,53 @@ public class BudgetFragment extends Fragment {
         super.onViewCreated(view, savedInstanceState);
 
         // --- Bind views ---
-        tvTotalBudget       = view.findViewById(R.id.tvTotalBudget);
-        tvTotalExpense      = view.findViewById(R.id.tvTotalExpense);
-        tvRemaining         = view.findViewById(R.id.tvRemaining);
-        progressBarMonthly  = view.findViewById(R.id.progressBarMonthly);
-        tvSpentToday        = view.findViewById(R.id.tvSpentToday);
-        tvTransactionCount  = view.findViewById(R.id.tvTransactionCount);
-        fabAddExpense       = view.findViewById(R.id.fabAddExpense);
-        btnEditBudget       = view.findViewById(R.id.btnEditBudget);
+        tvTotalBudget = view.findViewById(R.id.tvTotalBudget);
+        tvTotalExpense = view.findViewById(R.id.tvTotalExpense);
+        tvRemaining = view.findViewById(R.id.tvRemaining);
+        progressBarMonthly = view.findViewById(R.id.progressBarMonthly);
+        tvSpentToday = view.findViewById(R.id.tvSpentToday);
+        tvTransactionCount = view.findViewById(R.id.tvTransactionCount);
+        fabAddExpense = view.findViewById(R.id.fabAddExpense);
+        btnEditBudget = view.findViewById(R.id.btnEditBudget);
         rvRecentTransactions = view.findViewById(R.id.rvRecentTransactions);
         rvCategoriesHorizontal = view.findViewById(R.id.rvCategoriesHorizontal);
-        barChart            = view.findViewById(R.id.barChart);
+        barChart = view.findViewById(R.id.barChart);
 
         // --- Init DB ---
-        database       = PantrySmartDatabase.getInstance(getContext());
-        budgetDao      = database.budgetDao();
-        expenseDao     = database.expenseDao();
+        database = PantrySmartDatabase.getInstance(getContext());
+        budgetDao = database.budgetDao();
+        expenseDao = database.expenseDao();
         executorService = Executors.newSingleThreadExecutor();
 
         // --- Thời điểm hiện tại ---
         Calendar now = Calendar.getInstance();
         currentMonth = now.get(Calendar.MONTH) + 1;
-        currentYear  = now.get(Calendar.YEAR);
+        currentYear = now.get(Calendar.YEAR);
 
         // --- RecyclerView: Giao dịch gần đây ---
         transactionAdapter = new RecentTransactionAdapter(new ArrayList<>(),
-            new RecentTransactionAdapter.CategoryEmojiResolver() {
-                @Override public String getEmoji(String key) {
-                    ExpenseCategory c = categoryMap.get(key);
-                    return c != null ? c.getEmoji() : "💰";
-                }
-                @Override public String getLabel(String key) {
-                    ExpenseCategory c = categoryMap.get(key);
-                    return c != null ? c.getLabel() : "Khác";
-                }
-            });
+                new RecentTransactionAdapter.CategoryEmojiResolver() {
+                    @Override
+                    public String getEmoji(String key) {
+                        ExpenseCategory c = categoryMap.get(key);
+                        return c != null ? c.getEmoji() : "💰";
+                    }
+
+                    @Override
+                    public String getLabel(String key) {
+                        ExpenseCategory c = categoryMap.get(key);
+                        return c != null ? c.getLabel() : "Khác";
+                    }
+                });
         // Gắn callback xóa / sửa cho từng item giao dịch
         transactionAdapter.setOnActionListener(new RecentTransactionAdapter.OnActionListener() {
-            @Override public void onEdit(Expense expense) {
+            @Override
+            public void onEdit(Expense expense) {
                 showEditExpenseBottomSheet(expense);
             }
-            @Override public void onDelete(Expense expense) {
+
+            @Override
+            public void onDelete(Expense expense) {
                 showDeleteConfirmDialog(expense);
             }
         });
@@ -170,8 +176,10 @@ public class BudgetFragment extends Fragment {
             // --- Bounds: tháng ---
             Calendar mCal = Calendar.getInstance();
             mCal.set(Calendar.DAY_OF_MONTH, 1);
-            mCal.set(Calendar.HOUR_OF_DAY, 0); mCal.set(Calendar.MINUTE, 0);
-            mCal.set(Calendar.SECOND, 0);      mCal.set(Calendar.MILLISECOND, 0);
+            mCal.set(Calendar.HOUR_OF_DAY, 0);
+            mCal.set(Calendar.MINUTE, 0);
+            mCal.set(Calendar.SECOND, 0);
+            mCal.set(Calendar.MILLISECOND, 0);
             long monthStart = mCal.getTimeInMillis();
             mCal.add(Calendar.MONTH, 1);
             long monthEnd = mCal.getTimeInMillis();
@@ -181,42 +189,44 @@ public class BudgetFragment extends Fragment {
             int dow = wCal.get(Calendar.DAY_OF_WEEK);
             int daysFromMon = (dow == Calendar.SUNDAY) ? 6 : dow - Calendar.MONDAY;
             wCal.add(Calendar.DAY_OF_MONTH, -daysFromMon);
-            wCal.set(Calendar.HOUR_OF_DAY, 0); wCal.set(Calendar.MINUTE, 0);
-            wCal.set(Calendar.SECOND, 0);      wCal.set(Calendar.MILLISECOND, 0);
+            wCal.set(Calendar.HOUR_OF_DAY, 0);
+            wCal.set(Calendar.MINUTE, 0);
+            wCal.set(Calendar.SECOND, 0);
+            wCal.set(Calendar.MILLISECOND, 0);
             long weekStart = wCal.getTimeInMillis();
             wCal.add(Calendar.DAY_OF_MONTH, 7);
             long weekEnd = wCal.getTimeInMillis();
 
             // --- Bounds: hôm nay ---
             Calendar dayCal = Calendar.getInstance();
-            dayCal.set(Calendar.HOUR_OF_DAY, 0); dayCal.set(Calendar.MINUTE, 0);
-            dayCal.set(Calendar.SECOND, 0);       dayCal.set(Calendar.MILLISECOND, 0);
+            dayCal.set(Calendar.HOUR_OF_DAY, 0);
+            dayCal.set(Calendar.MINUTE, 0);
+            dayCal.set(Calendar.SECOND, 0);
+            dayCal.set(Calendar.MILLISECOND, 0);
             long dayStart = dayCal.getTimeInMillis();
             dayCal.add(Calendar.DAY_OF_MONTH, 1);
             long dayEnd = dayCal.getTimeInMillis();
 
             // --- Query chi tiêu (timestamp-based, không JOIN) ---
             double totalMonth = expenseDao.getTotalSpentForPeriod(monthStart, monthEnd);
-            double totalWeek  = expenseDao.getTotalSpentForPeriod(weekStart, weekEnd);
+            double totalWeek = expenseDao.getTotalSpentForPeriod(weekStart, weekEnd);
             double spentToday = expenseDao.getTotalSpentForPeriod(dayStart, dayEnd);
-            int    txCount    = expenseDao.getTransactionCountForMonth(monthStart, monthEnd);
+            int txCount = expenseDao.getTransactionCountForMonth(monthStart, monthEnd);
 
             double monthlyLimit = (currentBudget != null) ? currentBudget.getMonthlyLimit() : 0;
-            double weeklyLimit  = (currentBudget != null) ? currentBudget.getWeeklyLimit()  : 0;
+            double weeklyLimit = (currentBudget != null) ? currentBudget.getWeeklyLimit() : 0;
 
             // --- Query giao dịch gần đây (10 gần nhất) ---
             List<Expense> recentExpenses = expenseDao.getRecentExpenses(10);
 
             // --- Query thống kê theo danh mục ---
-            List<ExpenseDao.CategoryStat> categoryStats =
-                    expenseDao.getSpentByCategory(monthStart, monthEnd);
+            List<ExpenseDao.CategoryStat> categoryStats = expenseDao.getSpentByCategory(monthStart, monthEnd);
 
             // --- Query danh sách danh mục (để lấy emoji/label) ---
             List<ExpenseCategory> allCategories = expenseDao.getAllCategories();
 
             // --- Query chi tiêu 7 ngày cho BarChart ---
-            List<ExpenseDao.DailyStat> dailyStats =
-                    expenseDao.getDailySpentForWeek(weekStart, weekEnd);
+            List<ExpenseDao.DailyStat> dailyStats = expenseDao.getDailySpentForWeek(weekStart, weekEnd);
 
             if (getActivity() != null) {
                 getActivity().runOnUiThread(() -> {
@@ -228,7 +238,8 @@ public class BudgetFragment extends Fragment {
 
                     // Card: Ngân sách tháng
                     tvTotalBudget.setText(monthlyLimit > 0
-                            ? formatCurrency(monthlyLimit) : "Chưa đặt");
+                            ? formatCurrency(monthlyLimit)
+                            : "Chưa đặt");
                     updateProgressUI(totalMonth, monthlyLimit);
 
                     // Card: Hôm nay + Giao dịch
@@ -265,7 +276,7 @@ public class BudgetFragment extends Fragment {
         }
 
         // Tạo 7 entries cho 7 ngày (Thứ 2 → CN)
-        final String[] dayLabels = {"T2", "T3", "T4", "T5", "T6", "T7", "CN"};
+        final String[] dayLabels = { "T2", "T3", "T4", "T5", "T6", "T7", "CN" };
         List<BarEntry> entries = new ArrayList<>();
 
         Calendar cal = Calendar.getInstance();
@@ -289,7 +300,8 @@ public class BudgetFragment extends Fragment {
         // Cấu hình trục X
         XAxis xAxis = barChart.getXAxis();
         xAxis.setValueFormatter(new ValueFormatter() {
-            @Override public String getFormattedValue(float value) {
+            @Override
+            public String getFormattedValue(float value) {
                 int idx = (int) value;
                 return (idx >= 0 && idx < 7) ? dayLabels[idx] : "";
             }
@@ -307,10 +319,14 @@ public class BudgetFragment extends Fragment {
         barChart.getAxisLeft().setTextColor(Color.parseColor("#99A1AF"));
         barChart.getAxisLeft().setTextSize(9f);
         barChart.getAxisLeft().setValueFormatter(new ValueFormatter() {
-            @Override public String getFormattedValue(float value) {
-                if (value == 0) return "0";
-                if (value >= 1_000_000) return (int)(value / 1_000_000) + "tr";
-                if (value >= 1_000)    return (int)(value / 1_000) + "k";
+            @Override
+            public String getFormattedValue(float value) {
+                if (value == 0)
+                    return "0";
+                if (value >= 1_000_000)
+                    return (int) (value / 1_000_000) + "tr";
+                if (value >= 1_000)
+                    return (int) (value / 1_000) + "k";
                 return String.valueOf((int) value);
             }
         });
@@ -359,46 +375,49 @@ public class BudgetFragment extends Fragment {
     // UC10 — Cảnh báo vượt ngân sách
     // ===================================================================
     private void checkBudgetWarnings(double monthSpent, double monthLimit,
-                                     double weekSpent,  double weekLimit) {
-        if (hasShownWarning) return;
+            double weekSpent, double weekLimit) {
+        if (hasShownWarning)
+            return;
 
         if (monthLimit > 0 && monthSpent >= monthLimit) {
             hasShownWarning = true;
             showOverBudgetAlert("🚨 Vượt ngân sách tháng!",
-                "Đã chi: " + formatCurrency(monthSpent)
-                    + "\nGiới hạn: " + formatCurrency(monthLimit)
-                    + "\n\nHãy kiểm soát chi tiêu ngay!");
+                    "Đã chi: " + formatCurrency(monthSpent)
+                            + "\nGiới hạn: " + formatCurrency(monthLimit)
+                            + "\n\nHãy kiểm soát chi tiêu ngay!");
 
         } else if (weekLimit > 0 && weekSpent >= weekLimit) {
             hasShownWarning = true;
             showOverBudgetAlert("⚠️ Vượt ngân sách tuần!",
-                "Chi tiêu tuần: " + formatCurrency(weekSpent)
-                    + "\nGiới hạn tuần: " + formatCurrency(weekLimit));
+                    "Chi tiêu tuần: " + formatCurrency(weekSpent)
+                            + "\nGiới hạn tuần: " + formatCurrency(weekLimit));
 
         } else if (monthLimit > 0 && monthSpent >= monthLimit * 0.8) {
             hasShownWarning = true;
             showWarningSnackbar("⚡ Đã dùng "
-                    + (int)((monthSpent / monthLimit) * 100) + "% ngân sách tháng!", false);
+                    + (int) ((monthSpent / monthLimit) * 100) + "% ngân sách tháng!", false);
 
         } else if (weekLimit > 0 && weekSpent >= weekLimit * 0.8) {
             hasShownWarning = true;
             showWarningSnackbar("⚡ Đã dùng "
-                    + (int)((weekSpent / weekLimit) * 100) + "% ngân sách tuần!", false);
+                    + (int) ((weekSpent / weekLimit) * 100) + "% ngân sách tuần!", false);
         }
     }
 
     private void showOverBudgetAlert(String title, String message) {
-        if (getContext() == null) return;
+        if (getContext() == null)
+            return;
         new AlertDialog.Builder(getContext())
-            .setTitle(title)
-            .setMessage(message)
-            .setPositiveButton("Đã hiểu", null)
-            .setNegativeButton("Điều chỉnh ngân sách", (d, w) -> showSetBudgetBottomSheet())
-            .show();
+                .setTitle(title)
+                .setMessage(message)
+                .setPositiveButton("Đã hiểu", null)
+                .setNegativeButton("Điều chỉnh ngân sách", (d, w) -> showSetBudgetBottomSheet())
+                .show();
     }
 
     private void showWarningSnackbar(String message, boolean isError) {
-        if (rootView == null) return;
+        if (rootView == null)
+            return;
         int color = isError ? Color.parseColor("#C62828") : Color.parseColor("#F57C00");
         Snackbar sb = Snackbar.make(rootView, message, Snackbar.LENGTH_LONG);
         sb.getView().setBackgroundColor(color);
@@ -414,24 +433,24 @@ public class BudgetFragment extends Fragment {
                 .inflate(R.layout.bottom_sheet_set_budget, null);
         dialog.setContentView(sheetView);
 
-        EditText etMonthly    = sheetView.findViewById(R.id.etMonthlyLimit);
-        EditText etWeekly     = sheetView.findViewById(R.id.etWeeklyLimit);
-        Button   btnSave      = sheetView.findViewById(R.id.btnSaveBudget);
+        EditText etMonthly = sheetView.findViewById(R.id.etMonthlyLimit);
+        EditText etWeekly = sheetView.findViewById(R.id.etWeeklyLimit);
+        Button btnSave = sheetView.findViewById(R.id.btnSaveBudget);
         TextView tvMonthLabel = sheetView.findViewById(R.id.tvBudgetMonthLabel);
 
         tvMonthLabel.setText("Tháng " + currentMonth + " / " + currentYear);
 
         // Quick chips tháng
-        long[] mAmts = {1_000_000, 2_000_000, 3_000_000, 5_000_000, 10_000_000};
-        int[]  mIds  = {R.id.mChip1tr, R.id.mChip2tr, R.id.mChip3tr, R.id.mChip5tr, R.id.mChip10tr};
+        long[] mAmts = { 1_000_000, 2_000_000, 3_000_000, 5_000_000, 10_000_000 };
+        int[] mIds = { R.id.mChip1tr, R.id.mChip2tr, R.id.mChip3tr, R.id.mChip5tr, R.id.mChip10tr };
         for (int i = 0; i < mIds.length; i++) {
             final long val = mAmts[i];
             sheetView.findViewById(mIds[i]).setOnClickListener(v -> etMonthly.setText(String.valueOf(val)));
         }
 
         // Quick chips tuần
-        long[] wAmts = {200_000, 300_000, 500_000, 750_000, 1_000_000};
-        int[]  wIds  = {R.id.wChip200k, R.id.wChip300k, R.id.wChip500k, R.id.wChip750k, R.id.wChip1tr};
+        long[] wAmts = { 200_000, 300_000, 500_000, 750_000, 1_000_000 };
+        int[] wIds = { R.id.wChip200k, R.id.wChip300k, R.id.wChip500k, R.id.wChip750k, R.id.wChip1tr };
         for (int i = 0; i < wIds.length; i++) {
             final long val = wAmts[i];
             sheetView.findViewById(wIds[i]).setOnClickListener(v -> etWeekly.setText(String.valueOf(val)));
@@ -463,7 +482,8 @@ public class BudgetFragment extends Fragment {
             double monthlyLimit;
             try {
                 monthlyLimit = Double.parseDouble(mStr);
-                if (monthlyLimit <= 0) throw new NumberFormatException();
+                if (monthlyLimit <= 0)
+                    throw new NumberFormatException();
             } catch (NumberFormatException e) {
                 etMonthly.setError("Số tiền không hợp lệ");
                 return;
@@ -473,7 +493,8 @@ public class BudgetFragment extends Fragment {
             if (!TextUtils.isEmpty(wStr)) {
                 try {
                     weeklyLimit = Double.parseDouble(wStr);
-                    if (weeklyLimit < 0) throw new NumberFormatException();
+                    if (weeklyLimit < 0)
+                        throw new NumberFormatException();
                 } catch (NumberFormatException e) {
                     etWeekly.setError("Số tiền không hợp lệ");
                     return;
@@ -524,44 +545,42 @@ public class BudgetFragment extends Fragment {
                 .inflate(R.layout.bottom_sheet_add_expense, null);
         dialog.setContentView(sheetView);
 
-        EditText etExpenseName   = sheetView.findViewById(R.id.etExpenseName);
+        EditText etExpenseName = sheetView.findViewById(R.id.etExpenseName);
         EditText etExpenseAmount = sheetView.findViewById(R.id.etExpenseAmount);
-        TextView tvSelectDate    = sheetView.findViewById(R.id.tvSelectDate);
-        Button   btnSaveExpense  = sheetView.findViewById(R.id.btnSaveExpense);
+        TextView tvSelectDate = sheetView.findViewById(R.id.tvSelectDate);
+        Button btnSaveExpense = sheetView.findViewById(R.id.btnSaveExpense);
 
         Calendar calendar = Calendar.getInstance();
         SimpleDateFormat dateFormat = new SimpleDateFormat("dd/MM/yyyy", Locale.getDefault());
         tvSelectDate.setText(dateFormat.format(calendar.getTime()));
 
-        tvSelectDate.setOnClickListener(v ->
-            new DatePickerDialog(requireContext(), (vw, year, month, day) -> {
-                calendar.set(year, month, day);
-                tvSelectDate.setText(dateFormat.format(calendar.getTime()));
-            }, calendar.get(Calendar.YEAR),
-               calendar.get(Calendar.MONTH),
-               calendar.get(Calendar.DAY_OF_MONTH)).show()
-        );
+        tvSelectDate.setOnClickListener(v -> new DatePickerDialog(requireContext(), (vw, year, month, day) -> {
+            calendar.set(year, month, day);
+            tvSelectDate.setText(dateFormat.format(calendar.getTime()));
+        }, calendar.get(Calendar.YEAR),
+                calendar.get(Calendar.MONTH),
+                calendar.get(Calendar.DAY_OF_MONTH)).show());
 
-        int[] chipIds     = {R.id.chip20k, R.id.chip50k, R.id.chip100k, R.id.chip150k, R.id.chip200k, R.id.chip300k};
-        int[] chipAmounts = {20000, 50000, 100000, 150000, 200000, 300000};
+        int[] chipIds = { R.id.chip20k, R.id.chip50k, R.id.chip100k, R.id.chip150k, R.id.chip200k, R.id.chip300k };
+        int[] chipAmounts = { 20000, 50000, 100000, 150000, 200000, 300000 };
         for (int i = 0; i < chipIds.length; i++) {
             final int amount = chipAmounts[i];
             sheetView.findViewById(chipIds[i])
                     .setOnClickListener(v -> etExpenseAmount.setText(String.valueOf(amount)));
         }
 
-        final String[] selectedCategory = {"SHOPPING"};
+        final String[] selectedCategory = { "SHOPPING" };
         LinearLayout btnShopping = sheetView.findViewById(R.id.btnCatShopping);
         LinearLayout btnDelivery = sheetView.findViewById(R.id.btnCatDelivery);
-        LinearLayout btnSnacks   = sheetView.findViewById(R.id.btnCatSnacks);
-        LinearLayout btnOthers   = sheetView.findViewById(R.id.btnCatOthers);
-        LinearLayout[] catBtns   = {btnShopping, btnDelivery, btnSnacks, btnOthers};
-        String[]       catKeys   = {"SHOPPING", "DELIVERY", "SNACK", "OTHER"};
+        LinearLayout btnSnacks = sheetView.findViewById(R.id.btnCatSnacks);
+        LinearLayout btnOthers = sheetView.findViewById(R.id.btnCatOthers);
+        LinearLayout[] catBtns = { btnShopping, btnDelivery, btnSnacks, btnOthers };
+        String[] catKeys = { "SHOPPING", "DELIVERY", "SNACK", "OTHER" };
 
         View.OnClickListener catClick = v -> {
             for (int i = 0; i < catBtns.length; i++) {
-                LinearLayout btn  = catBtns[i];
-                TextView     txt  = (TextView) btn.getChildAt(1);
+                LinearLayout btn = catBtns[i];
+                TextView txt = (TextView) btn.getChildAt(1);
                 if (btn == v) {
                     selectedCategory[0] = catKeys[i];
                     btn.setBackgroundResource(R.drawable.bg_category_selected);
@@ -572,24 +591,29 @@ public class BudgetFragment extends Fragment {
                 }
             }
         };
-        for (LinearLayout b : catBtns) b.setOnClickListener(catClick);
+        for (LinearLayout b : catBtns)
+            b.setOnClickListener(catClick);
 
         btnSaveExpense.setOnClickListener(v -> {
-            String name      = etExpenseName.getText().toString().trim();
+            String name = etExpenseName.getText().toString().trim();
             String amountStr = etExpenseAmount.getText().toString().trim();
 
             if (TextUtils.isEmpty(name)) {
-                etExpenseName.setError("Vui lòng nhập tên chi tiêu"); return;
+                etExpenseName.setError("Vui lòng nhập tên chi tiêu");
+                return;
             }
             if (TextUtils.isEmpty(amountStr)) {
-                etExpenseAmount.setError("Vui lòng nhập số tiền"); return;
+                etExpenseAmount.setError("Vui lòng nhập số tiền");
+                return;
             }
             double amount;
             try {
                 amount = Double.parseDouble(amountStr);
-                if (amount <= 0) throw new NumberFormatException();
+                if (amount <= 0)
+                    throw new NumberFormatException();
             } catch (NumberFormatException e) {
-                etExpenseAmount.setError("Số tiền không hợp lệ"); return;
+                etExpenseAmount.setError("Số tiền không hợp lệ");
+                return;
             }
 
             btnSaveExpense.setEnabled(false);
@@ -603,7 +627,8 @@ public class BudgetFragment extends Fragment {
                 expense.setExpenseDate(calendar.getTimeInMillis());
 
                 Budget currentBudget = budgetDao.getBudgetForMonth(currentMonth, currentYear);
-                if (currentBudget != null) expense.setBudgetId(currentBudget.getId());
+                if (currentBudget != null)
+                    expense.setBudgetId(currentBudget.getId());
 
                 expenseDao.insertExpense(expense);
 
@@ -631,17 +656,18 @@ public class BudgetFragment extends Fragment {
 
         // Override tiêu đề thành "Sửa chi tiêu"
         TextView tvTitle = sheetView.findViewWithTag("titleText");
-        // Tìm TextView đầu tiên là tiêu đề (layout_marginStart=20dp, text=Thêm chi tiêu)
+        // Tìm TextView đầu tiên là tiêu đề (layout_marginStart=20dp, text=Thêm chi
+        // tiêu)
         // Dùng cách trực tiếp tìm qua thứ tự view — thay text thủ công
         LinearLayout root = (LinearLayout) sheetView;
         if (root.getChildCount() >= 2 && root.getChildAt(1) instanceof TextView) {
             ((TextView) root.getChildAt(1)).setText("Sửa chi tiêu");
         }
 
-        EditText etExpenseName   = sheetView.findViewById(R.id.etExpenseName);
+        EditText etExpenseName = sheetView.findViewById(R.id.etExpenseName);
         EditText etExpenseAmount = sheetView.findViewById(R.id.etExpenseAmount);
-        TextView tvSelectDate    = sheetView.findViewById(R.id.tvSelectDate);
-        Button   btnSave         = sheetView.findViewById(R.id.btnSaveExpense);
+        TextView tvSelectDate = sheetView.findViewById(R.id.tvSelectDate);
+        Button btnSave = sheetView.findViewById(R.id.btnSaveExpense);
 
         // Pre-fill dữ liệu cũ
         etExpenseName.setText(expense.getName());
@@ -653,18 +679,16 @@ public class BudgetFragment extends Fragment {
         SimpleDateFormat dateFormat = new SimpleDateFormat("dd/MM/yyyy", Locale.getDefault());
         tvSelectDate.setText(dateFormat.format(calendar.getTime()));
 
-        tvSelectDate.setOnClickListener(v ->
-            new DatePickerDialog(requireContext(), (vw, year, month, day) -> {
-                calendar.set(year, month, day);
-                tvSelectDate.setText(dateFormat.format(calendar.getTime()));
-            }, calendar.get(Calendar.YEAR),
-               calendar.get(Calendar.MONTH),
-               calendar.get(Calendar.DAY_OF_MONTH)).show()
-        );
+        tvSelectDate.setOnClickListener(v -> new DatePickerDialog(requireContext(), (vw, year, month, day) -> {
+            calendar.set(year, month, day);
+            tvSelectDate.setText(dateFormat.format(calendar.getTime()));
+        }, calendar.get(Calendar.YEAR),
+                calendar.get(Calendar.MONTH),
+                calendar.get(Calendar.DAY_OF_MONTH)).show());
 
         // Quick chips số tiền
-        int[] chipIds     = {R.id.chip20k, R.id.chip50k, R.id.chip100k, R.id.chip150k, R.id.chip200k, R.id.chip300k};
-        int[] chipAmounts = {20000, 50000, 100000, 150000, 200000, 300000};
+        int[] chipIds = { R.id.chip20k, R.id.chip50k, R.id.chip100k, R.id.chip150k, R.id.chip200k, R.id.chip300k };
+        int[] chipAmounts = { 20000, 50000, 100000, 150000, 200000, 300000 };
         for (int i = 0; i < chipIds.length; i++) {
             final int amount = chipAmounts[i];
             sheetView.findViewById(chipIds[i])
@@ -672,18 +696,18 @@ public class BudgetFragment extends Fragment {
         }
 
         // Chọn danh mục — pre-select danh mục cũ
-        final String[] selectedCategory = {expense.getCategoryKey()};
+        final String[] selectedCategory = { expense.getCategoryKey() };
         LinearLayout btnShopping = sheetView.findViewById(R.id.btnCatShopping);
         LinearLayout btnDelivery = sheetView.findViewById(R.id.btnCatDelivery);
-        LinearLayout btnSnacks   = sheetView.findViewById(R.id.btnCatSnacks);
-        LinearLayout btnOthers   = sheetView.findViewById(R.id.btnCatOthers);
-        LinearLayout[] catBtns   = {btnShopping, btnDelivery, btnSnacks, btnOthers};
-        String[]       catKeys   = {"SHOPPING", "DELIVERY", "SNACK", "OTHER"};
+        LinearLayout btnSnacks = sheetView.findViewById(R.id.btnCatSnacks);
+        LinearLayout btnOthers = sheetView.findViewById(R.id.btnCatOthers);
+        LinearLayout[] catBtns = { btnShopping, btnDelivery, btnSnacks, btnOthers };
+        String[] catKeys = { "SHOPPING", "DELIVERY", "SNACK", "OTHER" };
 
         // Áp dụng trạng thái ban đầu dựa trên danh mục của expense cũ
         for (int i = 0; i < catBtns.length; i++) {
             LinearLayout btn = catBtns[i];
-            TextView     txt = (TextView) btn.getChildAt(1);
+            TextView txt = (TextView) btn.getChildAt(1);
             if (catKeys[i].equals(expense.getCategoryKey())) {
                 btn.setBackgroundResource(R.drawable.bg_category_selected);
                 txt.setTextColor(Color.parseColor("#00BC7D"));
@@ -696,7 +720,7 @@ public class BudgetFragment extends Fragment {
         View.OnClickListener catClick = v -> {
             for (int i = 0; i < catBtns.length; i++) {
                 LinearLayout btn = catBtns[i];
-                TextView     txt = (TextView) btn.getChildAt(1);
+                TextView txt = (TextView) btn.getChildAt(1);
                 if (btn == v) {
                     selectedCategory[0] = catKeys[i];
                     btn.setBackgroundResource(R.drawable.bg_category_selected);
@@ -707,25 +731,30 @@ public class BudgetFragment extends Fragment {
                 }
             }
         };
-        for (LinearLayout b : catBtns) b.setOnClickListener(catClick);
+        for (LinearLayout b : catBtns)
+            b.setOnClickListener(catClick);
 
         // Lưu thay đổi
         btnSave.setOnClickListener(v -> {
-            String name      = etExpenseName.getText().toString().trim();
+            String name = etExpenseName.getText().toString().trim();
             String amountStr = etExpenseAmount.getText().toString().trim();
 
             if (TextUtils.isEmpty(name)) {
-                etExpenseName.setError("Vui lòng nhập tên chi tiêu"); return;
+                etExpenseName.setError("Vui lòng nhập tên chi tiêu");
+                return;
             }
             if (TextUtils.isEmpty(amountStr)) {
-                etExpenseAmount.setError("Vui lòng nhập số tiền"); return;
+                etExpenseAmount.setError("Vui lòng nhập số tiền");
+                return;
             }
             double amount;
             try {
                 amount = Double.parseDouble(amountStr);
-                if (amount <= 0) throw new NumberFormatException();
+                if (amount <= 0)
+                    throw new NumberFormatException();
             } catch (NumberFormatException e) {
-                etExpenseAmount.setError("Số tiền không hợp lệ"); return;
+                etExpenseAmount.setError("Số tiền không hợp lệ");
+                return;
             }
 
             btnSave.setEnabled(false);
@@ -756,26 +785,27 @@ public class BudgetFragment extends Fragment {
     // Xóa giao dịch — xác nhận trước khi xóa
     // ===================================================================
     private void showDeleteConfirmDialog(Expense expense) {
-        if (getContext() == null) return;
+        if (getContext() == null)
+            return;
         new AlertDialog.Builder(getContext())
-            .setTitle("Xóa giao dịch")
-            .setMessage("Bạn có chắc muốn xóa khoản chi\n\""
-                    + expense.getName() + "\" — "
-                    + formatCurrency(expense.getAmount()) + " không?")
-            .setPositiveButton("Xóa", (dialog, which) -> {
-                executorService.execute(() -> {
-                    expenseDao.deleteExpense(expense);
-                    if (getActivity() != null) {
-                        getActivity().runOnUiThread(() -> {
-                            Toast.makeText(getContext(),
-                                    "🗑️ Đã xóa giao dịch", Toast.LENGTH_SHORT).show();
-                            loadBudgetData();
-                        });
-                    }
-                });
-            })
-            .setNegativeButton("Hủy", null)
-            .show();
+                .setTitle("Xóa giao dịch")
+                .setMessage("Bạn có chắc muốn xóa khoản chi\n\""
+                        + expense.getName() + "\" — "
+                        + formatCurrency(expense.getAmount()) + " không?")
+                .setPositiveButton("Xóa", (dialog, which) -> {
+                    executorService.execute(() -> {
+                        expenseDao.deleteExpense(expense);
+                        if (getActivity() != null) {
+                            getActivity().runOnUiThread(() -> {
+                                Toast.makeText(getContext(),
+                                        "🗑️ Đã xóa giao dịch", Toast.LENGTH_SHORT).show();
+                                loadBudgetData();
+                            });
+                        }
+                    });
+                })
+                .setNegativeButton("Hủy", null)
+                .show();
     }
 
     // ===================================================================

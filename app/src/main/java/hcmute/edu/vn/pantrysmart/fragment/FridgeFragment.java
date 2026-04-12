@@ -1,5 +1,7 @@
 package hcmute.edu.vn.pantrysmart.fragment;
 
+
+import android.app.DatePickerDialog;
 import android.app.Dialog;
 import android.graphics.Color;
 import android.graphics.drawable.ColorDrawable;
@@ -10,6 +12,7 @@ import android.view.View;
 import android.view.ViewGroup;
 import android.view.Window;
 import android.view.animation.AccelerateDecelerateInterpolator;
+import android.widget.EditText;
 import android.widget.FrameLayout;
 import android.widget.ImageView;
 import android.widget.LinearLayout;
@@ -22,10 +25,18 @@ import androidx.fragment.app.Fragment;
 import androidx.recyclerview.widget.LinearLayoutManager;
 import androidx.recyclerview.widget.RecyclerView;
 
-import hcmute.edu.vn.pantrysmart.adapter.PantryItemAdapter;
+import com.google.android.material.bottomsheet.BottomSheetDialog;
+import com.google.android.material.dialog.MaterialAlertDialogBuilder;
 
+import hcmute.edu.vn.pantrysmart.adapter.EmojiPickerDialog;
+import hcmute.edu.vn.pantrysmart.adapter.PantryItemAdapter;
+import hcmute.edu.vn.pantrysmart.config.FoodEmojiConfig;
+
+import java.text.SimpleDateFormat;
 import java.util.ArrayList;
+import java.util.Calendar;
 import java.util.List;
+import java.util.Locale;
 import java.util.concurrent.TimeUnit;
 
 import hcmute.edu.vn.pantrysmart.R;
@@ -111,7 +122,7 @@ public class FridgeFragment extends Fragment {
 
         // View All buttons
         btnViewAllFreezer = view.findViewById(R.id.btnViewAllFreezer);
-        btnViewAllMain    = view.findViewById(R.id.btnViewAllMain);
+        btnViewAllMain = view.findViewById(R.id.btnViewAllMain);
 
         // Door tap → open interior
         doorFreezer.setOnClickListener(v -> toggleFreezerDoor());
@@ -134,7 +145,8 @@ public class FridgeFragment extends Fragment {
         loadItems();
     }
 
-    // Hàm xử lý khi nhấn vào cửa Ngăn Đông: Animation ẩn cửa, hiện nội dung kệ và ngược lại
+    // Hàm xử lý khi nhấn vào cửa Ngăn Đông: Animation ẩn cửa, hiện nội dung kệ và
+    // ngược lại
     private void toggleFreezerDoor() {
         freezerOpen = !freezerOpen;
         if (freezerOpen) {
@@ -157,7 +169,8 @@ public class FridgeFragment extends Fragment {
         }
     }
 
-    // Hàm xử lý khi nhấn vào cửa Ngăn Chính: Animation ẩn cửa, hiện nội dung kệ và ngược lại
+    // Hàm xử lý khi nhấn vào cửa Ngăn Chính: Animation ẩn cửa, hiện nội dung kệ và
+    // ngược lại
     private void toggleMainDoor() {
         mainOpen = !mainOpen;
         if (mainOpen) {
@@ -180,7 +193,8 @@ public class FridgeFragment extends Fragment {
         }
     }
 
-    // Hàm phân bổ danh sách thực phẩm vào các kệ của tủ lạnh (tối đa 4-5 món mỗi kệ)
+    // Hàm phân bổ danh sách thực phẩm vào các kệ của tủ lạnh (tối đa 4-5 món mỗi
+    // kệ)
     private int populateShelves(List<PantryItem> items,
             LinearLayout shelf1, LinearLayout shelf2,
             LinearLayout shelf3, TextView emptyView) {
@@ -200,7 +214,7 @@ public class FridgeFragment extends Fragment {
 
         emptyView.setVisibility(View.GONE);
         int maxPerShelf = shelf3 != null ? 5 : 4;
-        int maxTotal    = shelf3 != null ? maxPerShelf * 3 : maxPerShelf * 2;
+        int maxTotal = shelf3 != null ? maxPerShelf * 3 : maxPerShelf * 2;
         long now = System.currentTimeMillis();
 
         for (int i = 0; i < items.size(); i++) {
@@ -255,7 +269,7 @@ public class FridgeFragment extends Fragment {
         // Emoji circle
         TextView emojiView = new TextView(requireContext());
         emojiView.setLayoutParams(new LinearLayout.LayoutParams(dp(42), dp(42)));
-        emojiView.setText(item.getEmoji() != null ? item.getEmoji() : "📦");
+        emojiView.setText(FoodEmojiConfig.safeEmoji(item.getEmoji()));
         emojiView.setTextSize(22);
         emojiView.setGravity(Gravity.CENTER);
         emojiView.setElevation(dp(2));
@@ -291,7 +305,8 @@ public class FridgeFragment extends Fragment {
         }
     }
 
-    // Hàm kiểm tra và lấp đầy chỗ trống bằng các empty slots cho đến khi đủ số lượng tối đa của kệ
+    // Hàm kiểm tra và lấp đầy chỗ trống bằng các empty slots cho đến khi đủ số
+    // lượng tối đa của kệ
     private void fillEmptySlots(LinearLayout shelf, int maxPerShelf) {
         int remaining = maxPerShelf - shelf.getChildCount();
         if (remaining > 0)
@@ -318,7 +333,8 @@ public class FridgeFragment extends Fragment {
                 .start();
     }
 
-    // Hàm tải dữ liệu tổng hợp: đếm số món, số lượng hết hạn, tải danh sách và cập nhật
+    // Hàm tải dữ liệu tổng hợp: đếm số món, số lượng hết hạn, tải danh sách và cập
+    // nhật
     public void loadItems() {
         PantrySmartDatabase.databaseWriteExecutor.execute(() -> {
             int totalMain = pantryDao.countItemsByZone("MAIN");
@@ -414,7 +430,9 @@ public class FridgeFragment extends Fragment {
      * Hiển thị BottomSheet dialog liệt kê toàn bộ thực phẩm trong ngăn.
      */
     private void showAllItemsDialog(List<PantryItem> items, String title, String colorHex) {
-        if (getContext() == null) return;
+
+        if (getContext() == null)
+            return;
 
         Dialog dialog = new Dialog(requireContext());
         dialog.requestWindowFeature(Window.FEATURE_NO_TITLE);
@@ -429,16 +447,15 @@ public class FridgeFragment extends Fragment {
                     ViewGroup.LayoutParams.MATCH_PARENT,
                     ViewGroup.LayoutParams.WRAP_CONTENT);
             dialog.getWindow().setGravity(Gravity.BOTTOM);
-            dialog.getWindow().getAttributes().windowAnimations =
-                    android.R.style.Animation_InputMethod;
+            dialog.getWindow().getAttributes().windowAnimations = android.R.style.Animation_InputMethod;
         }
 
         // Bind header views
         boolean isFreezer = colorHex.equals("#3A7AB5");
-        TextView dialogTitle     = content.findViewById(R.id.dialogTitle);
-        TextView dialogSubtitle  = content.findViewById(R.id.dialogSubtitle);
+        TextView dialogTitle = content.findViewById(R.id.dialogTitle);
+        TextView dialogSubtitle = content.findViewById(R.id.dialogSubtitle);
         ImageView dialogZoneIcon = content.findViewById(R.id.dialogZoneIcon);
-        FrameLayout btnClose     = content.findViewById(R.id.dialogBtnClose);
+        FrameLayout btnClose = content.findViewById(R.id.dialogBtnClose);
         RecyclerView recyclerView = content.findViewById(R.id.dialogRecyclerView);
 
         dialogTitle.setText(isFreezer ? "Ngăn Đông" : "Ngăn Chính");
@@ -457,25 +474,257 @@ public class FridgeFragment extends Fragment {
         adapter.setOnItemActionListener(new PantryItemAdapter.OnItemActionListener() {
             @Override
             public void onEdit(PantryItem item, int position) {
-                Toast.makeText(requireContext(), "Sửa: " + item.getName(), Toast.LENGTH_SHORT).show();
-                // TODO: mở dialog chỉnh sửa item
+                showEditItemBottomSheet(item, position, adapter, dialogSubtitle);
             }
 
             @Override
             public void onDelete(PantryItem item, int position) {
-                PantrySmartDatabase.databaseWriteExecutor.execute(() -> {
-                    pantryDao.delete(item);
-                    if (getActivity() != null) {
-                        getActivity().runOnUiThread(() -> {
-                            adapter.removeItem(position);
-                            dialogSubtitle.setText(adapter.getItemCount() + " thực phẩm");
-                            loadItems(); // cập nhật badge + kệ
-                        });
-                    }
-                });
+                new MaterialAlertDialogBuilder(requireContext())
+                        .setTitle("Xác nhận xóa")
+                        .setMessage("Bạn có chắc muốn xóa '" + item.getName() + "' khỏi tủ lạnh?")
+                        .setPositiveButton("Xóa", (dialogInterface, i) -> {
+                            PantrySmartDatabase.databaseWriteExecutor.execute(() -> {
+                                pantryDao.delete(item);
+                                if (getActivity() != null) {
+                                    getActivity().runOnUiThread(() -> {
+                                        adapter.removeItem(position);
+                                        dialogSubtitle.setText(adapter.getItemCount() + " thực phẩm");
+                                        loadItems(); // cập nhật badge + kệ
+                                        Toast.makeText(requireContext(), "Đã xóa thành công!", Toast.LENGTH_SHORT)
+                                                .show();
+                                    });
+                                }
+                            });
+                        })
+                        .setNegativeButton("Hủy", null)
+                        .show();
             }
         });
 
         dialog.show();
     }
+
+    // Hiển thị BottomSheet Diaglog chỉnh sửa thông tin
+    private void showEditItemBottomSheet(PantryItem item, int position,
+            PantryItemAdapter adapter,
+            TextView dialogSubtitle) {
+
+        // 1. cấu hình layout bottom
+        BottomSheetDialog editDialog = new BottomSheetDialog(requireContext());
+        View sheetView = getLayoutInflater().inflate(R.layout.bottom_sheet_edit_item, null);
+        editDialog.setContentView(sheetView);
+
+        // Header
+        FrameLayout btnClose = sheetView.findViewById(R.id.btnCloseEditSheet);
+        // Row 1: Emoji + Tên
+        FrameLayout btnSelectEmoji = sheetView.findViewById(R.id.btnSelectEmoji);
+        TextView tvSelectedEmoji = sheetView.findViewById(R.id.tvSelectedEmoji);
+        EditText etItemName = sheetView.findViewById(R.id.etItemName);
+        // Row 2: Số lượng + Đơn vị
+        EditText etItemQuantity = sheetView.findViewById(R.id.etItemQuantity);
+        EditText etItemUnit = sheetView.findViewById(R.id.etItemUnit);
+        // Row 3: Hạn sử dụng
+        TextView tvExpiryDate = sheetView.findViewById(R.id.tvExpiryDate);
+        // Row 4: Danh mục chips
+        TextView chipDairy = sheetView.findViewById(R.id.chipDairy);
+        TextView chipVegetable = sheetView.findViewById(R.id.chipVegetable);
+        TextView chipFruit = sheetView.findViewById(R.id.chipFruit);
+        TextView chipMeat = sheetView.findViewById(R.id.chipMeat);
+        TextView chipSeafood = sheetView.findViewById(R.id.chipSeafood);
+        TextView chipDrink = sheetView.findViewById(R.id.chipDrink);
+        TextView chipSpice = sheetView.findViewById(R.id.chipSpice);
+        TextView chipOther = sheetView.findViewById(R.id.chipOther);
+        // Row 5: Ngăn chứa
+        TextView btnZoneMain = sheetView.findViewById(R.id.btnZoneMain);
+        TextView btnZoneFreezer = sheetView.findViewById(R.id.btnZoneFreezer);
+        // Nút Lưu
+        TextView btnSaveEdit = sheetView.findViewById(R.id.btnSaveEdit);
+
+        // 2. Refill dữ liệu vào form
+
+        // Emoji
+        tvSelectedEmoji.setText(FoodEmojiConfig.safeEmoji(item.getEmoji()));
+
+        // Tên
+        etItemName.setText(item.getName());
+
+        // Số lượng — bỏ phần thập phân nếu là số nguyên
+        double qty = item.getQuantity();
+        etItemQuantity.setText(qty == (long) qty ? String.valueOf((long) qty) : String.valueOf(qty));
+
+        // Đơn vị
+        etItemUnit.setText(item.getUnit());
+
+        // Hạn sử dụng
+        SimpleDateFormat sdf = new SimpleDateFormat("dd/MM/yyyy", Locale.getDefault());
+        Calendar expiryCal = Calendar.getInstance();
+        if (item.getExpiryDate() != null) {
+            expiryCal.setTimeInMillis(item.getExpiryDate());
+            tvExpiryDate.setText(sdf.format(expiryCal.getTime()));
+        }
+
+        // 3. Logic chọn
+        // Mảng các chip view — thứ tự tương ứng với mảng categoryKeys
+        TextView[] categoryChips = {
+                chipDairy, chipVegetable, chipFruit, chipMeat,
+                chipSeafood, chipDrink, chipSpice, chipOther
+        };
+
+        // Mảng key lưu vào DB — khớp thứ tự với categoryChips
+        String[] categoryKeys = {
+                "DAIRY", "VEGETABLE", "FRUIT", "MEAT",
+                "SEAFOOD", "DRINK", "SPICE", "OTHER"
+        };
+
+        // Biến lưu danh mục đang được chọn
+        final String[] selectedCategory = { item.getCategory() != null ? item.getCategory() : "OTHER" };
+
+        // Pre-fill: highlight chip ban đầu dựa theo item.getCategory()
+        highlightCategoryChip(categoryChips, categoryKeys, selectedCategory[0]);
+
+        // Gán listener cho từng chip
+        for (int i = 0; i < categoryChips.length; i++) {
+            final int index = i;
+            categoryChips[i].setOnClickListener(v -> {
+                selectedCategory[0] = categoryKeys[index];
+                highlightCategoryChip(categoryChips, categoryKeys, categoryKeys[index]);
+            });
+        }
+
+        // Logic chọn ngăn chứa
+        final String[] selectedZone = { item.getStorageZone() != null ? item.getStorageZone() : "MAIN" };
+
+        // Hàm highlight zone button
+        Runnable updateZoneUI = () -> {
+            if ("FREEZER".equals(selectedZone[0])) {
+                btnZoneFreezer.setBackgroundResource(R.drawable.bg_edit_zone_active);
+                btnZoneFreezer.setTextColor(Color.WHITE);
+                btnZoneMain.setBackgroundResource(R.drawable.bg_edit_zone_inactive);
+                btnZoneMain.setTextColor(Color.parseColor("#4A5565"));
+            } else {
+                btnZoneMain.setBackgroundResource(R.drawable.bg_edit_zone_active);
+                btnZoneMain.setTextColor(Color.WHITE);
+                btnZoneFreezer.setBackgroundResource(R.drawable.bg_edit_zone_inactive);
+                btnZoneFreezer.setTextColor(Color.parseColor("#4A5565"));
+            }
+        };
+        updateZoneUI.run();
+        // Pre-fill
+
+        btnZoneMain.setOnClickListener(v -> {
+            selectedZone[0] = "MAIN";
+            updateZoneUI.run();
+        });
+        btnZoneFreezer.setOnClickListener(v -> {
+            selectedZone[0] = "FREEZER";
+            updateZoneUI.run();
+        });
+
+        // Date
+        tvExpiryDate.setOnClickListener(v -> {
+            new DatePickerDialog(requireContext(), (view, year, month, dayOfMonth) -> {
+                expiryCal.set(year, month, dayOfMonth, 23, 59, 59);
+                tvExpiryDate.setText(sdf.format(expiryCal.getTime()));
+            },
+                    expiryCal.get(Calendar.YEAR),
+                    expiryCal.get(Calendar.MONTH),
+                    expiryCal.get(Calendar.DAY_OF_MONTH)).show();
+        });
+
+        // Emoji — mở EmojiPickerDialog theo nhóm
+        final String[] selectedEmoji = { FoodEmojiConfig.safeEmoji(item.getEmoji()) };
+
+        btnSelectEmoji.setOnClickListener(v -> {
+            EmojiPickerDialog.show(requireContext(), selectedEmoji[0], emoji -> {
+                selectedEmoji[0] = emoji;
+                tvSelectedEmoji.setText(emoji);
+            });
+        });
+
+        // LOGIC LƯU
+        btnSaveEdit.setOnClickListener(v -> {
+            // === Validate ===
+            String name = etItemName.getText().toString().trim();
+            if (name.isEmpty()) {
+                etItemName.setError("Vui lòng nhập tên");
+                return;
+            }
+
+            String qtyStr = etItemQuantity.getText().toString().trim();
+            double quantity;
+            try {
+                quantity = Double.parseDouble(qtyStr);
+                if (quantity <= 0)
+                    throw new NumberFormatException();
+            } catch (NumberFormatException e) {
+                etItemQuantity.setError("Số lượng không hợp lệ");
+                return;
+            }
+
+            String unit = etItemUnit.getText().toString().trim();
+            if (unit.isEmpty()) {
+                etItemUnit.setError("Vui lòng nhập đơn vị");
+                return;
+            }
+
+            // === Gán dữ liệu mới vào item (giữ nguyên id để Room update đúng row) ===
+            item.setName(name);
+            item.setEmoji(selectedEmoji[0]);
+            item.setQuantity(quantity);
+            item.setUnit(unit);
+            item.setCategory(selectedCategory[0]);
+            item.setStorageZone(selectedZone[0]);
+
+            // Hạn sử dụng — chỉ set nếu user đã chọn ngày
+            if (tvExpiryDate.getText() != null && !tvExpiryDate.getText().toString().isEmpty()
+                    && !"Chọn ngày".equals(tvExpiryDate.getText().toString())) {
+                item.setExpiryDate(expiryCal.getTimeInMillis());
+            }
+
+            // Disable nút tránh double-tap
+            btnSaveEdit.setEnabled(false);
+            btnSaveEdit.setText("Đang lưu...");
+
+            // === Update Database trên Background Thread ===
+            PantrySmartDatabase.databaseWriteExecutor.execute(() -> {
+                pantryDao.update(item);
+
+                if (getActivity() != null) {
+                    getActivity().runOnUiThread(() -> {
+                        // Cập nhật dòng tương ứng trên RecyclerView (không cần xóa rồi thêm lại)
+                        adapter.notifyItemChanged(position);
+
+                        // Cập nhật subtitle trên dialog cha (nếu zone đổi thì số lượng có thể thay đổi)
+                        // dialogSubtitle.setText(adapter.getItemCount() + " thực phẩm");
+
+                        // Reload tủ lạnh visual + dashboard
+                        loadItems();
+
+                        Toast.makeText(requireContext(), "✅ Đã cập nhật!", Toast.LENGTH_SHORT).show();
+
+                        editDialog.dismiss();
+                    });
+                }
+            });
+        });
+
+        // CLOSE
+        btnClose.setOnClickListener(v -> editDialog.dismiss());
+        editDialog.show();
+
+    }
+
+    // Hàm chung để highlight chip active và reset các chip khác
+    private void highlightCategoryChip(TextView[] chips, String[] keys, String activeKey) {
+        for (int i = 0; i < chips.length; i++) {
+            if (keys[i].equals(activeKey)) {
+                chips[i].setBackgroundResource(R.drawable.bg_edit_category_chip_active);
+                chips[i].setTextColor(Color.WHITE);
+            } else {
+                chips[i].setBackgroundResource(R.drawable.bg_edit_category_chip);
+                chips[i].setTextColor(Color.parseColor("#4A5565"));
+            }
+        }
+    }
+
 }

@@ -1,0 +1,10 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!-- Gradient button "Lưu thay đổi" — dải xanh lá từ #00BC7D đến #00BBA7 -->
+<shape xmlns:android="http://schemas.android.com/apk/res/android"
+    android:shape="rectangle">
+    <gradient
+        android:startColor="#00BC7D"
+        android:endColor="#00BBA7"
+        android:angle="0" />
+    <corners android:radius="16dp" />
+</shape>
