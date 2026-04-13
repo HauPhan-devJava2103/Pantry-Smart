@@ -1,6 +1,10 @@
 <?xml version="1.0" encoding="utf-8"?>
 <!-- Fragment "Tủ Lạnh" -->
-<ScrollView xmlns:android="http://schemas.android.com/apk/res/android"
+<FrameLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    android:layout_width="match_parent"
+    android:layout_height="match_parent">
+
+<ScrollView
     android:layout_width="match_parent"
     android:layout_height="match_parent"
     android:clipToPadding="false"
@@ -789,3 +793,8 @@
         </LinearLayout>
     </LinearLayout>
 </ScrollView>
+
+<!-- FAB Add Item -->
+<include layout="@layout/layout_fab_add_item" />
+
+</FrameLayout>

@@ -88,10 +88,6 @@ public class MainActivity extends AppCompatActivity {
             Toast.makeText(this, "Ngân sách - Sắp ra mắt", Toast.LENGTH_SHORT).show();
         });
 
-        // FAB
-        findViewById(R.id.fabAddItem)
-                .setOnClickListener(v -> Toast.makeText(this, "Thêm thực phẩm", Toast.LENGTH_SHORT).show());
-
         // Load default tab
         if (savedInstanceState == null) {
             fridgeFragment = new FridgeFragment();
@@ -105,12 +101,6 @@ public class MainActivity extends AppCompatActivity {
     private void switchTab(int tabIndex) {
         currentTab = tabIndex;
         setActiveTab(tabIndex);
-
-        // Ẩn FAB thêm thực phẩm khi ở tab Ngân sách (tab 2 có FAB riêng)
-        View fabAddItem = findViewById(R.id.fabAddItem);
-        if (fabAddItem != null) {
-            fabAddItem.setVisibility(tabIndex == 2 ? View.GONE : View.VISIBLE);
-        }
 
         Fragment fragment = null;
 
