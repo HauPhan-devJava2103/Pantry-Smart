@@ -51,6 +51,6 @@ public class ExpenseCategory {
 
     @Override
     public String toString() {
-        return emoji + " " + label;
+        return label;
     }
 }

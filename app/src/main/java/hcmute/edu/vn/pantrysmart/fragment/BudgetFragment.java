@@ -46,6 +46,7 @@ import java.util.concurrent.Executors;
 import hcmute.edu.vn.pantrysmart.R;
 import hcmute.edu.vn.pantrysmart.adapter.BudgetCategoryAdapter;
 import hcmute.edu.vn.pantrysmart.adapter.RecentTransactionAdapter;
+import hcmute.edu.vn.pantrysmart.config.FoodIconConfig;
 import hcmute.edu.vn.pantrysmart.data.local.PantrySmartDatabase;
 import hcmute.edu.vn.pantrysmart.data.local.dao.BudgetDao;
 import hcmute.edu.vn.pantrysmart.data.local.dao.ExpenseDao;
@@ -120,19 +121,19 @@ public class BudgetFragment extends Fragment {
         currentMonth = now.get(Calendar.MONTH) + 1;
         currentYear = now.get(Calendar.YEAR);
 
-        // --- RecyclerView: Giao dịch gần đây ---
+        // --- RecyclerView: Giao dich gan day ---
         transactionAdapter = new RecentTransactionAdapter(new ArrayList<>(),
                 new RecentTransactionAdapter.CategoryEmojiResolver() {
                     @Override
                     public String getEmoji(String key) {
                         ExpenseCategory c = categoryMap.get(key);
-                        return c != null ? c.getEmoji() : "💰";
+                        return c != null ? c.getEmoji() : FoodIconConfig.DEFAULT_ICON_NAME;
                     }
 
                     @Override
                     public String getLabel(String key) {
                         ExpenseCategory c = categoryMap.get(key);
-                        return c != null ? c.getLabel() : "Khác";
+                        return c != null ? c.getLabel() : "Kh\u00E1c";
                     }
                 });
         // Gắn callback xóa / sửa cho từng item giao dịch

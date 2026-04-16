@@ -15,11 +15,12 @@ import java.util.List;
 import java.util.Locale;
 
 import hcmute.edu.vn.pantrysmart.R;
+import hcmute.edu.vn.pantrysmart.config.FoodIconConfig;
 import hcmute.edu.vn.pantrysmart.data.local.entity.Expense;
 
 /**
  * Adapter cho danh sách giao dịch gần đây trong BudgetFragment.
- * Mỗi item có nút Edit (✏️) và Delete (🗑️).
+ * Mỗi item có nút Edit và Delete.
  * Layout: item_recent_transaction.xml
  */
 public class RecentTransactionAdapter extends RecyclerView.Adapter<RecentTransactionAdapter.ViewHolder> {
@@ -75,9 +76,9 @@ public class RecentTransactionAdapter extends RecyclerView.Adapter<RecentTransac
     public void onBindViewHolder(@NonNull ViewHolder holder, int position) {
         Expense expense = expenses.get(position);
 
-        // Emoji danh mục
+        // Icon danh mục — resolve emoji string → drawable resource
         String emoji = emojiResolver.getEmoji(expense.getCategoryKey());
-        holder.tvEmoji.setText(emoji != null ? emoji : "💰");
+        holder.imgIcon.setImageResource(FoodIconConfig.safeIcon(emoji));
 
         // Tên giao dịch
         holder.tvName.setText(expense.getName());
@@ -116,12 +117,13 @@ public class RecentTransactionAdapter extends RecyclerView.Adapter<RecentTransac
     // ==== ViewHolder ====
 
     static class ViewHolder extends RecyclerView.ViewHolder {
-        TextView  tvEmoji, tvName, tvInfo, tvAmount;
+        ImageView imgIcon;
+        TextView  tvName, tvInfo, tvAmount;
         ImageView btnEdit, btnDelete;
 
         ViewHolder(@NonNull View itemView) {
             super(itemView);
-            tvEmoji   = itemView.findViewById(R.id.tvTransactionEmoji);
+            imgIcon   = itemView.findViewById(R.id.imgTransactionIcon);
             tvName    = itemView.findViewById(R.id.tvTransactionName);
             tvInfo    = itemView.findViewById(R.id.tvTransactionInfo);
             tvAmount  = itemView.findViewById(R.id.tvTransactionAmount);

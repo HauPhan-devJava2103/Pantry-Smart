@@ -45,4 +45,5 @@ dependencies {
     annotationProcessor(libs.room.compiler)
     implementation(libs.glide)
     implementation("com.github.PhilJay:MPAndroidChart:v3.1.0")
+    implementation("androidx.viewpager2:viewpager2:1.1.0")
 }

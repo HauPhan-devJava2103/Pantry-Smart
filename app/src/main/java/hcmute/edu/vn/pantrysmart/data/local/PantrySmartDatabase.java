@@ -81,14 +81,37 @@ public abstract class PantrySmartDatabase extends RoomDatabase {
                         if (count == 0) {
                                 seedData(db);
                         }
+
+                        // Migrate: cập nhật emoji Unicode cũ → drawable name
+                        migrateEmojiToDrawable(db);
+                }
+
+                /**
+                 * Chuyển đổi emoji Unicode sang drawable name cho dữ liệu cũ.
+                 * Chạy mỗi lần mở DB nhưng chỉ ảnh hưởng row còn dùng emoji cũ.
+                 */
+                private void migrateEmojiToDrawable(SupportSQLiteDatabase db) {
+                        // Cập nhật emoji Unicode cũ sang drawable name.
+                        // Dùng UPDATE ... WHERE emoji NOT LIKE 'ic_%' để bắt tất cả
+                        // row chưa migrate (bất kể emoji nào), rồi gán default icon.
+                        // Sau đó dùng bind param tránh lỗi encoding.
+
+                        // expense_categories — chỉ có 4 key cố định
+                        db.execSQL("UPDATE expense_categories SET emoji = 'ic_food_package' WHERE category_key = 'SHOPPING' AND emoji NOT LIKE 'ic_%'");
+                        db.execSQL("UPDATE expense_categories SET emoji = 'ic_food_noodle'  WHERE category_key = 'DELIVERY' AND emoji NOT LIKE 'ic_%'");
+                        db.execSQL("UPDATE expense_categories SET emoji = 'ic_food_popcorn' WHERE category_key = 'SNACK'    AND emoji NOT LIKE 'ic_%'");
+                        db.execSQL("UPDATE expense_categories SET emoji = 'ic_food_bread'   WHERE category_key = 'OTHER'    AND emoji NOT LIKE 'ic_%'");
+
+                        // pantry_items — gán icon mặc định cho tất cả row chưa có drawable name
+                        db.execSQL("UPDATE pantry_items SET emoji = 'ic_food_package' WHERE emoji IS NOT NULL AND emoji != '' AND emoji NOT LIKE 'ic_%'");
                 }
 
                 private void seedData(SupportSQLiteDatabase db) {
-                        // 4 danh mục chi tiêu mặc định
-                        db.execSQL("INSERT INTO expense_categories VALUES ('SHOPPING','Mua sắm','🛒')");
-                        db.execSQL("INSERT INTO expense_categories VALUES ('DELIVERY','Giao hàng','🛵')");
-                        db.execSQL("INSERT INTO expense_categories VALUES ('SNACK','Đồ ăn vặt','🍿')");
-                        db.execSQL("INSERT INTO expense_categories VALUES ('OTHER','Khác','📦')");
+                        // 4 danh mục chi tiêu mặc định (emoji = drawable name)
+                        db.execSQL("INSERT INTO expense_categories VALUES ('SHOPPING','Mua sắm','ic_food_package')");
+                        db.execSQL("INSERT INTO expense_categories VALUES ('DELIVERY','Giao hàng','ic_food_noodle')");
+                        db.execSQL("INSERT INTO expense_categories VALUES ('SNACK','Đồ ăn vặt','ic_food_popcorn')");
+                        db.execSQL("INSERT INTO expense_categories VALUES ('OTHER','Khác','ic_food_bread')");
 
                         // Ngân sách mẫu tháng hiện tại (monthly: 2tr, weekly: 500k)
                         int currentMonth = java.util.Calendar.getInstance().get(java.util.Calendar.MONTH) + 1;
@@ -102,29 +125,29 @@ public abstract class PantrySmartDatabase extends RoomDatabase {
 
                         // Các sản phẩm có ảnh thật từ internet (dùng Unsplash để test Glide)
                         db.execSQL("INSERT INTO pantry_items (name, emoji, image_path, quantity, unit, expiry_date, added_date, storage_zone, category, is_active) VALUES "
-                                        + "('Trứng gà', '🥚', 'https://images.unsplash.com/photo-1582722872445-44dc5f7e3c8f?w=400', 5, 'quả', " + (now + 7 * oneDay) + ", " + now + ", 'MAIN', 'protein', 1)");
+                                        + "('Trứng gà', 'ic_food_egg', 'https://images.unsplash.com/photo-1582722872445-44dc5f7e3c8f?w=400', 5, 'quả', " + (now + 7 * oneDay) + ", " + now + ", 'MAIN', 'protein', 1)");
                         
                         db.execSQL("INSERT INTO pantry_items (name, emoji, image_path, quantity, unit, expiry_date, added_date, storage_zone, category, is_active) VALUES "
-                                        + "('Thịt heo', '🥩', 'https://images.unsplash.com/photo-1627997089456-e9f90f230da3?w=400', 0.5, 'kg', " + (now + 3 * oneDay) + ", " + now + ", 'FREEZER', 'thịt', 1)");
+                                        + "('Thịt heo', 'ic_food_steak', 'https://images.unsplash.com/photo-1627997089456-e9f90f230da3?w=400', 0.5, 'kg', " + (now + 3 * oneDay) + ", " + now + ", 'FREEZER', 'thịt', 1)");
 
                         db.execSQL("INSERT INTO pantry_items (name, emoji, image_path, quantity, unit, expiry_date, added_date, storage_zone, category, is_active) VALUES "
-                                        + "('Cà rốt', '🥕', 'https://images.unsplash.com/photo-1598170845058-32b9d6a5da37?w=400', 3, 'củ', " + (now + 5 * oneDay) + ", " + now + ", 'MAIN', 'rau', 1)");
+                                        + "('Cà rốt', 'ic_food_carrot', 'https://images.unsplash.com/photo-1598170845058-32b9d6a5da37?w=400', 3, 'củ', " + (now + 5 * oneDay) + ", " + now + ", 'MAIN', 'rau', 1)");
 
-                        // Các sản phẩm thiếu ảnh (sẽ tự động fallback hiển thị Emoji do image_path = NULL)
+                        // Các sản phẩm thiếu ảnh (sẽ tự động fallback hiển thị icon drawable)
                         db.execSQL("INSERT INTO pantry_items (name, emoji, image_path, quantity, unit, expiry_date, added_date, storage_zone, category, is_active) VALUES "
-                                        + "('Phô mai', '🧀', NULL, 1, 'hộp', " + (now + 14 * oneDay) + ", " + now + ", 'MAIN', 'sữa', 1)");
-
-                        db.execSQL("INSERT INTO pantry_items (name, emoji, image_path, quantity, unit, expiry_date, added_date, storage_zone, category, is_active) VALUES "
-                                        + "('Rau cải', '🥬', NULL, 1, 'bó', " + (now + 2 * oneDay) + ", " + now + ", 'MAIN', 'rau', 1)");
+                                        + "('Phô mai', 'ic_food_cheese', NULL, 1, 'hộp', " + (now + 14 * oneDay) + ", " + now + ", 'MAIN', 'sữa', 1)");
 
                         db.execSQL("INSERT INTO pantry_items (name, emoji, image_path, quantity, unit, expiry_date, added_date, storage_zone, category, is_active) VALUES "
-                                        + "('Tôm', '🦐', NULL, 0.3, 'kg', " + (now + 4 * oneDay) + ", " + now + ", 'FREEZER', 'hải sản', 1)");
+                                        + "('Rau cải', 'ic_food_lettuce', NULL, 1, 'bó', " + (now + 2 * oneDay) + ", " + now + ", 'MAIN', 'rau', 1)");
 
                         db.execSQL("INSERT INTO pantry_items (name, emoji, image_path, quantity, unit, expiry_date, added_date, storage_zone, category, is_active) VALUES "
-                                        + "('Mì tôm', '🍜', NULL, 5, 'gói', " + (now + 90 * oneDay) + ", " + now + ", 'MAIN', 'khô', 1)");
+                                        + "('Tôm', 'ic_food_shrimp', NULL, 0.3, 'kg', " + (now + 4 * oneDay) + ", " + now + ", 'FREEZER', 'hải sản', 1)");
 
                         db.execSQL("INSERT INTO pantry_items (name, emoji, image_path, quantity, unit, expiry_date, added_date, storage_zone, category, is_active) VALUES "
-                                        + "('Sữa tươi', '🥛', NULL, 1, 'hộp', " + (now + 1 * oneDay) + ", " + now + ", 'MAIN', 'sữa', 1)");
+                                        + "('Mì tôm', 'ic_food_noodle', NULL, 5, 'gói', " + (now + 90 * oneDay) + ", " + now + ", 'MAIN', 'khô', 1)");
+
+                        db.execSQL("INSERT INTO pantry_items (name, emoji, image_path, quantity, unit, expiry_date, added_date, storage_zone, category, is_active) VALUES "
+                                        + "('Sữa tươi', 'ic_food_milk', NULL, 1, 'hộp', " + (now + 1 * oneDay) + ", " + now + ", 'MAIN', 'sữa', 1)");
                         // Chi tiêu mẫu trong tuần hiện tại (để test biểu đồ & giao dịch gần đây)
                         // budget_id = 1 vì vừa insert budget ở trên
                         long today = System.currentTimeMillis();

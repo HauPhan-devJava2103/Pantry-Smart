@@ -24,13 +24,13 @@
             android:layout_width="36dp"
             android:layout_height="36dp"
             android:background="@drawable/bg_budget_category_icon_trans">
-            <TextView
-                android:id="@+id/tvTransactionEmoji"
-                android:layout_width="wrap_content"
-                android:layout_height="wrap_content"
+            <ImageView
+                android:id="@+id/imgTransactionIcon"
+                android:layout_width="20dp"
+                android:layout_height="20dp"
                 android:layout_gravity="center"
-                android:textSize="18sp"
-                tools:text="🛒" />
+                android:scaleType="centerInside"
+                android:contentDescription="Transaction icon" />
         </FrameLayout>
 
         <!-- Tên + thông tin -->

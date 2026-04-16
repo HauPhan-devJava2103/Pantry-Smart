@@ -22,7 +22,7 @@ import hcmute.edu.vn.pantrysmart.data.local.dao.PantryItemDao;
 import hcmute.edu.vn.pantrysmart.data.local.entity.PantryItem;
 import hcmute.edu.vn.pantrysmart.fragment.BudgetFragment;
 import hcmute.edu.vn.pantrysmart.fragment.FridgeFragment;
-
+import hcmute.edu.vn.pantrysmart.fragment.SuggestFragment;
 
 /**
  * MainActivity — Navigation Shell.
@@ -39,10 +39,13 @@ public class MainActivity extends AppCompatActivity {
 
     // Header Views
     private TextView tvGreeting, tvHeaderTitle, tvExpiryBadge, tvNotificationBadge;
+    private View headerRow2;
+    private View headerContainer, bottomNavigation;
 
     // Current Fragment & Tab
     private int currentTab = 0;
     private FridgeFragment fridgeFragment;
+    private SuggestFragment suggestFragment;
     private BudgetFragment budgetFragment;
 
     @Override
@@ -65,6 +68,9 @@ public class MainActivity extends AppCompatActivity {
         tvHeaderTitle = findViewById(R.id.tvHeaderTitle);
         tvExpiryBadge = findViewById(R.id.tvExpiryBadge);
         tvNotificationBadge = findViewById(R.id.tvNotificationBadge);
+        headerRow2 = findViewById(R.id.headerRow2);
+        headerContainer = findViewById(R.id.headerContainer);
+        bottomNavigation = findViewById(R.id.bottomNavigation);
 
         updateGreeting();
         updateHeaderStats();
@@ -79,10 +85,7 @@ public class MainActivity extends AppCompatActivity {
 
         // Bottom Navigation
         findViewById(R.id.navTabFridge).setOnClickListener(v -> switchTab(0));
-        findViewById(R.id.navTabSuggest).setOnClickListener(v -> {
-            switchTab(1);
-            Toast.makeText(this, "Gợi ý công thức - Sắp ra mắt", Toast.LENGTH_SHORT).show();
-        });
+        findViewById(R.id.navTabSuggest).setOnClickListener(v -> switchTab(1));
         findViewById(R.id.navTabBudget).setOnClickListener(v -> {
             switchTab(2);
             Toast.makeText(this, "Ngân sách - Sắp ra mắt", Toast.LENGTH_SHORT).show();
@@ -101,14 +104,16 @@ public class MainActivity extends AppCompatActivity {
     private void switchTab(int tabIndex) {
         currentTab = tabIndex;
         setActiveTab(tabIndex);
+        updateHeaderForTab(tabIndex);
 
         Fragment fragment = null;
 
         switch (tabIndex) {
             case 1:
-                // TODO: Create SuggestFragment
-                Toast.makeText(this, "Gợi ý công thức - Sắp ra mắt", Toast.LENGTH_SHORT).show();
-                return;
+                if (suggestFragment == null)
+                    suggestFragment = new SuggestFragment();
+                fragment = suggestFragment;
+                break;
             case 2:
                 // TODO: Create BudgetFragment
                 if (budgetFragment == null) {
@@ -177,6 +182,39 @@ public class MainActivity extends AppCompatActivity {
 
         tvGreeting.setText(greetingResId);
         tvGreeting.setCompoundDrawablesRelativeWithIntrinsicBounds(0, 0, iconResId, 0);
+    }
+
+    private void updateHeaderForTab(int tabIndex) {
+        View bottomNavWrapper = (bottomNavigation != null && bottomNavigation.getParent() instanceof View)
+                ? (View) bottomNavigation.getParent()
+                : null;
+
+        switch (tabIndex) {
+            case 1: // Gợi ý — full-screen immersive, ẩn header + footer
+                if (headerContainer != null)
+                    headerContainer.setVisibility(View.GONE);
+                if (bottomNavWrapper != null)
+                    bottomNavWrapper.setVisibility(View.VISIBLE);
+                break;
+            case 2: // Ngân sách
+                if (headerContainer != null)
+                    headerContainer.setVisibility(View.VISIBLE);
+                if (bottomNavWrapper != null)
+                    bottomNavWrapper.setVisibility(View.VISIBLE);
+                tvHeaderTitle.setText("Quản lý ngân sách");
+                if (headerRow2 != null)
+                    headerRow2.setVisibility(View.GONE);
+                break;
+            default: // Tủ lạnh
+                if (headerContainer != null)
+                    headerContainer.setVisibility(View.VISIBLE);
+                if (bottomNavWrapper != null)
+                    bottomNavWrapper.setVisibility(View.VISIBLE);
+                updateHeaderStats();
+                if (headerRow2 != null)
+                    headerRow2.setVisibility(View.VISIBLE);
+                break;
+        }
     }
 
     /**

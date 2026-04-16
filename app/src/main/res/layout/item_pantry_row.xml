@@ -10,7 +10,7 @@
     android:layout_marginBottom="8dp"
     android:padding="10dp">
 
-    <!-- Hình ảnh / Emoji placeholder -->
+    <!-- Hình ảnh / Icon placeholder -->
     <FrameLayout
         android:layout_width="52dp"
         android:layout_height="52dp"
@@ -25,7 +25,7 @@
             android:visibility="gone"
             android:contentDescription="Ảnh thực phẩm" />
 
-        <!-- Emoji fallback (hiện khi không có ảnh) -->
+        <!-- Icon fallback (hiện khi không có ảnh) -->
         <LinearLayout
             android:id="@+id/layoutEmojiPlaceholder"
             android:layout_width="52dp"
@@ -34,12 +34,12 @@
             android:gravity="center"
             android:orientation="vertical">
 
-            <TextView
-                android:id="@+id/tvEmoji"
-                android:layout_width="wrap_content"
-                android:layout_height="wrap_content"
-                android:text="Cà chua"
-                android:textSize="24sp" />
+            <ImageView
+                android:id="@+id/imgFoodIcon"
+                android:layout_width="28dp"
+                android:layout_height="28dp"
+                android:scaleType="centerInside"
+                android:contentDescription="Food icon" />
         </LinearLayout>
     </FrameLayout>
 
@@ -59,7 +59,6 @@
             android:ellipsize="end"
             android:fontFamily="sans-serif-medium"
             android:maxLines="1"
-            android:text="Cà chua"
             android:textColor="#1F2937"
             android:textSize="14sp" />
 
@@ -69,7 +68,6 @@
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
             android:layout_marginTop="2dp"
-            android:text="2 kg"
             android:textColor="#6B7280"
             android:textSize="11sp" />
 
@@ -84,13 +82,12 @@
             android:paddingEnd="8dp"
             android:paddingTop="2dp"
             android:paddingBottom="2dp"
-            android:text="Còn 5 ngày"
             android:textColor="#059669"
             android:textSize="10sp"
             android:fontFamily="sans-serif-medium" />
     </LinearLayout>
 
-    <!-- Phải: Zone, Date và Action Buttons -->
+    <!-- Phải: Action Buttons -->
     <LinearLayout
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"

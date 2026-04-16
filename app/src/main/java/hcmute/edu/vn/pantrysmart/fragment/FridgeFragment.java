@@ -30,7 +30,7 @@ import com.google.android.material.dialog.MaterialAlertDialogBuilder;
 
 import hcmute.edu.vn.pantrysmart.adapter.EmojiPickerDialog;
 import hcmute.edu.vn.pantrysmart.adapter.PantryItemAdapter;
-import hcmute.edu.vn.pantrysmart.config.FoodEmojiConfig;
+import hcmute.edu.vn.pantrysmart.config.FoodIconConfig;
 
 import java.text.SimpleDateFormat;
 import java.util.ArrayList;
@@ -277,20 +277,25 @@ public class FridgeFragment extends Fragment {
         containerParams.setMargins(dp(4), 0, dp(4), 0);
         container.setLayoutParams(containerParams);
 
-        // Emoji circle
-        TextView emojiView = new TextView(requireContext());
-        emojiView.setLayoutParams(new LinearLayout.LayoutParams(dp(42), dp(42)));
-        emojiView.setText(FoodEmojiConfig.safeEmoji(item.getEmoji()));
-        emojiView.setTextSize(22);
-        emojiView.setGravity(Gravity.CENTER);
-        emojiView.setElevation(dp(2));
-        emojiView.setBackgroundResource(isExpiring ? R.drawable.bg_food_on_shelf_warning : R.drawable.bg_food_on_shelf);
+        // Icon circle
+        FrameLayout iconFrame = new FrameLayout(requireContext());
+        iconFrame.setLayoutParams(new LinearLayout.LayoutParams(dp(42), dp(42)));
+        iconFrame.setElevation(dp(2));
+        iconFrame.setBackgroundResource(isExpiring ? R.drawable.bg_food_on_shelf_warning : R.drawable.bg_food_on_shelf);
 
-        emojiView.setOnClickListener(v -> Toast.makeText(requireContext(),
-                item.getEmoji() + " " + item.getName()
+        ImageView iconView = new ImageView(requireContext());
+        FrameLayout.LayoutParams iconParams = new FrameLayout.LayoutParams(dp(24), dp(24));
+        iconParams.gravity = Gravity.CENTER;
+        iconView.setLayoutParams(iconParams);
+        iconView.setScaleType(ImageView.ScaleType.CENTER_INSIDE);
+        iconView.setImageResource(FoodIconConfig.safeIcon(item.getEmoji()));
+        iconFrame.addView(iconView);
+
+        iconFrame.setOnClickListener(v -> Toast.makeText(requireContext(),
+                item.getName()
                         + " — " + formatQuantity(item.getQuantity()) + " " + item.getUnit(),
                 Toast.LENGTH_SHORT).show());
-        container.addView(emojiView);
+        container.addView(iconFrame);
 
         // Name label
         TextView label = new TextView(requireContext());
@@ -388,13 +393,11 @@ public class FridgeFragment extends Fragment {
                 badgeFreezerCount.setText(totalFreezer + " món");
                 badgeMainCount.setText(totalMain + " món");
                 if (finalExpiringFreezer > 0) {
-                    badgeFreezerWarning.setText("⚠️ " + finalExpiringFreezer);
                     badgeFreezerWarning.setVisibility(View.VISIBLE);
                 } else {
                     badgeFreezerWarning.setVisibility(View.GONE);
                 }
                 if (finalExpiringMain > 0) {
-                    badgeMainWarning.setText("⚠️ " + finalExpiringMain);
                     badgeMainWarning.setVisibility(View.VISIBLE);
                 } else {
                     badgeMainWarning.setVisibility(View.GONE);
@@ -529,7 +532,7 @@ public class FridgeFragment extends Fragment {
         FrameLayout btnClose = sheetView.findViewById(R.id.btnCloseEditSheet);
         // Row 1: Emoji + Tên
         FrameLayout btnSelectEmoji = sheetView.findViewById(R.id.btnSelectEmoji);
-        TextView tvSelectedEmoji = sheetView.findViewById(R.id.tvSelectedEmoji);
+        ImageView imgSelectedIcon = sheetView.findViewById(R.id.imgSelectedIcon);
         EditText etItemName = sheetView.findViewById(R.id.etItemName);
         // Row 2: Số lượng + Đơn vị
         EditText etItemQuantity = sheetView.findViewById(R.id.etItemQuantity);
@@ -554,7 +557,7 @@ public class FridgeFragment extends Fragment {
         // 2. Refill dữ liệu vào form
 
         // Emoji
-        tvSelectedEmoji.setText(FoodEmojiConfig.safeEmoji(item.getEmoji()));
+        imgSelectedIcon.setImageResource(FoodIconConfig.safeIcon(item.getEmoji()));
 
         // Tên
         etItemName.setText(item.getName());
@@ -643,12 +646,12 @@ public class FridgeFragment extends Fragment {
         });
 
         // Emoji — mở EmojiPickerDialog theo nhóm
-        final String[] selectedEmoji = { FoodEmojiConfig.safeEmoji(item.getEmoji()) };
+        final String[] selectedEmoji = { item.getEmoji() };
 
         btnSelectEmoji.setOnClickListener(v -> {
             EmojiPickerDialog.show(requireContext(), selectedEmoji[0], emoji -> {
                 selectedEmoji[0] = emoji;
-                tvSelectedEmoji.setText(emoji);
+                imgSelectedIcon.setImageResource(FoodIconConfig.safeIcon(emoji));
             });
         });
 
@@ -711,7 +714,7 @@ public class FridgeFragment extends Fragment {
                         // Reload tủ lạnh visual + dashboard
                         loadItems();
 
-                        Toast.makeText(requireContext(), "✅ Đã cập nhật!", Toast.LENGTH_SHORT).show();
+                        Toast.makeText(requireContext(), "Đã cập nhật!", Toast.LENGTH_SHORT).show();
 
                         editDialog.dismiss();
                     });

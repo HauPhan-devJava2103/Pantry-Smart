@@ -3,6 +3,7 @@ package hcmute.edu.vn.pantrysmart.adapter;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
+import android.widget.ImageView;
 import android.widget.TextView;
 
 import androidx.annotation.NonNull;
@@ -14,13 +15,13 @@ import java.util.List;
 import java.util.Locale;
 
 import hcmute.edu.vn.pantrysmart.R;
-import hcmute.edu.vn.pantrysmart.config.FoodEmojiConfig;
+import hcmute.edu.vn.pantrysmart.config.FoodIconConfig;
 import hcmute.edu.vn.pantrysmart.data.local.dao.ExpenseDao;
 import hcmute.edu.vn.pantrysmart.data.local.entity.ExpenseCategory;
 
 /**
  * Adapter cho phần "Theo danh mục" trong BudgetFragment.
- * Mỗi item hiển thị: emoji, tên danh mục, tổng chi tiêu, progress bar tỉ lệ.
+ * Mỗi item hiển thị: icon, tên danh mục, tổng chi tiêu, progress bar tỉ lệ.
  * Layout: item_budget_category.xml
  */
 public class BudgetCategoryAdapter extends RecyclerView.Adapter<BudgetCategoryAdapter.ViewHolder> {
@@ -69,7 +70,7 @@ public class BudgetCategoryAdapter extends RecyclerView.Adapter<BudgetCategoryAd
             }
         }
 
-        holder.tvEmoji.setText(FoodEmojiConfig.safeEmoji(cat.getEmoji()));
+        holder.imgIcon.setImageResource(FoodIconConfig.safeIcon(cat.getEmoji()));
         holder.tvName.setText(cat.getLabel());
         holder.tvSpent.setText(formatCurrency(spent));
 
@@ -90,12 +91,13 @@ public class BudgetCategoryAdapter extends RecyclerView.Adapter<BudgetCategoryAd
     }
 
     static class ViewHolder extends RecyclerView.ViewHolder {
-        TextView                tvEmoji, tvName, tvSpent;
-        LinearProgressIndicator progressBar;
+        ImageView                imgIcon;
+        TextView                 tvName, tvSpent;
+        LinearProgressIndicator  progressBar;
 
         ViewHolder(@NonNull View itemView) {
             super(itemView);
-            tvEmoji     = itemView.findViewById(R.id.tvCategoryEmoji);
+            imgIcon     = itemView.findViewById(R.id.imgCategoryIcon);
             tvName      = itemView.findViewById(R.id.tvCategoryName);
             tvSpent     = itemView.findViewById(R.id.tvCategorySpent);
             progressBar = itemView.findViewById(R.id.progressBarCategory);

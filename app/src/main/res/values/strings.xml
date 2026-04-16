@@ -15,11 +15,6 @@
     <string name="stat_expiring">Sắp hết hạn</string>
     <string name="stat_expired">Đã hết hạn</string>
 
-    <!-- Zone filter chips -->
-    <string name="filter_all">📋 Tất cả</string>
-    <string name="filter_main">🧊 Ngăn chính</string>
-    <string name="filter_freezer">❄️ Ngăn đông</string>
-
     <!-- Sort label -->
     <string name="sort_by_expiry">Sắp xếp theo hạn dùng</string>
 
@@ -34,4 +29,13 @@
 
     <!-- Item count -->
     <string name="item_count_format">%1$d món</string>
+
+    <!-- Suggest screen -->
+    <string name="suggest_header">Món ăn bạn muốn\năn hôm nay?</string>
+    <string name="suggest_btn_cook">Bắt đầu nấu</string>
+    <string name="suggest_swipe_hint">Lướt để đổi món</string>
+    <string name="suggest_loading">Đang tìm món ngon cho bạn…</string>
+    <string name="suggest_loading_sub">AI đang phân tích nguyên liệu trong tủ lạnh</string>
+    <string name="suggest_empty">Thêm thực phẩm vào tủ lạnh\nđể nhận gợi ý món ăn!</string>
+    <string name="suggest_retry">Thử lại</string>
 </resources>

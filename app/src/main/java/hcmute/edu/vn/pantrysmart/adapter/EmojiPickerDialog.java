@@ -7,6 +7,7 @@ import android.view.Gravity;
 import android.view.View;
 import android.view.ViewGroup;
 import android.widget.FrameLayout;
+import android.widget.ImageView;
 import android.widget.LinearLayout;
 import android.widget.TextView;
 
@@ -21,46 +22,46 @@ import java.util.List;
 import java.util.Map;
 
 import hcmute.edu.vn.pantrysmart.R;
-import hcmute.edu.vn.pantrysmart.config.FoodEmojiConfig;
+import hcmute.edu.vn.pantrysmart.config.FoodIconConfig;
 
 /**
- * Dialog tái sử dụng: hiển thị BottomSheet chọn emoji theo nhóm.
+ * BottomSheet dialog cho phep chon icon thuc pham theo nhom.
+ * Tra ve drawable name (VD: "ic_food_steak") de luu vao DB.
  */
 public class EmojiPickerDialog {
 
-    public interface OnEmojiPickedListener {
-        void onPicked(String emoji);
+    public interface OnIconPickedListener {
+        void onPicked(String iconName);
     }
 
-    public static void show(Context context, String currentEmoji, OnEmojiPickedListener listener) {
+    public static void show(Context context, String currentIconName, OnIconPickedListener listener) {
         BottomSheetDialog dialog = new BottomSheetDialog(context);
         View content = View.inflate(context, R.layout.dialog_emoji_picker, null);
         dialog.setContentView(content);
 
-        // Lấy dữ liệu nhóm emoji từ FoodEmojiConfig
-        Map<String, String[]> groupedEmojis = FoodEmojiConfig.getGroupedEmojis();
-        List<String> groupNames = new ArrayList<>(groupedEmojis.keySet());
+        Map<String, int[]> groupedIcons = FoodIconConfig.getGroupedIcons();
+        List<String> groupNames = new ArrayList<>(groupedIcons.keySet());
 
-        // Setup RecyclerView grid 5 cột
         RecyclerView rvGrid = content.findViewById(R.id.rvEmojiGrid);
         rvGrid.setLayoutManager(new GridLayoutManager(context, 5));
 
-        // Mặc định hiển thị nhóm đầu tiên
-        String[] firstGroupEmojis = groupedEmojis.get(groupNames.get(0));
-        EmojiGridAdapter adapter = new EmojiGridAdapter(context, firstGroupEmojis, currentEmoji);
+        int[] firstGroupIcons = groupedIcons.get(groupNames.get(0));
+        int currentIconRes = FoodIconConfig.safeIcon(currentIconName);
+        IconGridAdapter adapter = new IconGridAdapter(context, firstGroupIcons, currentIconRes);
         rvGrid.setAdapter(adapter);
 
-        // Khi user chọn emoji → callback + đóng dialog
-        adapter.setOnEmojiSelectedListener(emoji -> {
+        adapter.setOnIconSelectedListener(iconRes -> {
             rvGrid.postDelayed(() -> {
                 if (listener != null) {
-                    listener.onPicked(emoji);
+                    // Reverse lookup: drawable res -> drawable name (de luu DB)
+                    String iconName = FoodIconConfig.getIconName(iconRes);
+                    listener.onPicked(iconName);
                 }
                 dialog.dismiss();
             }, 300);
         });
 
-        // Setup tab nhóm (chips ngang)
+        // Tab nhom
         LinearLayout layoutTabs = content.findViewById(R.id.layoutEmojiGroupTabs);
         List<TextView> tabViews = new ArrayList<>();
 
@@ -74,8 +75,8 @@ public class EmojiPickerDialog {
                 for (int j = 0; j < tabViews.size(); j++) {
                     setTabActive(tabViews.get(j), j == index);
                 }
-                String[] emojis = groupedEmojis.get(groupNames.get(index));
-                adapter.updateEmojis(emojis);
+                int[] icons = groupedIcons.get(groupNames.get(index));
+                adapter.updateIcons(icons);
                 rvGrid.scrollToPosition(0);
             });
 
@@ -86,66 +87,75 @@ public class EmojiPickerDialog {
             layoutTabs.addView(tab, params);
         }
 
-        // Nút close
         FrameLayout btnClose = content.findViewById(R.id.btnCloseEmojiPicker);
         btnClose.setOnClickListener(v -> dialog.dismiss());
 
         dialog.show();
     }
 
-    private static class EmojiGridAdapter extends RecyclerView.Adapter<EmojiGridAdapter.VH> {
+    // === Grid Adapter ===
 
-        interface OnEmojiSelectedListener {
-            void onEmojiSelected(String emoji);
+    private static class IconGridAdapter extends RecyclerView.Adapter<IconGridAdapter.VH> {
+
+        interface OnIconSelectedListener {
+            void onIconSelected(int iconRes);
         }
 
         private final Context context;
-        private String[] emojis;
-        private String selectedEmoji;
-        private OnEmojiSelectedListener listener;
+        private int[] icons;
+        private int selectedIconRes;
+        private OnIconSelectedListener listener;
 
-        EmojiGridAdapter(Context context, String[] emojis, String selectedEmoji) {
+        IconGridAdapter(Context context, int[] icons, int selectedIconRes) {
             this.context = context;
-            this.emojis = emojis;
-            this.selectedEmoji = selectedEmoji;
+            this.icons = icons;
+            this.selectedIconRes = selectedIconRes;
         }
 
-        void setOnEmojiSelectedListener(OnEmojiSelectedListener listener) {
+        void setOnIconSelectedListener(OnIconSelectedListener listener) {
             this.listener = listener;
         }
 
-        void updateEmojis(String[] newEmojis) {
-            this.emojis = newEmojis;
+        void updateIcons(int[] newIcons) {
+            this.icons = newIcons;
             notifyDataSetChanged();
         }
 
         @NonNull
         @Override
         public VH onCreateViewHolder(@NonNull ViewGroup parent, int viewType) {
-            TextView tv = new TextView(context);
+            FrameLayout frame = new FrameLayout(context);
             int size = dp(context, 52);
             RecyclerView.LayoutParams params = new RecyclerView.LayoutParams(size, size);
             int margin = dp(context, 6);
             params.setMargins(margin, margin, margin, margin);
-            tv.setLayoutParams(params);
-            tv.setTextSize(26);
-            tv.setGravity(Gravity.CENTER);
-            return new VH(tv);
+            frame.setLayoutParams(params);
+
+            ImageView iv = new ImageView(context);
+            int iconSize = dp(context, 28);
+            FrameLayout.LayoutParams ivParams = new FrameLayout.LayoutParams(iconSize, iconSize);
+            ivParams.gravity = Gravity.CENTER;
+            iv.setLayoutParams(ivParams);
+            iv.setScaleType(ImageView.ScaleType.CENTER_INSIDE);
+            iv.setTag("icon");
+            frame.addView(iv);
+
+            return new VH(frame);
         }
 
         @Override
         public void onBindViewHolder(@NonNull VH holder, int position) {
-            String emoji = emojis[position];
-            holder.tv.setText(emoji);
+            int iconRes = icons[position];
+            holder.iv.setImageResource(iconRes);
 
-            boolean isSelected = emoji.equals(selectedEmoji);
-            holder.tv.setBackgroundResource(
+            boolean isSelected = iconRes == selectedIconRes;
+            holder.frame.setBackgroundResource(
                     isSelected ? R.drawable.bg_emoji_cell_selected : R.drawable.bg_emoji_cell);
-            holder.tv.setScaleX(isSelected ? 1.12f : 1.0f);
-            holder.tv.setScaleY(isSelected ? 1.12f : 1.0f);
+            holder.frame.setScaleX(isSelected ? 1.12f : 1.0f);
+            holder.frame.setScaleY(isSelected ? 1.12f : 1.0f);
 
-            holder.tv.setOnClickListener(v -> {
-                selectedEmoji = emoji;
+            holder.frame.setOnClickListener(v -> {
+                selectedIconRes = iconRes;
                 notifyDataSetChanged();
                 v.animate().scaleX(1.3f).scaleY(1.3f).setDuration(100)
                         .withEndAction(() -> v.animate()
@@ -153,26 +163,28 @@ public class EmojiPickerDialog {
                                 .setDuration(100).start())
                         .start();
                 if (listener != null)
-                    listener.onEmojiSelected(emoji);
+                    listener.onIconSelected(iconRes);
             });
         }
 
         @Override
         public int getItemCount() {
-            return emojis != null ? emojis.length : 0;
+            return icons != null ? icons.length : 0;
         }
 
         static class VH extends RecyclerView.ViewHolder {
-            final TextView tv;
+            final FrameLayout frame;
+            final ImageView iv;
 
             VH(@NonNull View itemView) {
                 super(itemView);
-                tv = (TextView) itemView;
+                frame = (FrameLayout) itemView;
+                iv = itemView.findViewWithTag("icon");
             }
         }
     }
 
-    // Helpers
+    // === Helpers ===
 
     private static TextView createTabView(Context context, String text, boolean active) {
         TextView tv = new TextView(context);

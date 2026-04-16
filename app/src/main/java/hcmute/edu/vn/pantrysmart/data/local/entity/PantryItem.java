@@ -144,7 +144,7 @@ public class PantryItem {
 
     @Override
     public String toString() {
-        return emoji + " " + name + " — " + quantity + " " + unit
+        return name + " \u2014 " + quantity + " " + unit
                 + " (" + storageZone + ")";
     }
 }

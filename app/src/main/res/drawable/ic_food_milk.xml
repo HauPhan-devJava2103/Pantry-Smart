@@ -1,0 +1,18 @@
+<vector xmlns:android="http://schemas.android.com/apk/res/android"
+    android:width="24dp"
+    android:height="24dp"
+    android:viewportWidth="24"
+    android:viewportHeight="24">
+    <!-- Carton body -->
+    <path
+        android:fillColor="#F3F4F6"
+        android:pathData="M6,6H18V21C18,21.55 17.55,22 17,22H7C6.45,22 6,21.55 6,21V6Z"/>
+    <!-- Carton top -->
+    <path
+        android:fillColor="#60A5FA"
+        android:pathData="M6,6L9,2H15L18,6H6Z"/>
+    <!-- Stripe -->
+    <path
+        android:fillColor="#93C5FD"
+        android:pathData="M6,10H18V14H6Z"/>
+</vector>

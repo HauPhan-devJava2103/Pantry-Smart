@@ -37,4 +37,11 @@
     <color name="badge_yellow_text">#D08700</color>
     <color name="accent_orange">#F97316</color>
     <color name="accent_orange_dark">#EA580C</color>
+
+    <!-- ===== Suggest Screen (Dark Mode) ===== -->
+    <color name="suggest_bg_dark">#1A1A2E</color>
+    <color name="suggest_surface">#1E1E32</color>
+    <color name="suggest_accent_orange">#FF6B35</color>
+    <color name="suggest_accent_red">#E23E57</color>
+    <color name="suggest_text_primary">#E2E0FC</color>
 </resources>

@@ -19,7 +19,7 @@ import java.util.List;
 import java.util.concurrent.TimeUnit;
 
 import hcmute.edu.vn.pantrysmart.R;
-import hcmute.edu.vn.pantrysmart.config.FoodEmojiConfig;
+import hcmute.edu.vn.pantrysmart.config.FoodIconConfig;
 import hcmute.edu.vn.pantrysmart.data.local.entity.PantryItem;
 
 /**
@@ -59,7 +59,7 @@ public class PantryItemAdapter extends RecyclerView.Adapter<PantryItemAdapter.Vi
         PantryItem item = items.get(position);
         long now = System.currentTimeMillis();
 
-        // Hình ảnh / Emoji
+        // Hình ảnh / Icon
         if (item.getImagePath() != null && !item.getImagePath().isEmpty()) {
             holder.imgFood.setVisibility(View.VISIBLE);
             holder.layoutEmojiHolder.setVisibility(View.GONE);
@@ -73,7 +73,7 @@ public class PantryItemAdapter extends RecyclerView.Adapter<PantryItemAdapter.Vi
         } else {
             holder.imgFood.setVisibility(View.GONE);
             holder.layoutEmojiHolder.setVisibility(View.VISIBLE);
-            holder.tvEmoji.setText(FoodEmojiConfig.safeEmoji(item.getEmoji()));
+            holder.imgFoodIcon.setImageResource(FoodIconConfig.safeIcon(item.getEmoji()));
         }
 
         // Tên + Số lượng
@@ -140,7 +140,7 @@ public class PantryItemAdapter extends RecyclerView.Adapter<PantryItemAdapter.Vi
     public static class ViewHolder extends RecyclerView.ViewHolder {
         final ImageView imgFood;
         final LinearLayout layoutEmojiHolder;
-        final TextView tvEmoji;
+        final ImageView imgFoodIcon;
         final TextView tvItemName;
         final TextView tvItemQuantity;
         final TextView tvExpiryBadge;
@@ -151,7 +151,7 @@ public class PantryItemAdapter extends RecyclerView.Adapter<PantryItemAdapter.Vi
             super(itemView);
             imgFood           = itemView.findViewById(R.id.imgFood);
             layoutEmojiHolder = itemView.findViewById(R.id.layoutEmojiPlaceholder);
-            tvEmoji           = itemView.findViewById(R.id.tvEmoji);
+            imgFoodIcon       = itemView.findViewById(R.id.imgFoodIcon);
             tvItemName        = itemView.findViewById(R.id.tvItemName);
             tvItemQuantity    = itemView.findViewById(R.id.tvItemQuantity);
             tvExpiryBadge     = itemView.findViewById(R.id.tvExpiryBadge);
