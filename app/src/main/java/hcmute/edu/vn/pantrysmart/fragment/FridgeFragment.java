@@ -92,7 +92,7 @@ public class FridgeFragment extends Fragment {
 
         bindViews(view);
         setupListeners();
-        fabHelper.setupFab(view);
+        fabHelper.setupFab(view, dialogHelper);
         loadItems();
     }
 
