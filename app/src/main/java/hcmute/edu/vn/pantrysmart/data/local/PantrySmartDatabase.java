@@ -29,7 +29,7 @@ import hcmute.edu.vn.pantrysmart.data.local.entity.PantryItem;
                 Budget.class,
                 Expense.class,
                 ExpenseCategory.class
-}, version = 7, exportSchema = false)
+}, version = 8, exportSchema = false)
 public abstract class PantrySmartDatabase extends RoomDatabase {
 
         // DAOs
@@ -119,35 +119,41 @@ public abstract class PantrySmartDatabase extends RoomDatabase {
                         db.execSQL("INSERT INTO budgets (monthly_limit, weekly_limit, month, year) VALUES (2000000, 500000, "
                                         + currentMonth + ", " + currentYear + ")");
 
-                        // Thực phẩm mẫu trong tủ lạnh
+                        // Thực phẩm mẫu trong tủ lạnh — đa dạng để test Gemini AI
                         long now = System.currentTimeMillis();
                         long oneDay = 86400000L;
 
-                        // Các sản phẩm có ảnh thật từ internet (dùng Unsplash để test Glide)
+                        // Ngăn chính (MAIN)
                         db.execSQL("INSERT INTO pantry_items (name, emoji, image_path, quantity, unit, expiry_date, added_date, storage_zone, category, is_active) VALUES "
-                                        + "('Trứng gà', 'ic_food_egg', 'https://images.unsplash.com/photo-1582722872445-44dc5f7e3c8f?w=400', 5, 'quả', " + (now + 7 * oneDay) + ", " + now + ", 'MAIN', 'protein', 1)");
-                        
-                        db.execSQL("INSERT INTO pantry_items (name, emoji, image_path, quantity, unit, expiry_date, added_date, storage_zone, category, is_active) VALUES "
-                                        + "('Thịt heo', 'ic_food_steak', 'https://images.unsplash.com/photo-1627997089456-e9f90f230da3?w=400', 0.5, 'kg', " + (now + 3 * oneDay) + ", " + now + ", 'FREEZER', 'thịt', 1)");
+                                        + "('Gạo', 'ic_food_bread', NULL, 5, 'kg', " + (now + 90 * oneDay) + ", " + now + ", 'MAIN', 'khô', 1)");
 
                         db.execSQL("INSERT INTO pantry_items (name, emoji, image_path, quantity, unit, expiry_date, added_date, storage_zone, category, is_active) VALUES "
-                                        + "('Cà rốt', 'ic_food_carrot', 'https://images.unsplash.com/photo-1598170845058-32b9d6a5da37?w=400', 3, 'củ', " + (now + 5 * oneDay) + ", " + now + ", 'MAIN', 'rau', 1)");
-
-                        // Các sản phẩm thiếu ảnh (sẽ tự động fallback hiển thị icon drawable)
-                        db.execSQL("INSERT INTO pantry_items (name, emoji, image_path, quantity, unit, expiry_date, added_date, storage_zone, category, is_active) VALUES "
-                                        + "('Phô mai', 'ic_food_cheese', NULL, 1, 'hộp', " + (now + 14 * oneDay) + ", " + now + ", 'MAIN', 'sữa', 1)");
+                                        + "('Hành tây', 'ic_food_onion', NULL, 3, 'củ', " + (now + 10 * oneDay) + ", " + now + ", 'MAIN', 'rau', 1)");
 
                         db.execSQL("INSERT INTO pantry_items (name, emoji, image_path, quantity, unit, expiry_date, added_date, storage_zone, category, is_active) VALUES "
-                                        + "('Rau cải', 'ic_food_lettuce', NULL, 1, 'bó', " + (now + 2 * oneDay) + ", " + now + ", 'MAIN', 'rau', 1)");
+                                        + "('Tỏi', 'ic_food_garlic', NULL, 1, 'củ', " + (now + 14 * oneDay) + ", " + now + ", 'MAIN', 'rau', 1)");
 
                         db.execSQL("INSERT INTO pantry_items (name, emoji, image_path, quantity, unit, expiry_date, added_date, storage_zone, category, is_active) VALUES "
-                                        + "('Tôm', 'ic_food_shrimp', NULL, 0.3, 'kg', " + (now + 4 * oneDay) + ", " + now + ", 'FREEZER', 'hải sản', 1)");
+                                        + "('Cà chua', 'ic_food_tomato', NULL, 4, 'quả', " + (now + 5 * oneDay) + ", " + now + ", 'MAIN', 'rau', 1)");
 
                         db.execSQL("INSERT INTO pantry_items (name, emoji, image_path, quantity, unit, expiry_date, added_date, storage_zone, category, is_active) VALUES "
-                                        + "('Mì tôm', 'ic_food_noodle', NULL, 5, 'gói', " + (now + 90 * oneDay) + ", " + now + ", 'MAIN', 'khô', 1)");
+                                        + "('Nước mắm', 'ic_food_sauce', NULL, 1, 'chai', " + (now + 180 * oneDay) + ", " + now + ", 'MAIN', 'gia vị', 1)");
 
                         db.execSQL("INSERT INTO pantry_items (name, emoji, image_path, quantity, unit, expiry_date, added_date, storage_zone, category, is_active) VALUES "
-                                        + "('Sữa tươi', 'ic_food_milk', NULL, 1, 'hộp', " + (now + 1 * oneDay) + ", " + now + ", 'MAIN', 'sữa', 1)");
+                                        + "('Trứng gà', 'ic_food_egg', NULL, 10, 'quả', " + (now + 14 * oneDay) + ", " + now + ", 'MAIN', 'protein', 1)");
+
+                        db.execSQL("INSERT INTO pantry_items (name, emoji, image_path, quantity, unit, expiry_date, added_date, storage_zone, category, is_active) VALUES "
+                                        + "('Đậu phụ', 'ic_food_cheese', NULL, 2, 'miếng', " + (now + 3 * oneDay) + ", " + now + ", 'MAIN', 'protein', 1)");
+
+                        // Ngăn đông (FREEZER)
+                        db.execSQL("INSERT INTO pantry_items (name, emoji, image_path, quantity, unit, expiry_date, added_date, storage_zone, category, is_active) VALUES "
+                                        + "('Thịt bò', 'ic_food_steak', NULL, 0.5, 'kg', " + (now + 30 * oneDay) + ", " + now + ", 'FREEZER', 'thịt', 1)");
+
+                        db.execSQL("INSERT INTO pantry_items (name, emoji, image_path, quantity, unit, expiry_date, added_date, storage_zone, category, is_active) VALUES "
+                                        + "('Cá basa', 'ic_food_fish', NULL, 0.4, 'kg', " + (now + 20 * oneDay) + ", " + now + ", 'FREEZER', 'hải sản', 1)");
+
+                        db.execSQL("INSERT INTO pantry_items (name, emoji, image_path, quantity, unit, expiry_date, added_date, storage_zone, category, is_active) VALUES "
+                                        + "('Tôm sú', 'ic_food_shrimp', NULL, 0.3, 'kg', " + (now + 15 * oneDay) + ", " + now + ", 'FREEZER', 'hải sản', 1)");
                         // Chi tiêu mẫu trong tuần hiện tại (để test biểu đồ & giao dịch gần đây)
                         // budget_id = 1 vì vừa insert budget ở trên
                         long today = System.currentTimeMillis();
