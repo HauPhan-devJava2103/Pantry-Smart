@@ -155,6 +155,17 @@
                 android:focusable="true">
 
                 <ImageView
+                    android:id="@+id/btnClearSearch"
+                    android:layout_width="28dp"
+                    android:layout_height="28dp"
+                    android:padding="6dp"
+                    android:src="@android:drawable/ic_menu_close_clear_cancel"
+                    android:visibility="gone"
+                    app:tint="@color/white_60"
+                    android:clickable="true"
+                    android:focusable="true" />
+
+                <ImageView
                     android:layout_width="16dp"
                     android:layout_height="16dp"
                     android:src="@drawable/ic_search"
@@ -162,13 +173,20 @@
                     android:contentDescription="Tìm kiếm"
                     app:tint="@color/white_60" />
 
-                <TextView
-                    android:layout_width="wrap_content"
-                    android:layout_height="wrap_content"
-                    android:text="Tìm thực phẩm..."
+                <EditText
+                    android:id="@+id/etSearch"
+                    android:layout_width="match_parent"
+                    android:layout_height="match_parent"
+                    android:background="@android:color/transparent"
+                    android:hint="Tìm thực phẩm..."
+                    android:textColorHint="#99FFFFFF"
+                    android:textColor="@color/white"
                     android:textSize="13sp"
-                    android:textColor="@color/white_60"
-                    android:fontFamily="sans-serif" />
+                    android:fontFamily="sans-serif"
+                    android:inputType="text"
+                    android:imeOptions="actionSearch"
+                    android:importantForAutofill="no"
+                    android:paddingTop="2dp" />
             </LinearLayout>
 
             <!-- Expiry badge -->

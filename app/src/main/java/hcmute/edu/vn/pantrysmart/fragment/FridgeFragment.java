@@ -1,26 +1,38 @@
 package hcmute.edu.vn.pantrysmart.fragment;
 
+import android.content.Intent;
+import android.graphics.Bitmap;
 import android.graphics.Color;
 import android.os.Bundle;
+import android.provider.MediaStore;
+import android.util.Base64;
+import android.util.Log;
 import android.view.Gravity;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
+import android.widget.EditText;
 import android.widget.FrameLayout;
 import android.widget.ImageView;
 import android.widget.LinearLayout;
 import android.widget.TextView;
 import android.widget.Toast;
 
+import androidx.activity.result.ActivityResultLauncher;
+import androidx.activity.result.contract.ActivityResultContracts;
 import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
 import androidx.fragment.app.Fragment;
+import androidx.recyclerview.widget.LinearLayoutManager;
+import androidx.recyclerview.widget.RecyclerView;
 
+import java.io.ByteArrayOutputStream;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.concurrent.TimeUnit;
 
 import hcmute.edu.vn.pantrysmart.R;
+import hcmute.edu.vn.pantrysmart.adapter.PantryItemAdapter;
 import hcmute.edu.vn.pantrysmart.config.FoodIconConfig;
 import hcmute.edu.vn.pantrysmart.data.local.PantrySmartDatabase;
 import hcmute.edu.vn.pantrysmart.data.local.dao.PantryItemDao;
@@ -71,6 +83,10 @@ public class FridgeFragment extends Fragment {
     private FridgeDialogHelper dialogHelper;
     private FridgeFabHelper fabHelper;
 
+    private EditText etSearch;
+    private View layoutSearchResults;
+    private RecyclerView rvSearchResults;
+
     @Nullable
     @Override
     public View onCreateView(@NonNull LayoutInflater inflater,
@@ -94,6 +110,19 @@ public class FridgeFragment extends Fragment {
         setupListeners();
         fabHelper.setupFab(view);
         loadItems();
+        setupSearch(view);
+        requireActivity().getOnBackPressedDispatcher().addCallback(getViewLifecycleOwner(),
+                new androidx.activity.OnBackPressedCallback(true) {
+                    @Override
+                    public void handleOnBackPressed() {
+                        if (layoutSearchResults.getVisibility() == View.VISIBLE) {
+                            etSearch.setText(""); // Đóng tìm kiếm
+                        } else {
+                            setEnabled(false);
+                            requireActivity().onBackPressed();
+                        }
+                    }
+                });
     }
 
     @Override
@@ -130,6 +159,162 @@ public class FridgeFragment extends Fragment {
         btnCloseMain = view.findViewById(R.id.btnCloseMain);
         btnViewAllFreezer = view.findViewById(R.id.btnViewAllFreezer);
         btnViewAllMain = view.findViewById(R.id.btnViewAllMain);
+        if (getActivity() != null) {
+            etSearch = getActivity().findViewById(R.id.etSearch);
+        }
+        layoutSearchResults = view.findViewById(R.id.layoutSearchResults);
+        rvSearchResults = view.findViewById(R.id.rvSearchResults);
+        View btnClearSearch = getActivity() != null ? getActivity().findViewById(R.id.btnClearSearch) : null;
+        if (btnClearSearch != null) {
+            btnClearSearch.setOnClickListener(v -> {
+                if (etSearch != null) {
+                    etSearch.setText(""); // Xóa chữ
+                    etSearch.clearFocus();
+                    // Ẩn bàn phím
+                    android.view.inputmethod.InputMethodManager imm = (android.view.inputmethod.InputMethodManager)
+                            requireContext().getSystemService(android.content.Context.INPUT_METHOD_SERVICE);
+                    imm.hideSoftInputFromWindow(etSearch.getWindowToken(), 0);
+                }
+            });
+        }
+    }
+
+    private void setupSearch(View view) {
+        if (etSearch == null) return;
+
+        etSearch.addTextChangedListener(new android.text.TextWatcher() {
+            @Override
+            public void beforeTextChanged(CharSequence s, int start, int count, int after) {}
+
+            @Override
+            public void onTextChanged(CharSequence s, int start, int before, int count) {
+                String query = s.toString().trim().toLowerCase();
+
+                // Tìm nút xóa để ẩn/hiện
+                View btnClear = getActivity() != null ? getActivity().findViewById(R.id.btnClearSearch) : null;
+                if (btnClear != null) {
+                    btnClear.setVisibility(query.isEmpty() ? View.GONE : View.VISIBLE);
+                }
+
+                if (query.isEmpty()) {
+                    layoutSearchResults.setVisibility(View.GONE);
+                } else {
+                    layoutSearchResults.setVisibility(View.VISIBLE);
+                    performSearch(query);
+                }
+            }
+
+            @Override
+            public void afterTextChanged(android.text.Editable s) {}
+        });
+
+        // 1. Khi nhấn vào vùng chứa (searchBar), tập trung vào ô nhập liệu
+        View searchBar = null;
+        if (getActivity() != null) {
+            searchBar = getActivity().findViewById(R.id.searchBar);
+        }
+
+        if (searchBar != null) {
+            searchBar.setOnClickListener(v -> {
+                etSearch.requestFocus();
+                android.view.inputmethod.InputMethodManager imm = (android.view.inputmethod.InputMethodManager)
+                        requireContext().getSystemService(android.content.Context.INPUT_METHOD_SERVICE);
+                imm.showSoftInput(etSearch, android.view.inputmethod.InputMethodManager.SHOW_IMPLICIT);
+            });
+        }
+
+        // 2. Xử lý nút "Tìm" trên bàn phím
+        etSearch.setOnEditorActionListener((v, actionId, event) -> {
+            if (actionId == android.view.inputmethod.EditorInfo.IME_ACTION_SEARCH) {
+                // Thu nhỏ bàn phím khi nhấn nút Tìm
+                android.view.inputmethod.InputMethodManager imm = (android.view.inputmethod.InputMethodManager)
+                        requireContext().getSystemService(android.content.Context.INPUT_METHOD_SERVICE);
+                imm.hideSoftInputFromWindow(etSearch.getWindowToken(), 0);
+                return true;
+            }
+            return false;
+        });
+    }
+
+    private void performSearch(String query) {
+        List<PantryItem> searchResults = new ArrayList<>();
+
+        // 1. Dò trong Ngăn Đông
+        for (PantryItem item : cachedFreezerItems) {
+            if (item.getName().toLowerCase().contains(query)) {
+                searchResults.add(item);
+            }
+        }
+
+        // 2. Dò trong Ngăn Chính
+        for (PantryItem item : cachedMainItems) {
+            if (item.getName().toLowerCase().contains(query)) {
+                searchResults.add(item);
+            }
+        }
+
+        // 3. Cập nhật số lượng kết quả lên giao diện
+        TextView tvSearchCount = layoutSearchResults.findViewById(R.id.tvSearchCount);
+        if (tvSearchCount != null) {
+            tvSearchCount.setText("Tìm thấy " + searchResults.size() + " thực phẩm");
+        }
+
+        // 4. Hiển thị danh sách (Chúng ta sẽ thiết lập Adapter ở bước sau)
+        displaySearchResults(searchResults);
+    }
+
+    private void displaySearchResults(List<PantryItem> results) {
+        // 1. Thiết lập LayoutManager nếu chưa có
+        if (rvSearchResults.getLayoutManager() == null) {
+            rvSearchResults.setLayoutManager(new androidx.recyclerview.widget.LinearLayoutManager(requireContext()));
+        }
+
+        // 2. Khởi tạo hoặc cập nhật Adapter
+        PantryItemAdapter adapter = new PantryItemAdapter(requireContext(), results);
+        rvSearchResults.setAdapter(adapter);
+
+        // 3. Xử lý khi nhấn vào một món đồ trong kết quả tìm kiếm
+        adapter.setOnItemActionListener(new PantryItemAdapter.OnItemActionListener() {
+            @Override
+            public void onEdit(PantryItem item, int position) {
+                // Tái sử dụng Dialog chỉnh sửa mà bạn đã làm ở nhánh trước
+                dialogHelper.showEditItemBottomSheet(item, position, adapter, null);
+            }
+
+            @Override
+            public void onDelete(PantryItem item, int position) {
+                // Hiện thông báo xác nhận trước khi xóa
+                new com.google.android.material.dialog.MaterialAlertDialogBuilder(requireContext())
+                        .setTitle("Xác nhận xóa")
+                        .setMessage("Bạn có chắc muốn xóa '" + item.getName() + "' khỏi tủ lạnh?")
+                        .setPositiveButton("Xóa", (dialog, which) -> {
+                            // Thực hiện xóa trong Database ở luồng phụ
+                            PantrySmartDatabase.databaseWriteExecutor.execute(() -> {
+                                pantryDao.delete(item);
+
+                                if (getActivity() != null) {
+                                    getActivity().runOnUiThread(() -> {
+                                        // 1. Xóa món đồ khỏi danh sách tìm kiếm hiện tại
+                                        adapter.removeItem(position);
+
+                                        // 2. Cập nhật lại số lượng kết quả trên header
+                                        TextView tvCount = layoutSearchResults.findViewById(R.id.tvSearchCount);
+                                        if (tvCount != null) {
+                                            tvCount.setText("Tìm thấy " + adapter.getItemCount() + " thực phẩm");
+                                        }
+
+                                        // 3. Quan trọng: Load lại dữ liệu tủ lạnh (Stats + Shelves) ở phía dưới
+                                        loadItems();
+
+                                        Toast.makeText(requireContext(), "Đã xóa thành công!", Toast.LENGTH_SHORT).show();
+                                    });
+                                }
+                            });
+                        })
+                        .setNegativeButton("Hủy", null)
+                        .show();
+            }
+        });
     }
 
     private void setupListeners() {
