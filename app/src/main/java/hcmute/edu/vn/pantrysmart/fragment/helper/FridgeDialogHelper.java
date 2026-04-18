@@ -327,6 +327,66 @@ public class FridgeDialogHelper {
         editDialog.show();
     }
 
+    /**
+     * Hiển thị BottomSheet với dữ liệu được điền sẵn từ AI.*/
+    public void showAIAddItemBottomSheet(PantryItem aiItem) {
+        if (fragment.getContext() == null) return;
+
+        BottomSheetDialog dialog = new BottomSheetDialog(fragment.requireContext());
+        View sheetView = fragment.getLayoutInflater().inflate(R.layout.bottom_sheet_edit_item, null);
+        dialog.setContentView(sheetView);
+
+        // 1. Tham chiếu các View
+        TextView tvTitle = sheetView.findViewById(R.id.tvEditSheetTitle);
+        if (tvTitle != null) tvTitle.setText("🪄 Xác nhận thực phẩm AI");
+
+        EditText etName = sheetView.findViewById(R.id.etItemName);
+        EditText etQuantity = sheetView.findViewById(R.id.etItemQuantity);
+        EditText etUnit = sheetView.findViewById(R.id.etItemUnit);
+        ImageView imgIcon = sheetView.findViewById(R.id.imgSelectedIcon);
+        TextView btnSave = sheetView.findViewById(R.id.btnSaveEdit);
+        btnSave.setText("Xác nhận và Lưu");
+
+        // 2. Điền dữ liệu AI vào Form
+        etName.setText(aiItem.getName());
+        etQuantity.setText(String.valueOf(aiItem.getQuantity()));
+        etUnit.setText(aiItem.getUnit());
+        imgIcon.setImageResource(FoodIconConfig.safeIcon(aiItem.getEmoji()));
+
+        // Logic chọn Danh mục (Chips)
+        TextView[] chips = {
+                sheetView.findViewById(R.id.chipDairy), sheetView.findViewById(R.id.chipVegetable),
+                sheetView.findViewById(R.id.chipFruit), sheetView.findViewById(R.id.chipMeat),
+                sheetView.findViewById(R.id.chipSeafood), sheetView.findViewById(R.id.chipDrink),
+                sheetView.findViewById(R.id.chipSpice), sheetView.findViewById(R.id.chipOther)
+        };
+        String[] keys = {"DAIRY", "VEGETABLE", "FRUIT", "MEAT", "SEAFOOD", "DRINK", "SPICE", "OTHER"};
+
+        // Highlight danh mục AI gợi ý
+        highlightCategoryChip(chips, keys, aiItem.getCategory());
+
+        // 3. Xử lý nút Lưu
+        btnSave.setOnClickListener(v -> {
+            aiItem.setName(etName.getText().toString().trim());
+            aiItem.setQuantity(Double.parseDouble(etQuantity.getText().toString().trim()));
+            aiItem.setUnit(etUnit.getText().toString().trim());
+            aiItem.setStorageZone("MAIN"); // Mặc định ngăn chính
+
+            PantrySmartDatabase.databaseWriteExecutor.execute(() -> {
+                pantryDao.insert(aiItem);
+                if (fragment.getActivity() != null) {
+                    fragment.getActivity().runOnUiThread(() -> {
+                        onDataChanged.run(); // Load lại tủ lạnh
+                        Toast.makeText(fragment.requireContext(), "Đã thêm: " + aiItem.getName(), Toast.LENGTH_SHORT).show();
+                        dialog.dismiss();
+                    });
+                }
+            });
+        });
+
+        dialog.show();
+    }
+
     /** Highlight chip active và reset các chip khác. */
     private void highlightCategoryChip(TextView[] chips, String[] keys, String activeKey) {
         for (int i = 0; i < chips.length; i++) {
