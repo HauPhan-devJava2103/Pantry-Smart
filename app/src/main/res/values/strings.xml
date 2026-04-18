@@ -38,4 +38,13 @@
     <string name="suggest_loading_sub">AI đang phân tích nguyên liệu trong tủ lạnh</string>
     <string name="suggest_empty">Thêm thực phẩm vào tủ lạnh\nđể nhận gợi ý món ăn!</string>
     <string name="suggest_retry">Thử lại</string>
+    <!-- Notification hết hạn -->
+    <string name="notif_title_both">%1$d đã hết hạn, %2$d sắp hết hạn!</string>
+    <string name="notif_title_expired">%d thực phẩm đã hết hạn!</string>
+    <string name="notif_title_expiring">%d thực phẩm sắp hết hạn!</string>
+    <string name="notif_summary">PantrySmart — Kiểm tra tủ lạnh</string>
+    <string name="notif_content">%d thực phẩm cần chú ý — nhấn để xem</string>
+    <string name="notif_expired">[HẾT HẠN] %1$s (%2$s)</string>
+    <string name="notif_today">[HÔM NAY] %1$s (%2$s)</string>
+    <string name="notif_days_left">[Còn %1$d ngày] %2$s (%3$s)</string>
 </resources>

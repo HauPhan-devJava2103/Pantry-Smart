@@ -67,4 +67,6 @@ dependencies {
     implementation("androidx.viewpager2:viewpager2:1.1.0")
     // Lottie animation cho loading
     implementation("com.airbnb.android:lottie:6.6.2")
+    // WorkManager cho background task
+    implementation("androidx.work:work-runtime:2.9.1")
 }
