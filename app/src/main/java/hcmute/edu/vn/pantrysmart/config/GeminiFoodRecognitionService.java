@@ -14,7 +14,7 @@ import hcmute.edu.vn.pantrysmart.data.local.entity.PantryItem;
 public class GeminiFoodRecognitionService {
     private static final String TAG = "GeminiFoodAI";
 
-    private static final String API_KEY = "AIzaSyA00O9XCUyAJo-oOFGz7ofDK_8ZKgxI9iM";
+    private static final String API_KEY = "YOUR_API_KEY";
 
     private static final String BASE_URL = "https://generativelanguage.googleapis.com/v1beta/models/gemini-2.5-flash:generateContent?key=";
 
