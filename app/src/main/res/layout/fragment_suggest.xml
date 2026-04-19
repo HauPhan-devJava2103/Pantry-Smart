@@ -1,6 +1,7 @@
 <?xml version="1.0" encoding="utf-8"?>
 <!-- Fragment "Gợi ý" — Swipeable recipe suggestions powered by Gemini AI -->
 <FrameLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
     android:layout_width="match_parent"
     android:layout_height="match_parent">
 
@@ -18,7 +19,7 @@
         android:layout_height="match_parent"
         android:visibility="gone" />
 
-    <!-- Loading State -->
+    <!-- Loading State — Premium cooking animation -->
     <LinearLayout
         android:id="@+id/loadingOverlay"
         android:layout_width="match_parent"
@@ -28,28 +29,47 @@
         android:orientation="vertical"
         android:visibility="visible">
 
-        <ProgressBar
-            android:layout_width="48dp"
-            android:layout_height="48dp"
-            android:indeterminateTint="#FFFFFF" />
+        <!-- Lottie Animation nấu ăn -->
+        <com.airbnb.lottie.LottieAnimationView
+            android:id="@+id/ivLoadingIcon"
+            android:layout_width="250dp"
+            android:layout_height="250dp"
+            android:scaleType="fitCenter"
+            app:lottie_rawRes="@raw/cooking"
+            app:lottie_autoPlay="true"
+            app:lottie_loop="true" />
 
+        <!-- Thanh progress ngang mềm mại -->
+        <ProgressBar
+            android:layout_width="200dp"
+            android:layout_height="4dp"
+            android:layout_marginTop="24dp"
+            android:indeterminate="true"
+            android:indeterminateTint="#FFFFFF"
+            style="@style/Widget.AppCompat.ProgressBar.Horizontal" />
+
+        <!-- Text chính -->
         <TextView
+            android:id="@+id/tvLoadingTitle"
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
             android:layout_marginTop="20dp"
             android:fontFamily="sans-serif-medium"
             android:text="@string/suggest_loading"
             android:textColor="#FFFFFF"
-            android:textSize="16sp" />
+            android:textSize="18sp" />
 
+        <!-- Text phụ thay đổi (step indicator) -->
         <TextView
+            android:id="@+id/tvLoadingStep"
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
-            android:layout_marginTop="6dp"
+            android:layout_marginTop="8dp"
             android:fontFamily="sans-serif"
             android:text="@string/suggest_loading_sub"
-            android:textColor="#80FFFFFF"
+            android:textColor="#B0FFFFFF"
             android:textSize="13sp" />
+
     </LinearLayout>
 
     <!-- Error / Empty State -->
