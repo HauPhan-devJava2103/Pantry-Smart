@@ -28,12 +28,23 @@ public class FridgeFabHelper {
 
     private boolean fabMenuOpen = false;
 
+    private OnFabActionListener listener;
+
+    public interface OnFabActionListener {
+        void onAIAction();
+    }
+
+    public void setOnFabActionListener(OnFabActionListener listener) {
+        this.listener = listener;
+    }
+
     public FridgeFabHelper(Fragment fragment) {
         this.fragment = fragment;
     }
 
     /** Bind views và gán click listener cho FAB menu. */
-    public void setupFab(View root) {
+    // Sửa dòng này:
+    public void setupFab(View root, FridgeDialogHelper dialogHelper) {
         fabMain = root.findViewById(R.id.fabMain);
         fabMainIcon = root.findViewById(R.id.fabMainIcon);
         fabMenuItems = root.findViewById(R.id.fabMenuItems);
@@ -47,8 +58,7 @@ public class FridgeFabHelper {
 
         fabItemAI.setOnClickListener(v -> {
             toggleFabMenu();
-            Toast.makeText(fragment.requireContext(),
-                    "Nhận diện AI - Sắp ra mắt", Toast.LENGTH_SHORT).show();
+            if (listener != null) listener.onAIAction();
         });
 
         fabItemScan.setOnClickListener(v -> {
@@ -59,8 +69,9 @@ public class FridgeFabHelper {
 
         fabItemManual.setOnClickListener(v -> {
             toggleFabMenu();
-            Toast.makeText(fragment.requireContext(),
-                    "Thêm thủ công", Toast.LENGTH_SHORT).show();
+            if (dialogHelper != null) {
+                dialogHelper.showAddItemBottomSheet();
+            }
         });
     }
 
