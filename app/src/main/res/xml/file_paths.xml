@@ -1,0 +1,8 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!-- FileProvider paths — cho phép chia sẻ file ảnh camera tạm thời -->
+<paths xmlns:android="http://schemas.android.com/apk/res/android">
+    <!-- Thư mục cache nội bộ để lưu ảnh chụp tạm -->
+    <cache-path
+        name="receipt_images"
+        path="receipt_images/" />
+</paths>
