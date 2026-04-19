@@ -28,6 +28,16 @@ public class FridgeFabHelper {
 
     private boolean fabMenuOpen = false;
 
+    private OnFabActionListener listener;
+
+    public interface OnFabActionListener {
+        void onAIAction();
+    }
+
+    public void setOnFabActionListener(OnFabActionListener listener) {
+        this.listener = listener;
+    }
+
     public FridgeFabHelper(Fragment fragment) {
         this.fragment = fragment;
     }
@@ -48,8 +58,7 @@ public class FridgeFabHelper {
 
         fabItemAI.setOnClickListener(v -> {
             toggleFabMenu();
-            Toast.makeText(fragment.requireContext(),
-                    "Nhận diện AI - Sắp ra mắt", Toast.LENGTH_SHORT).show();
+            if (listener != null) listener.onAIAction();
         });
 
         fabItemScan.setOnClickListener(v -> {

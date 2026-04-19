@@ -16,6 +16,16 @@ import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
 import androidx.fragment.app.Fragment;
 
+import androidx.activity.result.ActivityResultLauncher;
+import androidx.activity.result.contract.ActivityResultContracts;
+import android.content.Intent;
+import android.provider.MediaStore;
+
+import android.util.Base64;
+import java.io.ByteArrayOutputStream;
+import android.graphics.Bitmap;
+import android.app.ProgressDialog;
+
 import java.util.ArrayList;
 import java.util.List;
 import java.util.concurrent.TimeUnit;
@@ -71,6 +81,53 @@ public class FridgeFragment extends Fragment {
     private FridgeDialogHelper dialogHelper;
     private FridgeFabHelper fabHelper;
 
+    private final ActivityResultLauncher<Intent> cameraLauncher = registerForActivityResult(
+            new ActivityResultContracts.StartActivityForResult(),
+            result -> {
+                if (result.getResultCode() == android.app.Activity.RESULT_OK && result.getData() != null) {
+                    // Lấy ảnh từ Camera trả về
+                    Bundle extras = result.getData().getExtras();
+                    if (extras != null) {
+                        android.graphics.Bitmap photo = (android.graphics.Bitmap) extras.get("data");
+                        if (photo != null) {
+                            String base64Image = encodeImage(photo);
+
+                            ProgressDialog progressDialog = new ProgressDialog(requireContext());
+                            progressDialog.setMessage("AI đang phân tích ảnh... Vui lòng đợi");
+                            progressDialog.setCancelable(false); // Không cho nhấn ra ngoài để tắt
+                            progressDialog.show();
+
+                            // 1. Hiển thị thông báo đang xử lý
+                            Toast.makeText(requireContext(), "AI đang phân tích ảnh...", Toast.LENGTH_LONG).show();
+
+                            // 2. Gọi Service AI để nhận diện
+                            hcmute.edu.vn.pantrysmart.config.GeminiFoodRecognitionService.recognizeFood(
+                                    base64Image,
+                                    new hcmute.edu.vn.pantrysmart.config.GeminiFoodRecognitionService.RecognitionCallback() {
+                                        @Override
+                                        public void onSuccess(hcmute.edu.vn.pantrysmart.data.local.entity.PantryItem item) {
+                                            // 3. Khi AI trả về kết quả, hiển thị BottomSheet (phải chạy trên UI Thread)
+                                            getActivity().runOnUiThread(() -> {
+                                                if (progressDialog.isShowing()) progressDialog.dismiss();
+                                                dialogHelper.showAIAddItemBottomSheet(item);
+                                            });
+                                        }
+
+                                        @Override
+                                        public void onError(String errorMessage) {
+                                            getActivity().runOnUiThread(() -> {
+                                                if (progressDialog.isShowing()) progressDialog.dismiss();
+                                                Toast.makeText(requireContext(), errorMessage, Toast.LENGTH_SHORT).show();
+                                            });
+                                        }
+                                    }
+                            );
+                        }
+                    }
+                }
+            }
+    );
+
     @Nullable
     @Override
     public View onCreateView(@NonNull LayoutInflater inflater,
@@ -92,7 +149,13 @@ public class FridgeFragment extends Fragment {
 
         bindViews(view);
         setupListeners();
-        fabHelper.setupFab(view, dialogHelper);
+        fabHelper.setupFab(view);
+        fabHelper.setOnFabActionListener(() -> {
+            // Tạo Intent để yêu cầu hệ thống mở ứng dụng Camera
+            Intent intent = new Intent(MediaStore.ACTION_IMAGE_CAPTURE);
+            // Kích hoạt Camera thông qua "cổng" cameraLauncher đã khai báo
+            cameraLauncher.launch(intent);
+        });
         loadItems();
     }
 
@@ -408,5 +471,12 @@ public class FridgeFragment extends Fragment {
     private String truncate(String text, int maxLen) {
         if (text == null) return "";
         return text.length() > maxLen ? text.substring(0, maxLen) + "…" : text;
+    }
+
+    private String encodeImage(Bitmap bm) {
+        ByteArrayOutputStream baos = new ByteArrayOutputStream();
+        bm.compress(Bitmap.CompressFormat.JPEG, 10, baos);
+        byte[] b = baos.toByteArray();
+        return Base64.encodeToString(b, Base64.NO_WRAP);
     }
 }
