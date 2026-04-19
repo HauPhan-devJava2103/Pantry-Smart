@@ -17,7 +17,10 @@ import java.util.List;
 
 import hcmute.edu.vn.pantrysmart.R;
 import hcmute.edu.vn.pantrysmart.data.local.PantrySmartDatabase;
+import hcmute.edu.vn.pantrysmart.data.local.dao.CookingLogDao;
 import hcmute.edu.vn.pantrysmart.data.local.dao.PantryItemDao;
+import hcmute.edu.vn.pantrysmart.data.local.entity.CookingLog;
+import hcmute.edu.vn.pantrysmart.data.local.entity.CookingLogItem;
 import hcmute.edu.vn.pantrysmart.data.local.entity.PantryItem;
 
 /**
@@ -35,7 +38,8 @@ public class CookingDialogHelper {
 
     // Hiển thị dialog trừ nguyên liệu.
     public static void showDeductDialog(Context context, String dishName,
-            String[] ingredients, Runnable onComplete) {
+            String[] ingredients, String imageUrl, String recipeJson,
+            Runnable onComplete) {
         Dialog dialog = new Dialog(context);
         dialog.requestWindowFeature(Window.FEATURE_NO_TITLE);
         dialog.setContentView(R.layout.dialog_deduct_ingredients);
@@ -97,7 +101,7 @@ public class CookingDialogHelper {
 
         // Nút Xác nhận — validate rồi mới trừ
         dialog.findViewById(R.id.btnDialogConfirm).setOnClickListener(v -> {
-            validateAndDeduct(context, dialog, dishName, rows, onComplete);
+            validateAndDeduct(context, dialog, dishName, imageUrl, recipeJson, rows, onComplete);
         });
 
         dialog.show();
@@ -106,8 +110,8 @@ public class CookingDialogHelper {
     // Kiểm tra số lượng nhập có vượt quá tủ lạnh không.
     // Nếu vượt: cảnh báo, nếu hợp lệ: trừ luôn.
     private static void validateAndDeduct(Context context, Dialog dialog,
-            String dishName, List<DeductRow> rows,
-            Runnable onComplete) {
+            String dishName, String imageUrl, String recipeJson,
+            List<DeductRow> rows, Runnable onComplete) {
         PantrySmartDatabase db = PantrySmartDatabase.getInstance(context);
         PantryItemDao dao = db.pantryItemDao();
 
@@ -154,7 +158,7 @@ public class CookingDialogHelper {
                                     "\n\nBạn vẫn muốn trừ? (phần vượt sẽ bị xoá khỏi tủ)")
                             .setPositiveButton("Vẫn trừ", (d, w) -> {
                                 dialog.dismiss();
-                                deductIngredients(context, dishName, rows, onComplete);
+                                deductIngredients(context, dishName, imageUrl, recipeJson, rows, onComplete);
                             })
                             .setNegativeButton("Sửa lại", null)
                             .show();
@@ -162,7 +166,7 @@ public class CookingDialogHelper {
             } else {
                 mainHandler.post(() -> {
                     dialog.dismiss();
-                    deductIngredients(context, dishName, rows, onComplete);
+                    deductIngredients(context, dishName, imageUrl, recipeJson, rows, onComplete);
                 });
             }
         });
@@ -191,12 +195,14 @@ public class CookingDialogHelper {
 
     // Thực hiện trừ nguyên liệu trong DB theo số lượng người dùng đã chỉnh.
     private static void deductIngredients(Context context, String dishName,
+            String imageUrl, String recipeJson,
             List<DeductRow> rows, Runnable onComplete) {
         PantrySmartDatabase db = PantrySmartDatabase.getInstance(context);
         PantryItemDao dao = db.pantryItemDao();
 
         PantrySmartDatabase.databaseWriteExecutor.execute(() -> {
             int deducted = 0;
+            List<DeductedInfo> deductedItems = new ArrayList<>();
 
             for (DeductRow row : rows) {
                 // Đọc số lượng người dùng đã chỉnh trong EditText
@@ -225,7 +231,17 @@ public class CookingDialogHelper {
                         dao.update(item);
                     }
                     deducted++;
+
+                    // Ghi lại thông tin đã trừ
+                    deductedItems.add(new DeductedInfo(
+                            row.ingredientName, amount, row.unit,
+                            item.getId()));
                 }
+            }
+
+            // LƯU LỊCH SỬ NẤU ĂN
+            if (deducted > 0) {
+                saveCookingLog(db, dishName, imageUrl, recipeJson, deducted, deductedItems);
             }
 
             final int count = deducted;
@@ -241,6 +257,49 @@ public class CookingDialogHelper {
                 }
             });
         });
+    }
+
+    // Dữ liệu tạm lưu nguyên liệu đã trừ
+    private static class DeductedInfo {
+        String name;
+        double quantity;
+        String unit;
+        int pantryItemId;
+
+        DeductedInfo(String name, double quantity, String unit, int pantryItemId) {
+            this.name = name;
+            this.quantity = quantity;
+            this.unit = unit;
+            this.pantryItemId = pantryItemId;
+        }
+    }
+
+    // Lưu lịch sử nấu ăn vào database
+    private static void saveCookingLog(PantrySmartDatabase db,
+            String dishName, String imageUrl, String recipeJson,
+            int deductedCount, List<DeductedInfo> deductedItems) {
+        CookingLogDao logDao = db.cookingLogDao();
+
+        // Tạo log chính
+        CookingLog log = new CookingLog();
+        log.setDishName(dishName);
+        log.setImageUrl(imageUrl);
+        log.setRecipeJson(recipeJson);
+        log.setIngredientsDeducted(deductedCount);
+        long logId = logDao.insertLog(log);
+
+        // Tạo chi tiết nguyên liệu
+        List<CookingLogItem> logItems = new ArrayList<>();
+        for (DeductedInfo info : deductedItems) {
+            CookingLogItem logItem = new CookingLogItem();
+            logItem.setCookingLogId((int) logId);
+            logItem.setPantryItemId(info.pantryItemId);
+            logItem.setItemName(info.name);
+            logItem.setQuantityUsed(info.quantity);
+            logItem.setUnit(info.unit);
+            logItems.add(logItem);
+        }
+        logDao.insertLogItems(logItems);
     }
 
     /**

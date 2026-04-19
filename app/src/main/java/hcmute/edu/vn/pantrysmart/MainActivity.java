@@ -86,7 +86,7 @@ public class MainActivity extends AppCompatActivity {
         findViewById(R.id.btnNotification)
                 .setOnClickListener(v -> Toast.makeText(this, "Thông báo", Toast.LENGTH_SHORT).show());
         findViewById(R.id.btnProfile)
-                .setOnClickListener(v -> Toast.makeText(this, "Tài khoản", Toast.LENGTH_SHORT).show());
+                .setOnClickListener(v -> showProfileMenu());
 
         // Bottom Navigation
         findViewById(R.id.navTabFridge).setOnClickListener(v -> switchTab(0));
@@ -137,6 +137,27 @@ public class MainActivity extends AppCompatActivity {
         }
 
         return target.getTimeInMillis() - now.getTimeInMillis();
+    }
+
+    // Menu tài khoản — BottomSheet hiện đại
+    private void showProfileMenu() {
+        com.google.android.material.bottomsheet.BottomSheetDialog sheet =
+                new com.google.android.material.bottomsheet.BottomSheetDialog(this);
+        View sheetView = getLayoutInflater().inflate(R.layout.bottom_sheet_profile, null);
+        sheet.setContentView(sheetView);
+
+        // Background trong suốt để thấy bo góc
+        if (sheet.getWindow() != null) {
+            sheet.getWindow().setBackgroundDrawableResource(android.R.color.transparent);
+        }
+
+        // Lịch sử nấu ăn
+        sheetView.findViewById(R.id.menuCookingHistory).setOnClickListener(v -> {
+            sheet.dismiss();
+            startActivity(new android.content.Intent(this, CookingHistoryActivity.class));
+        });
+
+        sheet.show();
     }
 
     /**

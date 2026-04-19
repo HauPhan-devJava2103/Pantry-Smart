@@ -29,7 +29,7 @@ import hcmute.edu.vn.pantrysmart.data.local.entity.PantryItem;
                 Budget.class,
                 Expense.class,
                 ExpenseCategory.class
-}, version = 8, exportSchema = false)
+}, version = 9, exportSchema = false)
 public abstract class PantrySmartDatabase extends RoomDatabase {
 
         // DAOs

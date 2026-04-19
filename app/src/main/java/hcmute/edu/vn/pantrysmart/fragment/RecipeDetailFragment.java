@@ -43,6 +43,7 @@ public class RecipeDetailFragment extends Fragment {
     private static final String ARG_IMAGE_SEARCH = "image_search";
 
     private RecipeSuggestion recipe;
+    private String currentImageUrl;
 
     public static RecipeDetailFragment newInstance(RecipeSuggestion recipe) {
         RecipeDetailFragment f = new RecipeDetailFragment();
@@ -142,10 +143,18 @@ public class RecipeDetailFragment extends Fragment {
 
         // Bottom buttons
         final String[] dialogIngredients = ingredients;
+        final String[] dialogSteps = steps;
+
         view.findViewById(R.id.btnFinishCooking).setOnClickListener(v -> {
             if (dialogIngredients != null && dialogIngredients.length > 0) {
+                // Build recipe JSON để lưu lịch sử
+                String recipeJson = buildRecipeJson(dishName, description,
+                        cookingTime, difficulty, imageSearch,
+                        dialogIngredients, dialogSteps);
+
                 CookingDialogHelper.showDeductDialog(
                         requireContext(), dishName, dialogIngredients,
+                        currentImageUrl, recipeJson,
                         () -> requireActivity().getSupportFragmentManager().popBackStack());
             } else {
                 Toast.makeText(requireContext(),
@@ -165,6 +174,7 @@ public class RecipeDetailFragment extends Fragment {
                     ? imageSearch
                     : dishName;
             String imageUrl = PexelsImageService.searchFoodImage(query);
+            currentImageUrl = imageUrl;
 
             if (isAdded() && imageUrl != null) {
                 requireActivity().runOnUiThread(() -> Glide.with(requireContext())
@@ -195,5 +205,35 @@ public class RecipeDetailFragment extends Fragment {
                 }
             }
         });
+    }
+
+    // Build JSON chứa thông tin recipe để lưu vào lịch sử
+    private String buildRecipeJson(String dishName, String description,
+            String cookingTime, String difficulty, String imageSearch,
+            String[] ingredients, String[] steps) {
+        try {
+            org.json.JSONObject json = new org.json.JSONObject();
+            json.put("dishName", dishName);
+            json.put("description", description);
+            json.put("cookingTime", cookingTime);
+            json.put("difficulty", difficulty);
+            json.put("imageSearch", imageSearch);
+
+            org.json.JSONArray ingredArr = new org.json.JSONArray();
+            if (ingredients != null) {
+                for (String ing : ingredients) ingredArr.put(ing);
+            }
+            json.put("ingredients", ingredArr);
+
+            org.json.JSONArray stepArr = new org.json.JSONArray();
+            if (steps != null) {
+                for (String step : steps) stepArr.put(step);
+            }
+            json.put("steps", stepArr);
+
+            return json.toString();
+        } catch (Exception e) {
+            return null;
+        }
     }
 }

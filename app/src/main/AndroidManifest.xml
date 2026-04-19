@@ -29,6 +29,11 @@
         <activity
             android:name=".MainActivity"
             android:exported="false" />
+
+        <!-- Lịch sử nấu ăn -->
+        <activity
+            android:name=".CookingHistoryActivity"
+            android:exported="false" />
     </application>
 
 </manifest>

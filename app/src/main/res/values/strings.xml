@@ -47,4 +47,14 @@
     <string name="notif_expired">[HẾT HẠN] %1$s (%2$s)</string>
     <string name="notif_today">[HÔM NAY] %1$s (%2$s)</string>
     <string name="notif_days_left">[Còn %1$d ngày] %2$s (%3$s)</string>
+    <!-- Lịch sử nấu ăn -->
+    <string name="cooking_history_title">Nấu gần đây</string>
+    <string name="cooking_history_empty">Chưa có lịch sử nấu ăn\nHãy thử gợi ý món ăn!</string>
+    <string name="cooking_history_count">%d lần nấu</string>
+    <!-- Menu tài khoản -->
+    <string name="menu_account_title">Tài khoản</string>
+    <string name="menu_cooking_history">Lịch sử nấu ăn</string>
+    <string name="menu_settings">Cài đặt</string>
+    <string name="menu_about">Thông tin ứng dụng</string>
+    <string name="menu_coming_soon">Sắp ra mắt</string>
 </resources>
