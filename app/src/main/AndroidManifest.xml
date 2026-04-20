@@ -3,6 +3,9 @@
     xmlns:tools="http://schemas.android.com/tools">
 
     <uses-permission android:name="android.permission.INTERNET" />
+    <uses-permission android:name="android.permission.CAMERA" />
+    <uses-feature android:name="android.hardware.camera" android:required="false" />
+
     <!-- Quyền gửi notification (bắt buộc từ Android 13 / API 33) -->
     <uses-permission android:name="android.permission.POST_NOTIFICATIONS" />
     <uses-permission android:name="android.permission.CAMERA" />
@@ -32,6 +35,16 @@
             android:name=".MainActivity"
             android:exported="false" />
 
+        <!-- FileProvider — chia sẻ URI ảnh camera an toàn -->
+        <provider
+            android:name="androidx.core.content.FileProvider"
+            android:authorities="hcmute.edu.vn.pantrysmart.fileprovider"
+            android:exported="false"
+            android:grantUriPermissions="true">
+            <meta-data
+                android:name="android.support.FILE_PROVIDER_PATHS"
+                android:resource="@xml/file_paths" />
+        </provider>
         <!-- Lịch sử nấu ăn -->
         <activity
             android:name=".CookingHistoryActivity"

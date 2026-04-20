@@ -18,7 +18,19 @@ import hcmute.edu.vn.pantrysmart.R;
  */
 public class FridgeFabHelper {
 
+    /** Callback khi người dùng nhấn "Quét hóa đơn" */
+    public interface OnScanReceiptListener {
+        void onScanReceiptClicked();
+    }
+
+    /** Callback khi người dùng nhấn "Thêm thủ công" */
+    public interface OnManualAddListener {
+        void onManualAddClicked();
+    }
+
     private final Fragment fragment;
+    private OnScanReceiptListener scanListener;
+    private OnManualAddListener manualAddListener;
 
     private FrameLayout fabMain;
     private TextView fabMainIcon;
@@ -42,6 +54,14 @@ public class FridgeFabHelper {
         this.fragment = fragment;
     }
 
+    public void setOnScanReceiptListener(OnScanReceiptListener listener) {
+        this.scanListener = listener;
+    }
+
+    public void setOnManualAddListener(OnManualAddListener listener) {
+        this.manualAddListener = listener;
+    }
+
     /** Bind views và gán click listener cho FAB menu. */
     // Sửa dòng này:
     public void setupFab(View root, FridgeDialogHelper dialogHelper) {
@@ -61,18 +81,27 @@ public class FridgeFabHelper {
             if (listener != null) listener.onAIAction();
         });
 
+        // Quét hóa đơn → mở bottom sheet thực sự
         fabItemScan.setOnClickListener(v -> {
             toggleFabMenu();
-            Toast.makeText(fragment.requireContext(),
-                    "Quét hóa đơn - Sắp ra mắt", Toast.LENGTH_SHORT).show();
+            if (scanListener != null) {
+                scanListener.onScanReceiptClicked();
+            }
         });
 
         fabItemManual.setOnClickListener(v -> {
             toggleFabMenu();
-            if (dialogHelper != null) {
-                dialogHelper.showAddItemBottomSheet();
+            if (manualAddListener != null) {
+                manualAddListener.onManualAddClicked();
+            } else {
+                Toast.makeText(fragment.requireContext(),
+                        "Thêm thủ công", Toast.LENGTH_SHORT).show();
             }
         });
+    }
+
+    public void closeFabMenuIfOpen() {
+        if (fabMenuOpen) toggleFabMenu();
     }
 
     private void toggleFabMenu() {

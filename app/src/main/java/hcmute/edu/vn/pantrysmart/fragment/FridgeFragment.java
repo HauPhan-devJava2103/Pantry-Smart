@@ -30,6 +30,8 @@ import androidx.fragment.app.Fragment;
 import androidx.recyclerview.widget.LinearLayoutManager;
 import androidx.recyclerview.widget.RecyclerView;
 
+import com.google.android.material.bottomsheet.BottomSheetDialog;
+
 import java.io.ByteArrayOutputStream;
 import java.util.ArrayList;
 import java.util.List;
@@ -45,6 +47,7 @@ import hcmute.edu.vn.pantrysmart.data.local.entity.PantryItem;
 import hcmute.edu.vn.pantrysmart.fragment.helper.FridgeAnimationHelper;
 import hcmute.edu.vn.pantrysmart.fragment.helper.FridgeDialogHelper;
 import hcmute.edu.vn.pantrysmart.fragment.helper.FridgeFabHelper;
+import hcmute.edu.vn.pantrysmart.fragment.helper.ReceiptScanHelper;
 
 /**
  * FridgeFragment — Tab "Tủ lạnh"
@@ -53,6 +56,9 @@ import hcmute.edu.vn.pantrysmart.fragment.helper.FridgeFabHelper;
  *
  * Logic được tách nhỏ vào các helper:
  * - FridgeAnimationHelper: animation cửa tủ
+ * - FridgeDialogHelper:    dialog xem / chỉnh sửa thực phẩm
+ * - FridgeFabHelper:       FAB menu
+ * - ReceiptScanHelper:     quét hóa đơn OCR (ML Kit)
  * - FridgeDialogHelper: dialog xem / chỉnh sửa thực phẩm
  * - FridgeFabHelper: FAB menu
  */
@@ -92,6 +98,10 @@ public class FridgeFragment extends Fragment {
     // Helpers
     private FridgeDialogHelper dialogHelper;
     private FridgeFabHelper fabHelper;
+    private ReceiptScanHelper receiptScanHelper;
+
+    // Bottom sheet quét hóa đơn
+    private BottomSheetDialog scanBottomSheet;
 
     // Permission launcher — xin quyền Camera runtime
     private final ActivityResultLauncher<String> cameraPermissionLauncher = registerForActivityResult(
@@ -191,7 +201,12 @@ public class FridgeFragment extends Fragment {
 
         // Khởi tạo helpers
         dialogHelper = new FridgeDialogHelper(this, pantryDao, this::loadItems);
+
+        // ReceiptScanHelper phải khởi tạo trước fabHelper (dùng registerForActivityResult)
+        receiptScanHelper = new ReceiptScanHelper(this, this::loadItems);
+
         fabHelper = new FridgeFabHelper(this);
+        fabHelper.setOnScanReceiptListener(this::openScanBottomSheet);
 
         bindViews(view);
         setupListeners();
@@ -226,6 +241,39 @@ public class FridgeFragment extends Fragment {
     public void onResume() {
         super.onResume();
         loadItems();
+    }
+
+    // ========================= SCAN BOTTOM SHEET =========================
+
+    /**
+     * Mở bottom sheet "Quét hóa đơn" với 2 nút: Camera & Gallery.
+     */
+    private void openScanBottomSheet() {
+        if (getContext() == null) return;
+
+        View sheetView = LayoutInflater.from(requireContext())
+                .inflate(R.layout.bottom_sheet_scan_receipt, null);
+
+        scanBottomSheet = new BottomSheetDialog(requireContext());
+        scanBottomSheet.setContentView(sheetView);
+
+        // Đóng bottom sheet
+        sheetView.findViewById(R.id.btnCloseScanSheet).setOnClickListener(v ->
+                scanBottomSheet.dismiss());
+
+        // Chụp ảnh bằng Camera
+        sheetView.findViewById(R.id.btnScanCamera).setOnClickListener(v -> {
+            scanBottomSheet.dismiss();
+            receiptScanHelper.openCamera();
+        });
+
+        // Chọn ảnh từ Gallery
+        sheetView.findViewById(R.id.btnScanGallery).setOnClickListener(v -> {
+            scanBottomSheet.dismiss();
+            receiptScanHelper.openGallery();
+        });
+
+        scanBottomSheet.show();
     }
 
     // ========================= BIND VIEWS =========================
