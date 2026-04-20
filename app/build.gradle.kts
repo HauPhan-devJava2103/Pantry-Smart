@@ -5,6 +5,13 @@ plugins {
     alias(libs.plugins.android.application)
 }
 
+// Đọc API key từ local.properties
+val localProperties = Properties()
+val localPropertiesFile = rootProject.file("local.properties")
+if (localPropertiesFile.exists()) {
+    localProperties.load(localPropertiesFile.inputStream())
+}
+
 android {
     namespace = "hcmute.edu.vn.pantrysmart"
     compileSdk {
@@ -32,6 +39,16 @@ android {
         buildConfigField("String", "GEMINI_API_KEY", "\"$geminiApiKey\"")
 
         testInstrumentationRunner = "androidx.test.runner.AndroidJUnitRunner"
+
+        // Đưa API key vào BuildConfig
+        buildConfigField("String", "GEMINI_API_KEY",
+            "\"${localProperties.getProperty("GEMINI_API_KEY", "")}\"")
+        buildConfigField("String", "PEXELS_API_KEY",
+            "\"${localProperties.getProperty("PEXELS_API_KEY", "")}\"")
+    }
+
+    buildFeatures {
+        buildConfig = true
     }
 
     buildTypes {
@@ -64,4 +81,8 @@ dependencies {
     implementation("androidx.viewpager2:viewpager2:1.1.0")
     // ML Kit — nhận diện văn bản từ ảnh (on-device, hỗ trợ Latin + tiếng Việt)
     implementation("com.google.mlkit:text-recognition:16.0.1")
+    // Lottie animation cho loading
+    implementation("com.airbnb.android:lottie:6.6.2")
+    // WorkManager cho background task
+    implementation("androidx.work:work-runtime:2.9.1")
 }

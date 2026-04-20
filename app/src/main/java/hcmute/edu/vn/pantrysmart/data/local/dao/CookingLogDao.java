@@ -30,4 +30,13 @@ public interface CookingLogDao {
     // Đếm tổng số lần đã nấu ăn (số lượng bản ghi CookingLog)
     @Query("SELECT COUNT(*) FROM cooking_logs")
     int getTotalCookCount();
+
+    // Lọc lịch sử nấu ăn từ một mốc thời gian
+    @Transaction
+    @Query("SELECT * FROM cooking_logs WHERE cooked_at >= :fromTimestamp ORDER BY cooked_at DESC")
+    List<CookingLogWithItems> getLogsAfter(long fromTimestamp);
+
+    // Đếm số lần nấu từ một mốc thời gian
+    @Query("SELECT COUNT(*) FROM cooking_logs WHERE cooked_at >= :fromTimestamp")
+    int getCountAfter(long fromTimestamp);
 }

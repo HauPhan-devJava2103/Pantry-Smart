@@ -46,7 +46,8 @@ public class FridgeDialogHelper {
     private final Runnable onDataChanged;
 
     /**
-     * @param fragment      Fragment cha (dùng lấy Context, LayoutInflater, Activity)
+     * @param fragment      Fragment cha (dùng lấy Context, LayoutInflater,
+     *                      Activity)
      * @param pantryDao     DAO thao tác với bảng pantry_items
      * @param onDataChanged Callback khi dữ liệu thay đổi (VD: loadItems())
      */
@@ -60,8 +61,9 @@ public class FridgeDialogHelper {
      * Hiển thị Dialog liệt kê toàn bộ thực phẩm trong ngăn.
      */
     public void showAllItemsDialog(List<PantryItem> items,
-                                   String title, String colorHex) {
-        if (fragment.getContext() == null) return;
+            String title, String colorHex) {
+        if (fragment.getContext() == null)
+            return;
 
         Dialog dialog = new Dialog(fragment.requireContext());
         dialog.requestWindowFeature(Window.FEATURE_NO_TITLE);
@@ -76,8 +78,7 @@ public class FridgeDialogHelper {
                     ViewGroup.LayoutParams.MATCH_PARENT,
                     ViewGroup.LayoutParams.WRAP_CONTENT);
             dialog.getWindow().setGravity(Gravity.BOTTOM);
-            dialog.getWindow().getAttributes().windowAnimations =
-                    android.R.style.Animation_InputMethod;
+            dialog.getWindow().getAttributes().windowAnimations = android.R.style.Animation_InputMethod;
         }
 
         // Bind header views
@@ -139,11 +140,163 @@ public class FridgeDialogHelper {
     }
 
     /**
+     * Hiển thị BottomSheet để thêm mới thực phẩm thủ công.
+     */
+    public void showAddItemBottomSheet() {
+        if (fragment.getContext() == null)
+            return;
+
+        // 1. Khởi tạo đối tượng mới với các giá trị mặc định
+        PantryItem newItem = new PantryItem();
+        newItem.setEmoji("ic_food_package"); // Icon mặc định
+        newItem.setQuantity(1.0);
+        newItem.setUnit("kg");
+        newItem.setCategory("OTHER");
+        newItem.setStorageZone("MAIN");
+
+        BottomSheetDialog addDialog = new BottomSheetDialog(fragment.requireContext());
+        View sheetView = fragment.getLayoutInflater().inflate(R.layout.bottom_sheet_edit_item, null);
+        addDialog.setContentView(sheetView);
+
+        // 2. Bind views (Dùng chung layout với Edit)
+        TextView tvSheetTitle = sheetView.findViewById(R.id.tvEditSheetTitle);
+        if (tvSheetTitle != null)
+            tvSheetTitle.setText("Thêm thực phẩm");
+
+        FrameLayout btnClose = sheetView.findViewById(R.id.btnCloseEditSheet);
+        FrameLayout btnSelectEmoji = sheetView.findViewById(R.id.btnSelectEmoji);
+        ImageView imgSelectedIcon = sheetView.findViewById(R.id.imgSelectedIcon);
+        EditText etItemName = sheetView.findViewById(R.id.etItemName);
+        EditText etItemQuantity = sheetView.findViewById(R.id.etItemQuantity);
+        EditText etItemUnit = sheetView.findViewById(R.id.etItemUnit);
+        TextView tvExpiryDate = sheetView.findViewById(R.id.tvExpiryDate);
+        TextView btnSave = sheetView.findViewById(R.id.btnSaveEdit);
+        btnSave.setText("Thêm vào tủ");
+
+        // Chips Danh mục
+        TextView[] categoryChips = {
+                sheetView.findViewById(R.id.chipDairy), sheetView.findViewById(R.id.chipVegetable),
+                sheetView.findViewById(R.id.chipFruit), sheetView.findViewById(R.id.chipMeat),
+                sheetView.findViewById(R.id.chipSeafood), sheetView.findViewById(R.id.chipDrink),
+                sheetView.findViewById(R.id.chipSpice), sheetView.findViewById(R.id.chipOther)
+        };
+        String[] categoryKeys = { "DAIRY", "VEGETABLE", "FRUIT", "MEAT", "SEAFOOD", "DRINK", "SPICE", "OTHER" };
+
+        // Ngăn chứa
+        TextView btnZoneMain = sheetView.findViewById(R.id.btnZoneMain);
+        TextView btnZoneFreezer = sheetView.findViewById(R.id.btnZoneFreezer);
+
+        // 3. Setup UI ban đầu
+        imgSelectedIcon.setImageResource(FoodIconConfig.safeIcon(newItem.getEmoji()));
+        etItemQuantity.setText("1");
+        etItemUnit.setText("kg");
+
+        final String[] selectedCategory = { newItem.getCategory() };
+        highlightCategoryChip(categoryChips, categoryKeys, selectedCategory[0]);
+
+        final String[] selectedZone = { newItem.getStorageZone() };
+        Runnable updateZoneUI = () -> {
+            boolean isFreezer = "FREEZER".equals(selectedZone[0]);
+            btnZoneFreezer.setBackgroundResource(
+                    isFreezer ? R.drawable.bg_edit_zone_active : R.drawable.bg_edit_zone_inactive);
+            btnZoneFreezer.setTextColor(isFreezer ? Color.WHITE : Color.parseColor("#4A5565"));
+            btnZoneMain.setBackgroundResource(
+                    !isFreezer ? R.drawable.bg_edit_zone_active : R.drawable.bg_edit_zone_inactive);
+            btnZoneMain.setTextColor(!isFreezer ? Color.WHITE : Color.parseColor("#4A5565"));
+        };
+        updateZoneUI.run();
+
+        // 4. Xử lý sự kiện tương tác
+        for (int i = 0; i < categoryChips.length; i++) {
+            final int index = i;
+            categoryChips[i].setOnClickListener(v -> {
+                selectedCategory[0] = categoryKeys[index];
+                highlightCategoryChip(categoryChips, categoryKeys, categoryKeys[index]);
+            });
+        }
+
+        btnZoneMain.setOnClickListener(v -> {
+            selectedZone[0] = "MAIN";
+            updateZoneUI.run();
+        });
+        btnZoneFreezer.setOnClickListener(v -> {
+            selectedZone[0] = "FREEZER";
+            updateZoneUI.run();
+        });
+
+        Calendar expiryCal = Calendar.getInstance();
+        SimpleDateFormat sdf = new SimpleDateFormat("dd/MM/yyyy", Locale.getDefault());
+        tvExpiryDate.setOnClickListener(v -> {
+            new DatePickerDialog(fragment.requireContext(), (view, year, month, dayOfMonth) -> {
+                expiryCal.set(year, month, dayOfMonth, 23, 59, 59);
+                tvExpiryDate.setText(sdf.format(expiryCal.getTime()));
+            }, expiryCal.get(Calendar.YEAR), expiryCal.get(Calendar.MONTH), expiryCal.get(Calendar.DAY_OF_MONTH))
+                    .show();
+        });
+
+        final String[] selectedEmoji = { newItem.getEmoji() };
+        btnSelectEmoji.setOnClickListener(v -> {
+            EmojiPickerDialog.show(fragment.requireContext(), selectedEmoji[0], emoji -> {
+                selectedEmoji[0] = emoji;
+                imgSelectedIcon.setImageResource(FoodIconConfig.safeIcon(emoji));
+            });
+        });
+
+        // 5. Logic LƯU (INSERT)
+        btnSave.setOnClickListener(v -> {
+            String name = etItemName.getText().toString().trim();
+            if (name.isEmpty()) {
+                etItemName.setError("Nhập tên thực phẩm");
+                return;
+            }
+
+            double quantity;
+            try {
+                quantity = Double.parseDouble(etItemQuantity.getText().toString().trim());
+            } catch (Exception e) {
+                etItemQuantity.setError("Số lượng lỗi");
+                return;
+            }
+
+            String unit = etItemUnit.getText().toString().trim();
+            if (unit.isEmpty()) {
+                etItemUnit.setError("Nhập đơn vị");
+                return;
+            }
+
+            newItem.setName(name);
+            newItem.setEmoji(selectedEmoji[0]);
+            newItem.setQuantity(quantity);
+            newItem.setUnit(unit);
+            newItem.setCategory(selectedCategory[0]);
+            newItem.setStorageZone(selectedZone[0]);
+            if (!tvExpiryDate.getText().toString().equals("Chọn ngày")) {
+                newItem.setExpiryDate(expiryCal.getTimeInMillis());
+            }
+
+            btnSave.setEnabled(false);
+            PantrySmartDatabase.databaseWriteExecutor.execute(() -> {
+                pantryDao.insert(newItem); // Thực hiện INSERT
+                if (fragment.getActivity() != null) {
+                    fragment.getActivity().runOnUiThread(() -> {
+                        onDataChanged.run(); // Load lại danh sách ở màn hình chính
+                        Toast.makeText(fragment.requireContext(), "Đã thêm " + name, Toast.LENGTH_SHORT).show();
+                        addDialog.dismiss();
+                    });
+                }
+            });
+        });
+
+        btnClose.setOnClickListener(v -> addDialog.dismiss());
+        addDialog.show();
+    }
+
+    /**
      * Hiển thị BottomSheet chỉnh sửa thông tin thực phẩm.
      */
     public void showEditItemBottomSheet(PantryItem item, int position,
-                                        PantryItemAdapter adapter,
-                                        TextView dialogSubtitle) {
+            PantryItemAdapter adapter,
+            TextView dialogSubtitle) {
 
         BottomSheetDialog editDialog = new BottomSheetDialog(fragment.requireContext());
         View sheetView = fragment.getLayoutInflater()
@@ -281,7 +434,8 @@ public class FridgeDialogHelper {
             double quantity;
             try {
                 quantity = Double.parseDouble(qtyStr);
-                if (quantity <= 0) throw new NumberFormatException();
+                if (quantity <= 0)
+                    throw new NumberFormatException();
             } catch (NumberFormatException e) {
                 etItemQuantity.setError("Số lượng không hợp lệ");
                 return;
@@ -325,6 +479,140 @@ public class FridgeDialogHelper {
 
         btnClose.setOnClickListener(v -> editDialog.dismiss());
         editDialog.show();
+    }
+
+    /**
+     * Hiển thị BottomSheet với dữ liệu được điền sẵn từ AI.
+     */
+    public void showAIAddItemBottomSheet(PantryItem aiItem) {
+        if (fragment.getContext() == null)
+            return;
+
+        BottomSheetDialog dialog = new BottomSheetDialog(fragment.requireContext());
+        View sheetView = fragment.getLayoutInflater().inflate(R.layout.bottom_sheet_edit_item, null);
+        dialog.setContentView(sheetView);
+
+        // 1. Tham chiếu Views
+        TextView tvTitle = sheetView.findViewById(R.id.tvEditSheetTitle);
+        if (tvTitle != null) {
+            tvTitle.setText("AI đã nhận diện");
+            tvTitle.setTextColor(Color.parseColor("#2E7D32"));
+        }
+
+        EditText etName = sheetView.findViewById(R.id.etItemName);
+        EditText etQuantity = sheetView.findViewById(R.id.etItemQuantity);
+        EditText etUnit = sheetView.findViewById(R.id.etItemUnit);
+        TextView tvExpiryDate = sheetView.findViewById(R.id.tvExpiryDate);
+        ImageView imgIcon = sheetView.findViewById(R.id.imgSelectedIcon);
+        FrameLayout btnSelectEmoji = sheetView.findViewById(R.id.btnSelectEmoji);
+        TextView btnSave = sheetView.findViewById(R.id.btnSaveEdit);
+        btnSave.setText("Xác nhận thêm vào tủ");
+        btnSave.setBackgroundResource(R.drawable.bg_btn_ai_confirm);
+
+        TextView btnZoneMain = sheetView.findViewById(R.id.btnZoneMain);
+        TextView btnZoneFreezer = sheetView.findViewById(R.id.btnZoneFreezer);
+
+        // Danh mục chips
+        TextView[] categoryChips = {
+                sheetView.findViewById(R.id.chipDairy), sheetView.findViewById(R.id.chipVegetable),
+                sheetView.findViewById(R.id.chipFruit), sheetView.findViewById(R.id.chipMeat),
+                sheetView.findViewById(R.id.chipSeafood), sheetView.findViewById(R.id.chipDrink),
+                sheetView.findViewById(R.id.chipSpice), sheetView.findViewById(R.id.chipOther)
+        };
+        String[] categoryKeys = { "DAIRY", "VEGETABLE", "FRUIT", "MEAT", "SEAFOOD", "DRINK", "SPICE", "OTHER" };
+
+        // 2. Điền dữ liệu ban đầu từ AI
+        etName.setText(aiItem.getName());
+        double aiQty = aiItem.getQuantity();
+        etQuantity.setText(aiQty == (long) aiQty ? String.valueOf((long) aiQty) : String.valueOf(aiQty));
+        etUnit.setText(aiItem.getUnit());
+        imgIcon.setImageResource(FoodIconConfig.safeIcon(aiItem.getEmoji()));
+
+        // Biến tạm để lưu lựa chọn người dùng
+        final String[] selectedEmoji = { aiItem.getEmoji() };
+        final String[] selectedCategory = { aiItem.getCategory() };
+        final String[] selectedZone = { "MAIN" }; // Mặc định ngăn chính
+        Calendar expiryCal = Calendar.getInstance();
+        SimpleDateFormat sdf = new SimpleDateFormat("dd/MM/yyyy", Locale.getDefault());
+
+        // Highlight danh mục ban đầu
+        highlightCategoryChip(categoryChips, categoryKeys, selectedCategory[0]);
+
+        // 3. THIẾT LẬP CÁC TRÌNH LẮNG NGHE (LISTENERS)
+
+        // Sửa Icon (Emoji)
+        btnSelectEmoji.setOnClickListener(v -> {
+            EmojiPickerDialog.show(fragment.requireContext(), selectedEmoji[0], emoji -> {
+                selectedEmoji[0] = emoji;
+                imgIcon.setImageResource(FoodIconConfig.safeIcon(emoji));
+            });
+        });
+
+        // Sửa Ngày hết hạn
+        tvExpiryDate.setOnClickListener(v -> {
+            new DatePickerDialog(fragment.requireContext(), (view, year, month, dayOfMonth) -> {
+                expiryCal.set(year, month, dayOfMonth);
+                tvExpiryDate.setText(sdf.format(expiryCal.getTime()));
+            }, expiryCal.get(Calendar.YEAR), expiryCal.get(Calendar.MONTH), expiryCal.get(Calendar.DAY_OF_MONTH))
+                    .show();
+        });
+
+        // Sửa Danh mục (Click vào Chip nào chọn Chip đó)
+        for (int i = 0; i < categoryChips.length; i++) {
+            final int index = i;
+            categoryChips[i].setOnClickListener(v -> {
+                selectedCategory[0] = categoryKeys[index];
+                highlightCategoryChip(categoryChips, categoryKeys, selectedCategory[0]);
+            });
+        }
+
+        // Sửa Ngăn chứa (Main/Freezer)
+        Runnable updateZoneUI = () -> {
+            boolean isFreezer = "FREEZER".equals(selectedZone[0]);
+            btnZoneFreezer.setBackgroundResource(
+                    isFreezer ? R.drawable.bg_edit_zone_active : R.drawable.bg_edit_zone_inactive);
+            btnZoneFreezer.setTextColor(isFreezer ? Color.WHITE : Color.parseColor("#4A5565"));
+            btnZoneMain.setBackgroundResource(
+                    !isFreezer ? R.drawable.bg_edit_zone_active : R.drawable.bg_edit_zone_inactive);
+            btnZoneMain.setTextColor(!isFreezer ? Color.WHITE : Color.parseColor("#4A5565"));
+        };
+        updateZoneUI.run();
+        btnZoneMain.setOnClickListener(v -> {
+            selectedZone[0] = "MAIN";
+            updateZoneUI.run();
+        });
+        btnZoneFreezer.setOnClickListener(v -> {
+            selectedZone[0] = "FREEZER";
+            updateZoneUI.run();
+        });
+
+        // 4. LOGIC LƯU
+        btnSave.setOnClickListener(v -> {
+            aiItem.setName(etName.getText().toString().trim());
+            aiItem.setQuantity(Double.parseDouble(etQuantity.getText().toString().trim()));
+            aiItem.setUnit(etUnit.getText().toString().trim());
+            aiItem.setEmoji(selectedEmoji[0]);
+            aiItem.setCategory(selectedCategory[0]);
+            aiItem.setStorageZone(selectedZone[0]);
+            if (!tvExpiryDate.getText().toString().equals("Chọn ngày")) {
+                aiItem.setExpiryDate(expiryCal.getTimeInMillis());
+            }
+
+            PantrySmartDatabase.databaseWriteExecutor.execute(() -> {
+                pantryDao.insert(aiItem);
+                if (fragment.getActivity() != null) {
+                    fragment.getActivity().runOnUiThread(() -> {
+                        onDataChanged.run();
+                        Toast.makeText(fragment.requireContext(), "Đã thêm " + aiItem.getName(), Toast.LENGTH_SHORT)
+                                .show();
+                        dialog.dismiss();
+                    });
+                }
+            });
+        });
+
+        sheetView.findViewById(R.id.btnCloseEditSheet).setOnClickListener(v -> dialog.dismiss());
+        dialog.show();
     }
 
     /** Highlight chip active và reset các chip khác. */

@@ -14,20 +14,17 @@ import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
 
+import hcmute.edu.vn.pantrysmart.BuildConfig;
 import hcmute.edu.vn.pantrysmart.data.local.PantrySmartDatabase;
 import hcmute.edu.vn.pantrysmart.data.local.entity.PantryItem;
 import hcmute.edu.vn.pantrysmart.model.RecipeSuggestion;
 
-/**
- * Service gọi Gemini REST API để gợi ý món ăn từ nguyên liệu có sẵn.
- * Sử dụng HttpURLConnection (không cần thêm SDK).
- */
 public class GeminiRecipeService {
 
     private static final String TAG = "GeminiRecipeService";
 
-    private static final String API_KEY = "AIzaSyBb1hVh_OM0q2PqtbPLO20A5P3djMLiI_8";
-    private static final String API_URL = "https://generativelanguage.googleapis.com/v1beta/models/gemini-2.0-flash:generateContent?key=";
+    private static final String API_KEY = BuildConfig.GEMINI_API_KEY;
+    private static final String API_URL = "https://generativelanguage.googleapis.com/v1beta/models/gemini-2.5-flash:generateContent?key=";
 
     public interface RecipeCallback {
         void onSuccess(List<RecipeSuggestion> recipes);
@@ -35,20 +32,17 @@ public class GeminiRecipeService {
         void onError(String errorMessage);
     }
 
-    /**
-     * Gọi Gemini API để gợi ý món ăn. Chạy trên background thread.
-     */
     public static void suggestRecipes(List<PantryItem> items, RecipeCallback callback) {
         PantrySmartDatabase.databaseWriteExecutor.execute(() -> {
-            // Nếu chưa có API key → trả về demo data
-            if (API_KEY.equals("YOUR_GEMINI_API_KEY") || API_KEY.isEmpty()) {
-                Log.w(TAG, "API key chưa được cấu hình, sử dụng dữ liệu demo");
+
+            if (API_KEY == null || API_KEY.isEmpty()) {
+                Log.w(TAG, "No API key: demo");
                 callback.onSuccess(getDemoRecipes(items));
                 return;
             }
 
             try {
-                // 1. Build danh sách nguyên liệu
+                // 1. Lấy danh sách nguyên liệu
                 StringBuilder ingredients = new StringBuilder();
                 for (PantryItem item : items) {
                     ingredients.append("- ").append(item.getName())
@@ -57,175 +51,177 @@ public class GeminiRecipeService {
                             .append("\n");
                 }
 
-                // 2. Build prompt
-                String prompt = "Bạn là đầu bếp Việt Nam chuyên nghiệp. Dựa vào nguyên liệu có sẵn, " +
-                        "hãy gợi ý 5 món ăn ngon, đa dạng.\n\n" +
-                        "Nguyên liệu có sẵn:\n" + ingredients + "\n" +
-                        "Yêu cầu:\n" +
-                        "- Ưu tiên món ăn Việt Nam\n" +
-                        "- Mỗi món sử dụng ít nhất 2 nguyên liệu có sẵn\n" +
-                        "- Đa dạng loại món (xào, canh, kho, chiên, hấp...)\n\n" +
-                        "Trả về JSON array (KHÔNG markdown, KHÔNG giải thích thêm):\n" +
-                        "[{\"dishName\":\"Tên món\",\"description\":\"Mô tả hương vị 1-2 câu\"," +
-                        "\"cookingTime\":\"25 phút\",\"difficulty\":\"Dễ\"," +
-                        "\"matchedIngredients\":[\"Nguyên liệu 1\",\"Nguyên liệu 2\"]," +
-                        "\"imageSearch\":\"vietnamese dish name in english\"}]";
+                // 2. PROMPT
+                String prompt = "Bạn là đầu bếp Việt Nam chuyên nghiệp.\n\n" +
+                        "Nguyên liệu có sẵn:\n" + ingredients + "\n\n" +
 
-                // 3. Build request JSON
-                JSONObject requestBody = new JSONObject();
+                        "Hãy gợi ý 5 món ăn CHO 1 NGƯỜI ĂN.\n" +
+                        "Yêu cầu:\n" +
+                        "- Ưu tiên món Việt\n" +
+                        "- Mỗi món dùng ít nhất 2 nguyên liệu\n" +
+                        "- Đa dạng cách nấu\n" +
+                        "- matchedIngredients phải ghi RÕ SỐ LƯỢNG cho 1 người ăn\n" +
+                        "- Định dạng: \"Tên nguyên liệu - số lượng đơn vị\"\n" +
+                        "- Đồ đếm được (quả, con, lát, miếng, nhánh, tép, cây) phải dùng SỐ NGUYÊN (1, 2, 3...)\n" +
+                        "- Chỉ dùng số lẻ cho đơn vị cân/đo (g, ml, thìa, muỗng)\n" +
+                        "- Ví dụ: [\"Trứng gà - 2 quả\", \"Thịt heo xay - 100g\", \"Hành lá - 1 nhánh\"]\n\n" +
+
+                        "QUAN TRỌNG VỀ STEPS:\n" +
+                        "- Mỗi bước nấu PHẢI ghi RÕ SỐ LƯỢNG nguyên liệu sử dụng\n" +
+                        "- ĐÚNG: \"Cho 200g cà chua thái nhỏ vào chảo xào 2 phút\"\n" +
+                        "- ĐÚNG: \"Đập 2 quả trứng vào bát, thêm 1 thìa nước mắm, đánh đều\"\n" +
+                        "- SAI: \"Cho cà chua vào xào\" (thiếu số lượng)\n" +
+                        "- SAI: \"Đập trứng vào bát\" (thiếu số lượng)\n\n" +
+
+                        "QUAN TRỌNG VỀ IMAGE:\n" +
+                        "- imageSearch phải là tiếng Anh\n" +
+                        "- Ngắn gọn 2-5 từ\n" +
+                        "- Mô tả CHÍNH XÁC món ăn\n" +
+                        "- Không dùng từ chung chung như 'delicious food'\n\n" +
+
+                        "Ví dụ imageSearch tốt:\n" +
+                        "- 'stir fried beef onion'\n" +
+                        "- 'vietnamese caramelized pork'\n" +
+                        "- 'shrimp fried rice'\n\n" +
+
+                        "Trả về JSON array:\n" +
+                        "[{" +
+                        "\"dishName\":\"Tên món\"," +
+                        "\"description\":\"Mô tả\"," +
+                        "\"cookingTime\":\"25 phút\"," +
+                        "\"difficulty\":\"Dễ\"," +
+                        "\"matchedIngredients\":[\"Trứng gà - 2 quả\",\"Thịt heo - 150g\"]," +
+                        "\"steps\":[\"Đập 2 quả trứng vào bát, thêm 1 thìa nước mắm\",\"Cho 150g thịt heo vào chảo xào 3 phút\"]," +
+                        "\"imageSearch\":\"english keyword\"" +
+                        "}]";
+
+                // 3. Request JSON
+                JSONObject body = new JSONObject();
                 JSONArray contents = new JSONArray();
                 JSONObject content = new JSONObject();
                 JSONArray parts = new JSONArray();
+
                 JSONObject part = new JSONObject();
                 part.put("text", prompt);
+
                 parts.put(part);
                 content.put("parts", parts);
                 contents.put(content);
-                requestBody.put("contents", contents);
+                body.put("contents", contents);
 
-                // Force JSON response
-                JSONObject genConfig = new JSONObject();
-                genConfig.put("responseMimeType", "application/json");
-                requestBody.put("generationConfig", genConfig);
+                JSONObject config = new JSONObject();
+                config.put("responseMimeType", "application/json");
+                body.put("generationConfig", config);
 
-                // 4. HTTP Request
+                // 4. CALL API
                 URL url = new URL(API_URL + API_KEY);
                 HttpURLConnection conn = (HttpURLConnection) url.openConnection();
+
                 conn.setRequestMethod("POST");
                 conn.setRequestProperty("Content-Type", "application/json");
                 conn.setDoOutput(true);
-                conn.setConnectTimeout(30000);
-                conn.setReadTimeout(30000);
 
                 OutputStream os = conn.getOutputStream();
-                os.write(requestBody.toString().getBytes("UTF-8"));
+                os.write(body.toString().getBytes("UTF-8"));
                 os.close();
 
-                int responseCode = conn.getResponseCode();
-                if (responseCode != 200) {
-                    BufferedReader errorReader = new BufferedReader(
-                            new InputStreamReader(conn.getErrorStream()));
-                    StringBuilder errorResponse = new StringBuilder();
-                    String line;
-                    while ((line = errorReader.readLine()) != null) {
-                        errorResponse.append(line);
-                    }
-                    errorReader.close();
-                    Log.e(TAG, "API Error " + responseCode + ": " + errorResponse);
-                    // Fallback to demo
+                if (conn.getResponseCode() != 200) {
                     callback.onSuccess(getDemoRecipes(items));
                     return;
                 }
 
-                // 5. Read response
+                // 5. READ
                 BufferedReader reader = new BufferedReader(
                         new InputStreamReader(conn.getInputStream()));
-                StringBuilder response = new StringBuilder();
+                StringBuilder res = new StringBuilder();
                 String line;
+
                 while ((line = reader.readLine()) != null) {
-                    response.append(line);
+                    res.append(line);
                 }
                 reader.close();
 
-                // 6. Parse response
-                JSONObject jsonResponse = new JSONObject(response.toString());
-                String text = jsonResponse.getJSONArray("candidates")
+                // 6. PARSE
+                JSONObject json = new JSONObject(res.toString());
+
+                String text = json.getJSONArray("candidates")
                         .getJSONObject(0)
                         .getJSONObject("content")
                         .getJSONArray("parts")
                         .getJSONObject(0)
                         .getString("text");
 
-                // Clean markdown fences if present
-                text = text.trim();
-                if (text.startsWith("```")) {
-                    text = text.replaceAll("```json\\s*", "").replaceAll("```\\s*", "");
-                }
+                text = text.trim().replaceAll("```json|```", "");
 
-                JSONArray recipesArray = new JSONArray(text);
-                List<RecipeSuggestion> recipes = new ArrayList<>();
+                JSONArray arr = new JSONArray(text);
+                List<RecipeSuggestion> list = new ArrayList<>();
 
-                for (int i = 0; i < recipesArray.length(); i++) {
-                    JSONObject obj = recipesArray.getJSONObject(i);
-                    RecipeSuggestion recipe = new RecipeSuggestion();
-                    recipe.setDishName(obj.optString("dishName", "Món ăn"));
-                    recipe.setDescription(obj.optString("description", ""));
-                    recipe.setCookingTime(obj.optString("cookingTime", "30 phút"));
-                    recipe.setDifficulty(obj.optString("difficulty", "Trung bình"));
-                    recipe.setImageSearch(obj.optString("imageSearch", ""));
+                for (int i = 0; i < arr.length(); i++) {
+                    JSONObject o = arr.getJSONObject(i);
 
-                    JSONArray matched = obj.optJSONArray("matchedIngredients");
-                    if (matched != null) {
-                        List<String> matchedList = new ArrayList<>();
-                        for (int j = 0; j < matched.length(); j++) {
-                            matchedList.add(matched.getString(j));
+                    RecipeSuggestion r = new RecipeSuggestion();
+                    r.setDishName(o.optString("dishName"));
+                    r.setDescription(o.optString("description"));
+                    r.setCookingTime(o.optString("cookingTime"));
+                    r.setDifficulty(o.optString("difficulty"));
+                    r.setImageSearch(o.optString("imageSearch"));
+
+                    // Parse matchedIngredients
+                    JSONArray ingArr = o.optJSONArray("matchedIngredients");
+                    if (ingArr != null) {
+                        List<String> ings = new ArrayList<>();
+                        for (int j = 0; j < ingArr.length(); j++) {
+                            ings.add(ingArr.getString(j));
                         }
-                        recipe.setMatchedIngredients(matchedList);
+                        r.setMatchedIngredients(ings);
                     }
 
-                    recipes.add(recipe);
+                    // Parse steps
+                    JSONArray stepsArr = o.optJSONArray("steps");
+                    if (stepsArr != null) {
+                        List<String> stepsList = new ArrayList<>();
+                        for (int j = 0; j < stepsArr.length(); j++) {
+                            stepsList.add(stepsArr.getString(j));
+                        }
+                        r.setSteps(stepsList);
+                    }
+
+                    list.add(r);
                 }
 
-                callback.onSuccess(recipes);
+                callback.onSuccess(list);
 
             } catch (Exception e) {
-                Log.e(TAG, "Error calling Gemini API", e);
+                Log.e(TAG, "Error", e);
                 callback.onSuccess(getDemoRecipes(items));
             }
         });
     }
 
-    /**
-     * Dữ liệu demo khi chưa có API key hoặc API lỗi.
-     */
     public static List<RecipeSuggestion> getDemoRecipes(List<PantryItem> items) {
-        List<RecipeSuggestion> recipes = new ArrayList<>();
+        List<RecipeSuggestion> list = new ArrayList<>();
 
-        RecipeSuggestion r1 = new RecipeSuggestion();
-        r1.setDishName("Trứng chiên thịt");
-        r1.setDescription("Trứng chiên giòn với thịt heo băm, thơm ngon cho bữa cơm gia đình.");
-        r1.setCookingTime("15 phút");
-        r1.setDifficulty("Dễ");
-        r1.setMatchedIngredients(Arrays.asList("Trứng gà", "Thịt heo"));
-        r1.setImageSearch("vietnamese fried egg with pork");
-        recipes.add(r1);
+        RecipeSuggestion r = new RecipeSuggestion();
+        r.setDishName("Trứng chiên thịt");
+        r.setDescription("Món ăn nhanh, bổ dưỡng cho bữa sáng.");
+        r.setCookingTime("10 phút");
+        r.setDifficulty("Dễ");
+        r.setImageSearch("fried egg pork");
 
-        RecipeSuggestion r2 = new RecipeSuggestion();
-        r2.setDishName("Canh cà rốt thịt heo");
-        r2.setDescription("Canh ngọt thanh với cà rốt mềm và thịt heo tươi, bổ dưỡng.");
-        r2.setCookingTime("25 phút");
-        r2.setDifficulty("Dễ");
-        r2.setMatchedIngredients(Arrays.asList("Cà rốt", "Thịt heo"));
-        r2.setImageSearch("vietnamese carrot pork soup");
-        recipes.add(r2);
+        List<String> ings = new ArrayList<>();
+        ings.add("Trứng gà - 2 quả");
+        ings.add("Thịt heo xay - 100g");
+        r.setMatchedIngredients(ings);
 
-        RecipeSuggestion r3 = new RecipeSuggestion();
-        r3.setDishName("Mì xào hải sản");
-        r3.setDescription("Mì xào giòn với tôm tươi, rau cải xanh, đậm đà hương vị biển.");
-        r3.setCookingTime("20 phút");
-        r3.setDifficulty("Trung bình");
-        r3.setMatchedIngredients(Arrays.asList("Mì tôm", "Tôm", "Rau cải"));
-        r3.setImageSearch("vietnamese stir fried noodles seafood");
-        recipes.add(r3);
+        List<String> steps = new ArrayList<>();
+        steps.add("Đập 2 quả trứng vào bát, thêm 1/2 thìa muối, đánh tan đều.");
+        steps.add("Phi 2 tép tỏi thơm, cho 100g thịt heo xay vào xào 2 phút cho chín.");
+        steps.add("Đổ trứng vào chảo, chiên đều hai mặt khoảng 3 phút.");
+        steps.add("Trang trí với hành lá thái nhỏ và thưởng thức.");
+        r.setSteps(steps);
 
-        RecipeSuggestion r4 = new RecipeSuggestion();
-        r4.setDishName("Phô mai trứng nướng");
-        r4.setDescription("Trứng nướng phô mai béo ngậy, thơm lừng, món snack hấp dẫn.");
-        r4.setCookingTime("20 phút");
-        r4.setDifficulty("Dễ");
-        r4.setMatchedIngredients(Arrays.asList("Trứng gà", "Phô mai"));
-        r4.setImageSearch("baked cheese egg");
-        recipes.add(r4);
+        list.add(r);
 
-        RecipeSuggestion r5 = new RecipeSuggestion();
-        r5.setDishName("Tôm rang cà rốt");
-        r5.setDescription("Tôm rang cháy cạnh với cà rốt giòn ngọt, đơn giản mà ngon miệng.");
-        r5.setCookingTime("15 phút");
-        r5.setDifficulty("Dễ");
-        r5.setMatchedIngredients(Arrays.asList("Tôm", "Cà rốt"));
-        r5.setImageSearch("vietnamese stir fried shrimp carrot");
-        recipes.add(r5);
-
-        return recipes;
+        return list;
     }
 }

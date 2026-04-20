@@ -2,7 +2,6 @@ package hcmute.edu.vn.pantrysmart.data.local.entity;
 
 import androidx.room.ColumnInfo;
 import androidx.room.Entity;
-import androidx.room.ForeignKey;
 import androidx.room.PrimaryKey;
 
 // Lịch sử nấu ăn.
@@ -24,39 +23,33 @@ public class CookingLog {
     @ColumnInfo(name = "ingredients_deducted")
     private int ingredientsDeducted;
 
+    // URL ảnh món ăn (từ Pexels)
+    @ColumnInfo(name = "image_url")
+    private String imageUrl;
+
+    // Dữ liệu recipe dạng JSON để xem lại chi tiết
+    @ColumnInfo(name = "recipe_json")
+    private String recipeJson;
+
     public CookingLog() {
         this.cookedAt = System.currentTimeMillis();
     }
 
-    public int getId() {
-        return id;
-    }
+    public int getId() { return id; }
+    public void setId(int id) { this.id = id; }
 
-    public void setId(int id) {
-        this.id = id;
-    }
+    public String getDishName() { return dishName; }
+    public void setDishName(String dishName) { this.dishName = dishName; }
 
-    public String getDishName() {
-        return dishName;
-    }
+    public long getCookedAt() { return cookedAt; }
+    public void setCookedAt(long cookedAt) { this.cookedAt = cookedAt; }
 
-    public void setDishName(String dishName) {
-        this.dishName = dishName;
-    }
+    public int getIngredientsDeducted() { return ingredientsDeducted; }
+    public void setIngredientsDeducted(int ingredientsDeducted) { this.ingredientsDeducted = ingredientsDeducted; }
 
-    public long getCookedAt() {
-        return cookedAt;
-    }
+    public String getImageUrl() { return imageUrl; }
+    public void setImageUrl(String imageUrl) { this.imageUrl = imageUrl; }
 
-    public void setCookedAt(long cookedAt) {
-        this.cookedAt = cookedAt;
-    }
-
-    public int getIngredientsDeducted() {
-        return ingredientsDeducted;
-    }
-
-    public void setIngredientsDeducted(int ingredientsDeducted) {
-        this.ingredientsDeducted = ingredientsDeducted;
-    }
+    public String getRecipeJson() { return recipeJson; }
+    public void setRecipeJson(String recipeJson) { this.recipeJson = recipeJson; }
 }

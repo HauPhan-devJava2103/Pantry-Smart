@@ -1,0 +1,52 @@
+<?xml version="1.0" encoding="utf-8"?>
+<LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    android:layout_width="match_parent"
+    android:layout_height="wrap_content"
+    android:gravity="center_vertical"
+    android:orientation="horizontal"
+    android:paddingTop="8dp"
+    android:paddingBottom="8dp">
+
+    <!-- Icon trừ -->
+    <ImageView
+        android:layout_width="18dp"
+        android:layout_height="18dp"
+        android:src="@drawable/ic_remove_circle" />
+
+    <!-- Tên nguyên liệu (chiếm phần còn lại) -->
+    <TextView
+        android:id="@+id/tvDeductName"
+        android:layout_width="0dp"
+        android:layout_height="wrap_content"
+        android:layout_marginStart="10dp"
+        android:layout_weight="1"
+        android:ellipsize="end"
+        android:maxLines="1"
+        android:textColor="#1A1A1A"
+        android:textSize="14sp" />
+
+    <!-- Số lượng trừ (cố định 56dp, căn phải) -->
+    <EditText
+        android:id="@+id/etDeductQty"
+        android:layout_width="56dp"
+        android:layout_height="36dp"
+        android:background="@drawable/bg_section_icon_green"
+        android:gravity="center"
+        android:inputType="numberDecimal"
+        android:maxLines="1"
+        android:padding="4dp"
+        android:textColor="#EF4444"
+        android:textSize="13sp"
+        android:textStyle="bold" />
+
+    <!-- Đơn vị (cố định 48dp, căn trái) -->
+    <TextView
+        android:id="@+id/tvDeductUnit"
+        android:layout_width="48dp"
+        android:layout_height="wrap_content"
+        android:layout_marginStart="6dp"
+        android:gravity="start"
+        android:textColor="#6B7280"
+        android:textSize="12sp" />
+
+</LinearLayout>

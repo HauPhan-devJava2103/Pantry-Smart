@@ -1,29 +1,46 @@
 package hcmute.edu.vn.pantrysmart.fragment;
 
+
+import android.app.Dialog;
+import android.content.Intent;
+import android.graphics.Bitmap;
 import android.graphics.Color;
+import android.graphics.drawable.ColorDrawable;
 import android.os.Bundle;
+import android.provider.MediaStore;
+import android.util.Base64;
+import android.util.Log;
 import android.view.Gravity;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
+import android.widget.EditText;
 import android.widget.FrameLayout;
 import android.widget.ImageView;
 import android.widget.LinearLayout;
 import android.widget.TextView;
 import android.widget.Toast;
 
+import androidx.activity.result.ActivityResultLauncher;
+import androidx.activity.result.contract.ActivityResultContracts;
 import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
+import androidx.core.content.ContextCompat;
 import androidx.fragment.app.Fragment;
+import androidx.recyclerview.widget.LinearLayoutManager;
+import androidx.recyclerview.widget.RecyclerView;
 
 import com.google.android.material.bottomsheet.BottomSheetDialog;
 
+import java.io.ByteArrayOutputStream;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.concurrent.TimeUnit;
 
 import hcmute.edu.vn.pantrysmart.R;
+import hcmute.edu.vn.pantrysmart.adapter.PantryItemAdapter;
 import hcmute.edu.vn.pantrysmart.config.FoodIconConfig;
+import hcmute.edu.vn.pantrysmart.config.GeminiFoodRecognitionService;
 import hcmute.edu.vn.pantrysmart.data.local.PantrySmartDatabase;
 import hcmute.edu.vn.pantrysmart.data.local.dao.PantryItemDao;
 import hcmute.edu.vn.pantrysmart.data.local.entity.PantryItem;
@@ -42,6 +59,8 @@ import hcmute.edu.vn.pantrysmart.fragment.helper.ReceiptScanHelper;
  * - FridgeDialogHelper:    dialog xem / chỉnh sửa thực phẩm
  * - FridgeFabHelper:       FAB menu
  * - ReceiptScanHelper:     quét hóa đơn OCR (ML Kit)
+ * - FridgeDialogHelper: dialog xem / chỉnh sửa thực phẩm
+ * - FridgeFabHelper: FAB menu
  */
 public class FridgeFragment extends Fragment {
 
@@ -71,6 +90,11 @@ public class FridgeFragment extends Fragment {
     private List<PantryItem> cachedFreezerItems = new ArrayList<>();
     private List<PantryItem> cachedMainItems = new ArrayList<>();
 
+    // Search views
+    private EditText etSearch;
+    private View layoutSearchResults;
+    private RecyclerView rvSearchResults;
+
     // Helpers
     private FridgeDialogHelper dialogHelper;
     private FridgeFabHelper fabHelper;
@@ -78,6 +102,87 @@ public class FridgeFragment extends Fragment {
 
     // Bottom sheet quét hóa đơn
     private BottomSheetDialog scanBottomSheet;
+
+    // Permission launcher — xin quyền Camera runtime
+    private final ActivityResultLauncher<String> cameraPermissionLauncher = registerForActivityResult(
+            new ActivityResultContracts.RequestPermission(),
+            granted -> {
+                if (granted) {
+                    openCamera();
+                } else {
+                    Toast.makeText(requireContext(),
+                            "Cần cấp quyền Camera để nhận diện thực phẩm",
+                            Toast.LENGTH_SHORT).show();
+                }
+            });
+
+    private final ActivityResultLauncher<Intent> cameraLauncher = registerForActivityResult(
+            new ActivityResultContracts.StartActivityForResult(),
+            result -> {
+                if (result.getResultCode() == android.app.Activity.RESULT_OK && result.getData() != null) {
+                    // Lấy ảnh từ Camera trả về
+                    Bundle extras = result.getData().getExtras();
+                    if (extras != null) {
+                        android.graphics.Bitmap photo = (android.graphics.Bitmap) extras.get("data");
+                        if (photo != null) {
+                            String base64Image = encodeImage(photo);
+
+                            // Tạo custom AI scanning dialog với Lottie animation
+                            Dialog aiDialog = new Dialog(requireContext());
+                            aiDialog.requestWindowFeature(android.view.Window.FEATURE_NO_TITLE);
+                            aiDialog.setContentView(R.layout.dialog_ai_scanning);
+                            aiDialog.setCancelable(false);
+                            if (aiDialog.getWindow() != null) {
+                                aiDialog.getWindow().setBackgroundDrawable(
+                                        new ColorDrawable(android.graphics.Color.TRANSPARENT));
+                                aiDialog.getWindow().setLayout(
+                                        ViewGroup.LayoutParams.WRAP_CONTENT,
+                                        ViewGroup.LayoutParams.WRAP_CONTENT);
+                            }
+                            aiDialog.show();
+
+                            // 2. Gọi Service AI để nhận diện
+                            GeminiFoodRecognitionService.recognizeFood(
+                                    base64Image,
+                                    new GeminiFoodRecognitionService.RecognitionCallback() {
+                                        @Override
+                                        public void onSuccess(PantryItem item) {
+                                            if (getActivity() == null)
+                                                return;
+                                            getActivity().runOnUiThread(() -> {
+                                                if (aiDialog.isShowing())
+                                                    aiDialog.dismiss();
+                                                dialogHelper.showAIAddItemBottomSheet(item);
+                                            });
+                                        }
+
+                                        @Override
+                                        public void onError(String errorMessage) {
+                                            if (getActivity() == null)
+                                                return;
+                                            getActivity().runOnUiThread(() -> {
+                                                if (aiDialog.isShowing())
+                                                    aiDialog.dismiss();
+                                                Toast.makeText(requireContext(), errorMessage,
+                                                        Toast.LENGTH_SHORT).show();
+                                            });
+                                        }
+                                    });
+                        }
+                    }
+                }
+            });
+
+    // Mở Camera sau khi đã có quyền
+    private void openCamera() {
+        Intent intent = new Intent(MediaStore.ACTION_IMAGE_CAPTURE);
+        if (intent.resolveActivity(requireContext().getPackageManager()) != null) {
+            cameraLauncher.launch(intent);
+        } else {
+            Toast.makeText(requireContext(),
+                    "Không tìm thấy ứng dụng Camera", Toast.LENGTH_SHORT).show();
+        }
+    }
 
     @Nullable
     @Override
@@ -105,8 +210,31 @@ public class FridgeFragment extends Fragment {
 
         bindViews(view);
         setupListeners();
-        fabHelper.setupFab(view);
+        fabHelper.setupFab(view, dialogHelper);
+        fabHelper.setOnFabActionListener(() -> {
+            // Kiểm tra quyền Camera trước khi mở
+            if (ContextCompat.checkSelfPermission(
+                    requireContext(),
+                    android.Manifest.permission.CAMERA) == android.content.pm.PackageManager.PERMISSION_GRANTED) {
+                openCamera();
+            } else {
+                cameraPermissionLauncher.launch(android.Manifest.permission.CAMERA);
+            }
+        });
         loadItems();
+        setupSearch(view);
+        requireActivity().getOnBackPressedDispatcher().addCallback(getViewLifecycleOwner(),
+                new androidx.activity.OnBackPressedCallback(true) {
+                    @Override
+                    public void handleOnBackPressed() {
+                        if (layoutSearchResults.getVisibility() == View.VISIBLE) {
+                            etSearch.setText(""); // Đóng tìm kiếm
+                        } else {
+                            setEnabled(false);
+                            requireActivity().onBackPressed();
+                        }
+                    }
+                });
     }
 
     @Override
@@ -176,6 +304,166 @@ public class FridgeFragment extends Fragment {
         btnCloseMain = view.findViewById(R.id.btnCloseMain);
         btnViewAllFreezer = view.findViewById(R.id.btnViewAllFreezer);
         btnViewAllMain = view.findViewById(R.id.btnViewAllMain);
+        if (getActivity() != null) {
+            etSearch = getActivity().findViewById(R.id.etSearch);
+        }
+        layoutSearchResults = view.findViewById(R.id.layoutSearchResults);
+        rvSearchResults = view.findViewById(R.id.rvSearchResults);
+        View btnClearSearch = getActivity() != null ? getActivity().findViewById(R.id.btnClearSearch) : null;
+        if (btnClearSearch != null) {
+            btnClearSearch.setOnClickListener(v -> {
+                if (etSearch != null) {
+                    etSearch.setText(""); // Xóa chữ
+                    etSearch.clearFocus();
+                    // Ẩn bàn phím
+                    android.view.inputmethod.InputMethodManager imm = (android.view.inputmethod.InputMethodManager) requireContext()
+                            .getSystemService(android.content.Context.INPUT_METHOD_SERVICE);
+                    imm.hideSoftInputFromWindow(etSearch.getWindowToken(), 0);
+                }
+            });
+        }
+    }
+
+    private void setupSearch(View view) {
+        if (etSearch == null)
+            return;
+
+        etSearch.addTextChangedListener(new android.text.TextWatcher() {
+            @Override
+            public void beforeTextChanged(CharSequence s, int start, int count, int after) {
+            }
+
+            @Override
+            public void onTextChanged(CharSequence s, int start, int before, int count) {
+                String query = s.toString().trim().toLowerCase();
+
+                // Tìm nút xóa để ẩn/hiện
+                View btnClear = getActivity() != null ? getActivity().findViewById(R.id.btnClearSearch) : null;
+                if (btnClear != null) {
+                    btnClear.setVisibility(query.isEmpty() ? View.GONE : View.VISIBLE);
+                }
+
+                if (query.isEmpty()) {
+                    layoutSearchResults.setVisibility(View.GONE);
+                } else {
+                    layoutSearchResults.setVisibility(View.VISIBLE);
+                    performSearch(query);
+                }
+            }
+
+            @Override
+            public void afterTextChanged(android.text.Editable s) {
+            }
+        });
+
+        // 1. Khi nhấn vào vùng chứa (searchBar), tập trung vào ô nhập liệu
+        View searchBar = null;
+        if (getActivity() != null) {
+            searchBar = getActivity().findViewById(R.id.searchBar);
+        }
+
+        if (searchBar != null) {
+            searchBar.setOnClickListener(v -> {
+                etSearch.requestFocus();
+                android.view.inputmethod.InputMethodManager imm = (android.view.inputmethod.InputMethodManager) requireContext()
+                        .getSystemService(android.content.Context.INPUT_METHOD_SERVICE);
+                imm.showSoftInput(etSearch, android.view.inputmethod.InputMethodManager.SHOW_IMPLICIT);
+            });
+        }
+
+        // 2. Xử lý nút "Tìm" trên bàn phím
+        etSearch.setOnEditorActionListener((v, actionId, event) -> {
+            if (actionId == android.view.inputmethod.EditorInfo.IME_ACTION_SEARCH) {
+                // Thu nhỏ bàn phím khi nhấn nút Tìm
+                android.view.inputmethod.InputMethodManager imm = (android.view.inputmethod.InputMethodManager) requireContext()
+                        .getSystemService(android.content.Context.INPUT_METHOD_SERVICE);
+                imm.hideSoftInputFromWindow(etSearch.getWindowToken(), 0);
+                return true;
+            }
+            return false;
+        });
+    }
+
+    private void performSearch(String query) {
+        List<PantryItem> searchResults = new ArrayList<>();
+
+        // 1. Dò trong Ngăn Đông
+        for (PantryItem item : cachedFreezerItems) {
+            if (item.getName().toLowerCase().contains(query)) {
+                searchResults.add(item);
+            }
+        }
+
+        // 2. Dò trong Ngăn Chính
+        for (PantryItem item : cachedMainItems) {
+            if (item.getName().toLowerCase().contains(query)) {
+                searchResults.add(item);
+            }
+        }
+
+        // 3. Cập nhật số lượng kết quả lên giao diện
+        TextView tvSearchCount = layoutSearchResults.findViewById(R.id.tvSearchCount);
+        if (tvSearchCount != null) {
+            tvSearchCount.setText("Tìm thấy " + searchResults.size() + " thực phẩm");
+        }
+
+        // 4. Hiển thị danh sách (Chúng ta sẽ thiết lập Adapter ở bước sau)
+        displaySearchResults(searchResults);
+    }
+
+    private void displaySearchResults(List<PantryItem> results) {
+        // 1. Thiết lập LayoutManager nếu chưa có
+        if (rvSearchResults.getLayoutManager() == null) {
+            rvSearchResults.setLayoutManager(new androidx.recyclerview.widget.LinearLayoutManager(requireContext()));
+        }
+
+        // 2. Khởi tạo hoặc cập nhật Adapter
+        PantryItemAdapter adapter = new PantryItemAdapter(requireContext(), results);
+        rvSearchResults.setAdapter(adapter);
+
+        // 3. Xử lý khi nhấn vào một món đồ trong kết quả tìm kiếm
+        adapter.setOnItemActionListener(new PantryItemAdapter.OnItemActionListener() {
+            @Override
+            public void onEdit(PantryItem item, int position) {
+                // Tái sử dụng Dialog chỉnh sửa mà bạn đã làm ở nhánh trước
+                dialogHelper.showEditItemBottomSheet(item, position, adapter, null);
+            }
+
+            @Override
+            public void onDelete(PantryItem item, int position) {
+                // Hiện thông báo xác nhận trước khi xóa
+                new com.google.android.material.dialog.MaterialAlertDialogBuilder(requireContext())
+                        .setTitle("Xác nhận xóa")
+                        .setMessage("Bạn có chắc muốn xóa '" + item.getName() + "' khỏi tủ lạnh?")
+                        .setPositiveButton("Xóa", (dialog, which) -> {
+                            // Thực hiện xóa trong Database ở luồng phụ
+                            PantrySmartDatabase.databaseWriteExecutor.execute(() -> {
+                                pantryDao.delete(item);
+
+                                if (getActivity() != null) {
+                                    getActivity().runOnUiThread(() -> {
+                                        // 1. Xóa món đồ khỏi danh sách tìm kiếm hiện tại
+                                        adapter.removeItem(position);
+
+                                        // 2. Cập nhật lại số lượng kết quả trên header
+                                        TextView tvCount = layoutSearchResults.findViewById(R.id.tvSearchCount);
+                                        if (tvCount != null) {
+                                            tvCount.setText("Tìm thấy " + adapter.getItemCount() + " thực phẩm");
+                                        }
+
+                                        // 3. Quan trọng: Load lại dữ liệu tủ lạnh (Stats + Shelves) ở phía dưới
+                                        loadItems();
+
+                                        Toast.makeText(requireContext(), "Đã xóa thành công!", Toast.LENGTH_SHORT)
+                                                .show();
+                                    });
+                                }
+                            });
+                        })
+                        .setNegativeButton("Hủy", null)
+                        .show();
+            }
+        });
     }
 
     private void setupListeners() {
@@ -183,10 +471,10 @@ public class FridgeFragment extends Fragment {
         doorMain.setOnClickListener(v -> toggleMainDoor());
         btnCloseFreezer.setOnClickListener(v -> toggleFreezerDoor());
         btnCloseMain.setOnClickListener(v -> toggleMainDoor());
-        btnViewAllFreezer.setOnClickListener(v ->
-                dialogHelper.showAllItemsDialog(cachedFreezerItems, "Ngăn Đông", "#3A7AB5"));
-        btnViewAllMain.setOnClickListener(v ->
-                dialogHelper.showAllItemsDialog(cachedMainItems, "Ngăn Chính", "#A06828"));
+        btnViewAllFreezer
+                .setOnClickListener(v -> dialogHelper.showAllItemsDialog(cachedFreezerItems, "Ngăn Đông", "#3A7AB5"));
+        btnViewAllMain
+                .setOnClickListener(v -> dialogHelper.showAllItemsDialog(cachedMainItems, "Ngăn Chính", "#A06828"));
     }
 
     // ========================= DOOR TOGGLE =========================
@@ -249,13 +537,15 @@ public class FridgeFragment extends Fragment {
             LinearLayout shelf3, TextView emptyView) {
         shelf1.removeAllViews();
         shelf2.removeAllViews();
-        if (shelf3 != null) shelf3.removeAllViews();
+        if (shelf3 != null)
+            shelf3.removeAllViews();
 
         if (items.isEmpty()) {
             emptyView.setVisibility(View.VISIBLE);
             addEmptySlots(shelf1, 4);
             addEmptySlots(shelf2, 4);
-            if (shelf3 != null) addEmptySlots(shelf3, 4);
+            if (shelf3 != null)
+                addEmptySlots(shelf3, 4);
             return 0;
         }
 
@@ -270,9 +560,12 @@ public class FridgeFragment extends Fragment {
 
             LinearLayout targetShelf;
             if (shelf3 != null) {
-                if (i < maxPerShelf) targetShelf = shelf1;
-                else if (i < maxPerShelf * 2) targetShelf = shelf2;
-                else targetShelf = shelf3;
+                if (i < maxPerShelf)
+                    targetShelf = shelf1;
+                else if (i < maxPerShelf * 2)
+                    targetShelf = shelf2;
+                else
+                    targetShelf = shelf3;
             } else {
                 targetShelf = (i < maxPerShelf) ? shelf1 : shelf2;
             }
@@ -284,7 +577,8 @@ public class FridgeFragment extends Fragment {
 
         fillEmptySlots(shelf1, maxPerShelf);
         fillEmptySlots(shelf2, maxPerShelf);
-        if (shelf3 != null) fillEmptySlots(shelf3, maxPerShelf);
+        if (shelf3 != null)
+            fillEmptySlots(shelf3, maxPerShelf);
 
         return Math.min(items.size(), maxTotal);
     }
@@ -332,7 +626,8 @@ public class FridgeFragment extends Fragment {
         label.setText(truncate(item.getName(), 6));
         label.setTextSize(8);
         label.setTextColor(isExpiring
-                ? Color.parseColor("#EA580C") : Color.parseColor("#6B7280"));
+                ? Color.parseColor("#EA580C")
+                : Color.parseColor("#6B7280"));
         label.setGravity(Gravity.CENTER);
         label.setPadding(0, dp(2), 0, 0);
         container.addView(label);
@@ -344,8 +639,7 @@ public class FridgeFragment extends Fragment {
     private void addEmptySlots(LinearLayout shelf, int count) {
         for (int i = 0; i < count; i++) {
             View slot = new View(requireContext());
-            LinearLayout.LayoutParams slotParams =
-                    new LinearLayout.LayoutParams(dp(42), dp(42));
+            LinearLayout.LayoutParams slotParams = new LinearLayout.LayoutParams(dp(42), dp(42));
             slotParams.setMargins(dp(4), 0, dp(4), 0);
             slot.setLayoutParams(slotParams);
             slot.setBackgroundResource(R.drawable.bg_shelf_empty_slot);
@@ -356,7 +650,8 @@ public class FridgeFragment extends Fragment {
     // Hàm lấp đầy chỗ trống bằng empty slots
     private void fillEmptySlots(LinearLayout shelf, int maxPerShelf) {
         int remaining = maxPerShelf - shelf.getChildCount();
-        if (remaining > 0) addEmptySlots(shelf, remaining);
+        if (remaining > 0)
+            addEmptySlots(shelf, remaining);
     }
 
     // ========================= DATA =========================
@@ -382,14 +677,17 @@ public class FridgeFragment extends Fragment {
                 }
             }
             for (PantryItem item : expiring) {
-                if ("FREEZER".equals(item.getStorageZone())) expiringFreezer++;
-                else expiringMain++;
+                if ("FREEZER".equals(item.getStorageZone()))
+                    expiringFreezer++;
+                else
+                    expiringMain++;
             }
             final int finalExpiredCount = expiredCount;
             final int finalExpiringFreezer = expiringFreezer;
             final int finalExpiringMain = expiringMain;
 
-            if (getActivity() == null) return;
+            if (getActivity() == null)
+                return;
             getActivity().runOnUiThread(() -> {
                 int totalItems = totalMain + totalFreezer;
 
@@ -447,12 +745,21 @@ public class FridgeFragment extends Fragment {
     }
 
     private String formatQuantity(double qty) {
-        if (qty == (long) qty) return String.valueOf((long) qty);
+        if (qty == (long) qty)
+            return String.valueOf((long) qty);
         return String.valueOf(qty);
     }
 
     private String truncate(String text, int maxLen) {
-        if (text == null) return "";
+        if (text == null)
+            return "";
         return text.length() > maxLen ? text.substring(0, maxLen) + "…" : text;
+    }
+
+    private String encodeImage(Bitmap bm) {
+        ByteArrayOutputStream baos = new ByteArrayOutputStream();
+        bm.compress(Bitmap.CompressFormat.JPEG, 60, baos);
+        byte[] b = baos.toByteArray();
+        return Base64.encodeToString(b, Base64.NO_WRAP);
     }
 }

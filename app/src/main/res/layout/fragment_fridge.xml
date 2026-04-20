@@ -791,8 +791,37 @@
                 android:layout_marginTop="2dp"
                 android:background="#0D000000" />
         </LinearLayout>
+
     </LinearLayout>
 </ScrollView>
+
+    <!-- Overlay Search Results -->
+    <LinearLayout
+        android:id="@+id/layoutSearchResults"
+        android:layout_width="match_parent"
+        android:layout_height="match_parent"
+        android:background="#F8FAFC"
+        android:orientation="vertical"
+        android:visibility="gone"
+        android:clickable="true"
+        android:focusable="true">
+
+        <TextView
+            android:id="@+id/tvSearchCount"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:padding="16dp"
+            android:text="Tìm thấy 0 kết quả"
+            android:textColor="#64748B"
+            android:textSize="12sp" />
+
+        <androidx.recyclerview.widget.RecyclerView
+            android:id="@+id/rvSearchResults"
+            android:layout_width="match_parent"
+            android:layout_height="match_parent"
+            android:clipToPadding="false"
+            android:paddingBottom="80dp" />
+    </LinearLayout>
 
 <!-- FAB Add Item -->
 <include layout="@layout/layout_fab_add_item" />

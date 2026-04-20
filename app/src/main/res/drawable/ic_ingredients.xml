@@ -1,0 +1,33 @@
+<vector xmlns:android="http://schemas.android.com/apk/res/android"
+    android:width="24dp"
+    android:height="24dp"
+    android:viewportWidth="24"
+    android:viewportHeight="24">
+    <!-- Pot/bowl shape -->
+    <path
+        android:fillColor="#22C55E"
+        android:pathData="M3,6 L21,6 Q21,6 20,14 Q19,18 12,19 Q5,18 4,14 Q3,10 3,6Z" />
+    <!-- Lid handle -->
+    <path
+        android:fillColor="#16A34A"
+        android:pathData="M9,6 Q9,3 12,3 Q15,3 15,6Z" />
+    <!-- Steam lines -->
+    <path
+        android:fillColor="@android:color/transparent"
+        android:strokeColor="#86EFAC"
+        android:strokeWidth="1.5"
+        android:strokeLineCap="round"
+        android:pathData="M8,10 Q8.5,8.5 8,7" />
+    <path
+        android:fillColor="@android:color/transparent"
+        android:strokeColor="#86EFAC"
+        android:strokeWidth="1.5"
+        android:strokeLineCap="round"
+        android:pathData="M12,11 Q12.5,9.5 12,8" />
+    <path
+        android:fillColor="@android:color/transparent"
+        android:strokeColor="#86EFAC"
+        android:strokeWidth="1.5"
+        android:strokeLineCap="round"
+        android:pathData="M16,10 Q16.5,8.5 16,7" />
+</vector>
