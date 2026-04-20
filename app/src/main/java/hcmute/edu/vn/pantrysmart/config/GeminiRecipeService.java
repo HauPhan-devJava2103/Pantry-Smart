@@ -24,7 +24,7 @@ public class GeminiRecipeService {
     private static final String TAG = "GeminiRecipeService";
 
     private static final String API_KEY = BuildConfig.GEMINI_API_KEY;
-    private static final String API_URL = "https://generativelanguage.googleapis.com/v1beta/models/gemini-2.5-flash:generateContent?key=";
+    private static final String API_URL = "https://generativelanguage.googleapis.com/v1beta/models/gemini-2.5-flash-lite:generateContent?key=";
 
     public interface RecipeCallback {
         void onSuccess(List<RecipeSuggestion> recipes);
@@ -91,7 +91,8 @@ public class GeminiRecipeService {
                         "\"cookingTime\":\"25 phút\"," +
                         "\"difficulty\":\"Dễ\"," +
                         "\"matchedIngredients\":[\"Trứng gà - 2 quả\",\"Thịt heo - 150g\"]," +
-                        "\"steps\":[\"Đập 2 quả trứng vào bát, thêm 1 thìa nước mắm\",\"Cho 150g thịt heo vào chảo xào 3 phút\"]," +
+                        "\"steps\":[\"Đập 2 quả trứng vào bát, thêm 1 thìa nước mắm\",\"Cho 150g thịt heo vào chảo xào 3 phút\"],"
+                        +
                         "\"imageSearch\":\"english keyword\"" +
                         "}]";
 

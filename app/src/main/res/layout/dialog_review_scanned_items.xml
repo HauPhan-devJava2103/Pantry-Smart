@@ -26,22 +26,27 @@
     <View
         android:layout_width="match_parent"
         android:layout_height="1dp"
-        android:layout_marginVertical="16dp"
+        android:layout_marginVertical="12dp"
         android:background="#F3F4F6" />
 
+    <!-- RecyclerView giới hạn chiều cao tối đa bằng weight + maxHeight -->
     <androidx.recyclerview.widget.RecyclerView
         android:id="@+id/rvReviewScannedItems"
         android:layout_width="match_parent"
-        android:layout_height="wrap_content"
-        android:maxHeight="400dp"
-        android:scrollbars="vertical" />
+        android:layout_height="0dp"
+        android:layout_weight="1"
+        android:scrollbars="vertical"
+        android:overScrollMode="always"
+        android:fadingEdge="vertical"
+        android:fadingEdgeLength="24dp" />
 
     <View
         android:layout_width="match_parent"
         android:layout_height="1dp"
-        android:layout_marginVertical="16dp"
+        android:layout_marginVertical="12dp"
         android:background="#F3F4F6" />
 
+    <!-- Buttons luôn hiển thị ở dưới cùng -->
     <LinearLayout
         android:layout_width="match_parent"
         android:layout_height="wrap_content"

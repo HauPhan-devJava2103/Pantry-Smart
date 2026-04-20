@@ -9,8 +9,10 @@ import android.graphics.BitmapFactory;
 import android.net.Uri;
 import android.os.Environment;
 import android.provider.MediaStore;
+import android.util.DisplayMetrics;
 import android.view.LayoutInflater;
 import android.view.View;
+import android.view.WindowManager;
 import android.widget.EditText;
 import android.widget.RadioGroup;
 import android.widget.TextView;
@@ -339,6 +341,15 @@ public class ReceiptScanHelper {
         });
 
         dialog.show();
+
+        // Giới hạn chiều cao dialog tối đa 80% màn hình
+        if (dialog.getWindow() != null) {
+            DisplayMetrics dm = fragment.getResources().getDisplayMetrics();
+            int maxHeight = (int) (dm.heightPixels * 0.80);
+            dialog.getWindow().setLayout(
+                    WindowManager.LayoutParams.MATCH_PARENT,
+                    maxHeight);
+        }
     }
 
     private void showEditItemBottomSheet(ScannedItem item, int position, ScannedReviewAdapter adapter) {

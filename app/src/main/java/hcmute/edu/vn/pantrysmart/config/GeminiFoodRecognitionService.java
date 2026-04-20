@@ -18,7 +18,7 @@ public class GeminiFoodRecognitionService {
 
     private static final String API_KEY = BuildConfig.GEMINI_API_KEY;
 
-    private static final String BASE_URL = "https://generativelanguage.googleapis.com/v1beta/models/gemini-2.5-flash:generateContent?key=";
+    private static final String BASE_URL = "https://generativelanguage.googleapis.com/v1beta/models/gemini-2.5-flash-lite:generateContent?key=";
 
     public interface RecognitionCallback {
         void onSuccess(PantryItem item);

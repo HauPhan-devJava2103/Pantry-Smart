@@ -28,7 +28,7 @@ import hcmute.edu.vn.pantrysmart.model.ScannedItem;
 public class GeminiReceiptParser {
     private static final String TAG = "GeminiReceiptParser";
     private static final String API_KEY = BuildConfig.GEMINI_API_KEY;
-    private static final String API_URL = "https://generativelanguage.googleapis.com/v1beta/models/gemini-2.5-flash:generateContent?key=";
+    private static final String API_URL = "https://generativelanguage.googleapis.com/v1beta/models/gemini-2.5-flash-lite:generateContent?key=";
 
     private static final ExecutorService executor = Executors.newSingleThreadExecutor();
     private static final Handler mainHandler = new Handler(Looper.getMainLooper());
