@@ -188,22 +188,11 @@ public class GeminiReceiptParser {
                         cache.put(imageCacheKey, new ArrayList<>(items));
                         mainHandler.post(() -> callback.onSuccess(items));
                     }
-                } else if ((responseCode == 429 || responseCode == 503) && attempt < MAX_RETRIES) {
-                    // 429 = Rate Limit, 503 = Service Unavailable → retry với backoff
+                } else if (responseCode == 429 && attempt < MAX_RETRIES) {
                     long backoffDelay = INITIAL_BACKOFF_MS * (long) Math.pow(2, attempt);
-                    Log.w(TAG, "API trả " + responseCode + ", retry lần " + (attempt + 1) + " sau " + backoffDelay + "ms");
                     Thread.sleep(backoffDelay);
                     executeRequestWithRetry(requestBody, attempt + 1, imageCacheKey, callback);
                 } else {
-                    // Đọc error body để debug
-                    String errorBody = "";
-                    try (BufferedReader er = new BufferedReader(new InputStreamReader(conn.getErrorStream()))) {
-                        StringBuilder sb = new StringBuilder();
-                        String l;
-                        while ((l = er.readLine()) != null) sb.append(l);
-                        errorBody = sb.toString();
-                    } catch (Exception ignored) {}
-                    Log.e(TAG, "API Error " + responseCode + ": " + errorBody);
                     mainHandler.post(() -> callback.onError("Lỗi API Gemini (Code: " + responseCode + ")"));
                 }
             } catch (Exception e) {
