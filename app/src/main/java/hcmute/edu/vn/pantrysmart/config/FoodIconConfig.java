@@ -115,6 +115,11 @@ public final class FoodIconConfig {
         ICON_MAP.put("ic_food_popcorn", R.drawable.ic_food_popcorn);
         ICON_MAP.put("ic_food_cupcake", R.drawable.ic_food_cupcake);
         ICON_MAP.put("ic_food_package", R.drawable.ic_food_package);
+
+        // Expense category icons
+        ICON_MAP.put("ic_shopping_cart", R.drawable.ic_shopping_cart);
+        ICON_MAP.put("ic_delivery", R.drawable.ic_delivery);
+        ICON_MAP.put("ic_snack", R.drawable.ic_snack);
     }
 
     // === CATEGORIES ===

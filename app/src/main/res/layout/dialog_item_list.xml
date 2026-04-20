@@ -79,13 +79,12 @@
             android:layout_height="32dp"
             android:background="@drawable/bg_dialog_close_btn">
 
-            <TextView
-                android:layout_width="32dp"
-                android:layout_height="32dp"
-                android:gravity="center"
-                android:text="✕"
-                android:textColor="#6B7280"
-                android:textSize="14sp" />
+            <ImageView
+                android:layout_width="16dp"
+                android:layout_height="16dp"
+                android:layout_gravity="center"
+                android:src="@drawable/ic_close"
+                android:contentDescription="Đóng" />
         </FrameLayout>
     </LinearLayout>
 

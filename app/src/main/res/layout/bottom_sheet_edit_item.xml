@@ -35,7 +35,7 @@
             android:layout_width="0dp"
             android:layout_height="wrap_content"
             android:layout_weight="1"
-            android:text="✏️ Chỉnh sửa thực phẩm"
+            android:text="Chỉnh sửa thực phẩm"
             android:textSize="18sp"
             android:textStyle="bold"
             android:textColor="#1E2939"
@@ -49,13 +49,12 @@
             android:clickable="true"
             android:focusable="true">
 
-            <TextView
-                android:layout_width="wrap_content"
-                android:layout_height="wrap_content"
+            <ImageView
+                android:layout_width="14dp"
+                android:layout_height="14dp"
                 android:layout_gravity="center"
-                android:text="✕"
-                android:textSize="14sp"
-                android:textColor="#6B7280" />
+                android:src="@drawable/ic_close"
+                android:contentDescription="Đóng" />
         </FrameLayout>
     </LinearLayout>
 
@@ -247,119 +246,151 @@
                     android:fontFamily="sans-serif-medium"
                     android:layout_marginBottom="8dp" />
 
-                <!-- Hàng 1: Sữa & Trứng, Rau củ, Trái cây -->
+                <!-- Hàng 1: Sữa & Trứng, Rau củ -->
                 <LinearLayout
                     android:layout_width="match_parent"
                     android:layout_height="wrap_content"
                     android:orientation="horizontal"
-                    android:layout_marginBottom="6dp">
+                    android:layout_marginBottom="8dp">
 
                     <TextView
                         android:id="@+id/chipDairy"
-                        android:layout_width="wrap_content"
-                        android:layout_height="28dp"
+                        android:layout_width="0dp"
+                        android:layout_height="44dp"
+                        android:layout_weight="1"
                         android:background="@drawable/bg_edit_category_chip"
-                        android:paddingStart="12dp"
-                        android:paddingEnd="12dp"
                         android:gravity="center"
-                        android:text="🥛 Sữa \u0026 Trứng"
-                        android:textSize="12sp"
+                        android:text="Sữa \u0026 Trứng"
+                        android:textSize="13sp"
                         android:textColor="#4A5565"
                         android:fontFamily="sans-serif-medium"
-                        android:layout_marginEnd="6dp"
+                        android:drawableStart="@drawable/ic_food_milk"
+                        android:drawablePadding="8dp"
+                        android:paddingStart="20dp"
+                        android:paddingEnd="20dp"
                         android:clickable="true"
                         android:focusable="true" />
+
+                    <View
+                        android:layout_width="8dp"
+                        android:layout_height="0dp" />
 
                     <TextView
                         android:id="@+id/chipVegetable"
-                        android:layout_width="wrap_content"
-                        android:layout_height="28dp"
+                        android:layout_width="0dp"
+                        android:layout_height="44dp"
+                        android:layout_weight="1"
                         android:background="@drawable/bg_edit_category_chip"
-                        android:paddingStart="12dp"
-                        android:paddingEnd="12dp"
                         android:gravity="center"
-                        android:text="🥦 Rau củ"
-                        android:textSize="12sp"
+                        android:text="Rau củ"
+                        android:textSize="13sp"
                         android:textColor="#4A5565"
                         android:fontFamily="sans-serif-medium"
-                        android:layout_marginEnd="6dp"
-                        android:clickable="true"
-                        android:focusable="true" />
-
-                    <TextView
-                        android:id="@+id/chipFruit"
-                        android:layout_width="wrap_content"
-                        android:layout_height="28dp"
-                        android:background="@drawable/bg_edit_category_chip"
-                        android:paddingStart="12dp"
-                        android:paddingEnd="12dp"
-                        android:gravity="center"
-                        android:text="🍎 Trái cây"
-                        android:textSize="12sp"
-                        android:textColor="#4A5565"
-                        android:fontFamily="sans-serif-medium"
+                        android:drawableStart="@drawable/ic_food_broccoli"
+                        android:drawablePadding="8dp"
+                        android:paddingStart="20dp"
+                        android:paddingEnd="20dp"
                         android:clickable="true"
                         android:focusable="true" />
                 </LinearLayout>
 
-                <!-- Hàng 2: Thịt, Hải sản, Đồ uống, Gia vị -->
+                <!-- Hàng 2: Trái cây, Thịt -->
                 <LinearLayout
                     android:layout_width="match_parent"
                     android:layout_height="wrap_content"
                     android:orientation="horizontal"
-                    android:layout_marginBottom="6dp">
+                    android:layout_marginBottom="8dp">
+
+                    <TextView
+                        android:id="@+id/chipFruit"
+                        android:layout_width="0dp"
+                        android:layout_height="44dp"
+                        android:layout_weight="1"
+                        android:background="@drawable/bg_edit_category_chip"
+                        android:gravity="center"
+                        android:text="Trái cây"
+                        android:textSize="13sp"
+                        android:textColor="#4A5565"
+                        android:fontFamily="sans-serif-medium"
+                        android:drawableStart="@drawable/ic_food_apple"
+                        android:drawablePadding="8dp"
+                        android:paddingStart="20dp"
+                        android:paddingEnd="20dp"
+                        android:clickable="true"
+                        android:focusable="true" />
+
+                    <View
+                        android:layout_width="8dp"
+                        android:layout_height="0dp" />
 
                     <TextView
                         android:id="@+id/chipMeat"
-                        android:layout_width="wrap_content"
-                        android:layout_height="28dp"
+                        android:layout_width="0dp"
+                        android:layout_height="44dp"
+                        android:layout_weight="1"
                         android:background="@drawable/bg_edit_category_chip"
-                        android:paddingStart="12dp"
-                        android:paddingEnd="12dp"
                         android:gravity="center"
-                        android:text="🥩 Thịt"
-                        android:textSize="12sp"
+                        android:text="Thịt"
+                        android:textSize="13sp"
                         android:textColor="#4A5565"
                         android:fontFamily="sans-serif-medium"
-                        android:layout_marginEnd="6dp"
+                        android:drawableStart="@drawable/ic_food_steak"
+                        android:drawablePadding="8dp"
+                        android:paddingStart="20dp"
+                        android:paddingEnd="20dp"
                         android:clickable="true"
                         android:focusable="true" />
+                </LinearLayout>
+
+                <!-- Hàng 3: Hải sản, Đồ uống -->
+                <LinearLayout
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:orientation="horizontal"
+                    android:layout_marginBottom="8dp">
 
                     <TextView
                         android:id="@+id/chipSeafood"
-                        android:layout_width="wrap_content"
-                        android:layout_height="28dp"
+                        android:layout_width="0dp"
+                        android:layout_height="44dp"
+                        android:layout_weight="1"
                         android:background="@drawable/bg_edit_category_chip"
-                        android:paddingStart="12dp"
-                        android:paddingEnd="12dp"
                         android:gravity="center"
-                        android:text="🦐 Hải sản"
-                        android:textSize="12sp"
+                        android:text="Hải sản"
+                        android:textSize="13sp"
                         android:textColor="#4A5565"
                         android:fontFamily="sans-serif-medium"
-                        android:layout_marginEnd="6dp"
+                        android:drawableStart="@drawable/ic_food_shrimp"
+                        android:drawablePadding="8dp"
+                        android:paddingStart="20dp"
+                        android:paddingEnd="20dp"
                         android:clickable="true"
                         android:focusable="true" />
+
+                    <View
+                        android:layout_width="8dp"
+                        android:layout_height="0dp" />
 
                     <TextView
                         android:id="@+id/chipDrink"
-                        android:layout_width="wrap_content"
-                        android:layout_height="28dp"
+                        android:layout_width="0dp"
+                        android:layout_height="44dp"
+                        android:layout_weight="1"
                         android:background="@drawable/bg_edit_category_chip"
-                        android:paddingStart="12dp"
-                        android:paddingEnd="12dp"
                         android:gravity="center"
-                        android:text="🧃 Đồ uống"
-                        android:textSize="12sp"
+                        android:text="Đồ uống"
+                        android:textSize="13sp"
                         android:textColor="#4A5565"
                         android:fontFamily="sans-serif-medium"
-                        android:layout_marginEnd="6dp"
+                        android:drawableStart="@drawable/ic_food_juice"
+                        android:drawablePadding="8dp"
+                        android:paddingStart="20dp"
+                        android:paddingEnd="20dp"
                         android:clickable="true"
                         android:focusable="true" />
-
                 </LinearLayout>
 
-                <!-- Hàng 3: Gia vị, Khác -->
+                <!-- Hàng 4: Gia vị, Khác -->
                 <LinearLayout
                     android:layout_width="match_parent"
                     android:layout_height="wrap_content"
@@ -367,32 +398,41 @@
 
                     <TextView
                         android:id="@+id/chipSpice"
-                        android:layout_width="wrap_content"
-                        android:layout_height="28dp"
+                        android:layout_width="0dp"
+                        android:layout_height="44dp"
+                        android:layout_weight="1"
                         android:background="@drawable/bg_edit_category_chip"
-                        android:paddingStart="12dp"
-                        android:paddingEnd="12dp"
                         android:gravity="center"
-                        android:text="🧂 Gia vị"
-                        android:textSize="12sp"
+                        android:text="Gia vị"
+                        android:textSize="13sp"
                         android:textColor="#4A5565"
                         android:fontFamily="sans-serif-medium"
-                        android:layout_marginEnd="6dp"
+                        android:drawableStart="@drawable/ic_food_salt"
+                        android:drawablePadding="8dp"
+                        android:paddingStart="20dp"
+                        android:paddingEnd="20dp"
                         android:clickable="true"
                         android:focusable="true" />
 
+                    <View
+                        android:layout_width="8dp"
+                        android:layout_height="0dp" />
+
                     <TextView
                         android:id="@+id/chipOther"
-                        android:layout_width="wrap_content"
-                        android:layout_height="28dp"
+                        android:layout_width="0dp"
+                        android:layout_height="44dp"
+                        android:layout_weight="1"
                         android:background="@drawable/bg_edit_category_chip"
-                        android:paddingStart="12dp"
-                        android:paddingEnd="12dp"
                         android:gravity="center"
-                        android:text="📦 Khác"
-                        android:textSize="12sp"
+                        android:text="Khác"
+                        android:textSize="13sp"
                         android:textColor="#4A5565"
                         android:fontFamily="sans-serif-medium"
+                        android:drawableStart="@drawable/ic_food_package"
+                        android:drawablePadding="8dp"
+                        android:paddingStart="20dp"
+                        android:paddingEnd="20dp"
                         android:clickable="true"
                         android:focusable="true" />
                 </LinearLayout>
@@ -426,10 +466,14 @@
                         android:layout_weight="1"
                         android:background="@drawable/bg_edit_zone_inactive"
                         android:gravity="center"
-                        android:text="🧊 Ngăn chính"
+                        android:text="Ngăn chính"
                         android:textSize="14sp"
                         android:textColor="#4A5565"
                         android:fontFamily="sans-serif-medium"
+                        android:drawableStart="@drawable/ic_zone_main"
+                        android:drawablePadding="8dp"
+                        android:paddingStart="20dp"
+                        android:paddingEnd="20dp"
                         android:clickable="true"
                         android:focusable="true" />
 
@@ -444,10 +488,14 @@
                         android:layout_weight="1"
                         android:background="@drawable/bg_edit_zone_active"
                         android:gravity="center"
-                        android:text="❄️ Ngăn đông"
+                        android:text="Ngăn đông"
                         android:textSize="14sp"
                         android:textColor="@android:color/white"
                         android:fontFamily="sans-serif-medium"
+                        android:drawableStart="@drawable/ic_zone_freezer"
+                        android:drawablePadding="8dp"
+                        android:paddingStart="20dp"
+                        android:paddingEnd="20dp"
                         android:clickable="true"
                         android:focusable="true" />
                 </LinearLayout>
@@ -461,7 +509,7 @@
                 android:layout_marginTop="20dp"
                 android:background="@drawable/bg_edit_sheet_button_save"
                 android:gravity="center"
-                android:text="✓  Lưu thay đổi"
+                android:text="Lưu thay đổi"
                 android:textSize="16sp"
                 android:textColor="@android:color/white"
                 android:fontFamily="sans-serif-medium"

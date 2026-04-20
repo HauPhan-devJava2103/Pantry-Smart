@@ -207,6 +207,7 @@ public class FridgeFragment extends Fragment {
 
         fabHelper = new FridgeFabHelper(this);
         fabHelper.setOnScanReceiptListener(this::openScanBottomSheet);
+        fabHelper.setOnManualAddListener(() -> dialogHelper.showAddItemBottomSheet());
 
         bindViews(view);
         setupListeners();

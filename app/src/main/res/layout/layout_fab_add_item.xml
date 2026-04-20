@@ -59,12 +59,12 @@
                 android:layout_height="48dp"
                 android:background="@drawable/bg_fab_item_gray">
 
-                <TextView
-                    android:layout_width="wrap_content"
-                    android:layout_height="wrap_content"
+                <ImageView
+                    android:layout_width="24dp"
+                    android:layout_height="24dp"
                     android:layout_gravity="center"
-                    android:text="📷"
-                    android:textSize="22sp" />
+                    android:src="@drawable/ic_camera"
+                    android:contentDescription="AI" />
             </FrameLayout>
         </LinearLayout>
 
@@ -97,12 +97,12 @@
                 android:layout_height="48dp"
                 android:background="@drawable/bg_fab_item_purple">
 
-                <TextView
-                    android:layout_width="wrap_content"
-                    android:layout_height="wrap_content"
+                <ImageView
+                    android:layout_width="24dp"
+                    android:layout_height="24dp"
                     android:layout_gravity="center"
-                    android:text="📋"
-                    android:textSize="22sp" />
+                    android:src="@drawable/ic_scan"
+                    android:contentDescription="Quét" />
             </FrameLayout>
         </LinearLayout>
 
@@ -134,12 +134,12 @@
                 android:layout_height="48dp"
                 android:background="@drawable/bg_fab_item_orange">
 
-                <TextView
-                    android:layout_width="wrap_content"
-                    android:layout_height="wrap_content"
+                <ImageView
+                    android:layout_width="24dp"
+                    android:layout_height="24dp"
                     android:layout_gravity="center"
-                    android:text="✏️"
-                    android:textSize="22sp" />
+                    android:src="@drawable/ic_edit"
+                    android:contentDescription="Thêm" />
             </FrameLayout>
         </LinearLayout>
 
@@ -158,15 +158,13 @@
         android:clickable="true"
         android:focusable="true">
 
-        <TextView
+        <ImageView
             android:id="@+id/fabMainIcon"
-            android:layout_width="wrap_content"
-            android:layout_height="wrap_content"
+            android:layout_width="28dp"
+            android:layout_height="28dp"
             android:layout_gravity="center"
-            android:text="＋"
-            android:textSize="28sp"
-            android:textColor="#FFFFFF"
-            android:textStyle="bold" />
+            android:src="@drawable/ic_add"
+            android:contentDescription="Thêm" />
     </FrameLayout>
 
 </FrameLayout>

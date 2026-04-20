@@ -4,6 +4,7 @@ import android.view.View;
 import android.view.animation.AccelerateDecelerateInterpolator;
 import android.view.animation.OvershootInterpolator;
 import android.widget.FrameLayout;
+import android.widget.ImageView;
 import android.widget.LinearLayout;
 import android.widget.TextView;
 import android.widget.Toast;
@@ -33,7 +34,7 @@ public class FridgeFabHelper {
     private OnManualAddListener manualAddListener;
 
     private FrameLayout fabMain;
-    private TextView fabMainIcon;
+    private ImageView fabMainIcon;
     private LinearLayout fabMenuItems;
     private View fabOverlay;
     private LinearLayout fabItemAI, fabItemScan, fabItemManual;

@@ -186,11 +186,11 @@
                     android:background="@drawable/bg_category_selected"
                     android:gravity="center_vertical"
                     android:paddingHorizontal="12dp">
-                    <TextView
-                        android:layout_width="wrap_content"
-                        android:layout_height="wrap_content"
-                        android:text="🛒"
-                        android:textSize="14sp" />
+                    <ImageView
+                        android:layout_width="18dp"
+                        android:layout_height="18dp"
+                        android:src="@drawable/ic_shopping_cart"
+                        android:contentDescription="Mua sắm" />
                     <TextView
                         android:layout_width="wrap_content"
                         android:layout_height="wrap_content"
@@ -211,11 +211,11 @@
                     android:background="@drawable/bg_category_unselected"
                     android:gravity="center_vertical"
                     android:paddingHorizontal="12dp">
-                    <TextView
-                        android:layout_width="wrap_content"
-                        android:layout_height="wrap_content"
-                        android:text="🛵"
-                        android:textSize="14sp" />
+                    <ImageView
+                        android:layout_width="18dp"
+                        android:layout_height="18dp"
+                        android:src="@drawable/ic_delivery"
+                        android:contentDescription="Giao hàng" />
                     <TextView
                         android:layout_width="wrap_content"
                         android:layout_height="wrap_content"
@@ -245,11 +245,11 @@
                     android:background="@drawable/bg_category_unselected"
                     android:gravity="center_vertical"
                     android:paddingHorizontal="12dp">
-                    <TextView
-                        android:layout_width="wrap_content"
-                        android:layout_height="wrap_content"
-                        android:text="🍿"
-                        android:textSize="14sp" />
+                    <ImageView
+                        android:layout_width="18dp"
+                        android:layout_height="18dp"
+                        android:src="@drawable/ic_snack"
+                        android:contentDescription="Đồ ăn vặt" />
                     <TextView
                         android:layout_width="wrap_content"
                         android:layout_height="wrap_content"
@@ -270,11 +270,11 @@
                     android:background="@drawable/bg_category_unselected"
                     android:gravity="center_vertical"
                     android:paddingHorizontal="12dp">
-                    <TextView
-                        android:layout_width="wrap_content"
-                        android:layout_height="wrap_content"
-                        android:text="📦"
-                        android:textSize="14sp" />
+                    <ImageView
+                        android:layout_width="18dp"
+                        android:layout_height="18dp"
+                        android:src="@drawable/ic_food_package"
+                        android:contentDescription="Khác" />
                     <TextView
                         android:layout_width="wrap_content"
                         android:layout_height="wrap_content"

@@ -44,13 +44,12 @@
             android:clickable="true"
             android:focusable="true">
 
-            <TextView
-                android:layout_width="wrap_content"
-                android:layout_height="wrap_content"
+            <ImageView
+                android:layout_width="14dp"
+                android:layout_height="14dp"
                 android:layout_gravity="center"
-                android:text="✕"
-                android:textSize="14sp"
-                android:textColor="#6B7280" />
+                android:src="@drawable/ic_close"
+                android:contentDescription="Đóng" />
         </FrameLayout>
     </LinearLayout>
 

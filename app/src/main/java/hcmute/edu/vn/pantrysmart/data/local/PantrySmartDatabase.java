@@ -97,10 +97,10 @@ public abstract class PantrySmartDatabase extends RoomDatabase {
                         // Sau đó dùng bind param tránh lỗi encoding.
 
                         // expense_categories — chỉ có 4 key cố định
-                        db.execSQL("UPDATE expense_categories SET emoji = 'ic_food_package' WHERE category_key = 'SHOPPING' AND emoji NOT LIKE 'ic_%'");
-                        db.execSQL("UPDATE expense_categories SET emoji = 'ic_food_noodle'  WHERE category_key = 'DELIVERY' AND emoji NOT LIKE 'ic_%'");
-                        db.execSQL("UPDATE expense_categories SET emoji = 'ic_food_popcorn' WHERE category_key = 'SNACK'    AND emoji NOT LIKE 'ic_%'");
-                        db.execSQL("UPDATE expense_categories SET emoji = 'ic_food_bread'   WHERE category_key = 'OTHER'    AND emoji NOT LIKE 'ic_%'");
+                        db.execSQL("UPDATE expense_categories SET emoji = 'ic_shopping_cart' WHERE category_key = 'SHOPPING'");
+                        db.execSQL("UPDATE expense_categories SET emoji = 'ic_delivery'      WHERE category_key = 'DELIVERY'");
+                        db.execSQL("UPDATE expense_categories SET emoji = 'ic_snack'         WHERE category_key = 'SNACK'");
+                        db.execSQL("UPDATE expense_categories SET emoji = 'ic_food_package'  WHERE category_key = 'OTHER'");
 
                         // pantry_items — gán icon mặc định cho tất cả row chưa có drawable name
                         db.execSQL("UPDATE pantry_items SET emoji = 'ic_food_package' WHERE emoji IS NOT NULL AND emoji != '' AND emoji NOT LIKE 'ic_%'");
@@ -108,10 +108,10 @@ public abstract class PantrySmartDatabase extends RoomDatabase {
 
                 private void seedData(SupportSQLiteDatabase db) {
                         // 4 danh mục chi tiêu mặc định (emoji = drawable name)
-                        db.execSQL("INSERT INTO expense_categories VALUES ('SHOPPING','Mua sắm','ic_food_package')");
-                        db.execSQL("INSERT INTO expense_categories VALUES ('DELIVERY','Giao hàng','ic_food_noodle')");
-                        db.execSQL("INSERT INTO expense_categories VALUES ('SNACK','Đồ ăn vặt','ic_food_popcorn')");
-                        db.execSQL("INSERT INTO expense_categories VALUES ('OTHER','Khác','ic_food_bread')");
+                        db.execSQL("INSERT INTO expense_categories VALUES ('SHOPPING','Mua sắm','ic_shopping_cart')");
+                        db.execSQL("INSERT INTO expense_categories VALUES ('DELIVERY','Giao hàng','ic_delivery')");
+                        db.execSQL("INSERT INTO expense_categories VALUES ('SNACK','Đồ ăn vặt','ic_snack')");
+                        db.execSQL("INSERT INTO expense_categories VALUES ('OTHER','Khác','ic_food_package')");
 
                         // Ngân sách mẫu tháng hiện tại (monthly: 2tr, weekly: 500k)
                         int currentMonth = java.util.Calendar.getInstance().get(java.util.Calendar.MONTH) + 1;
