@@ -9,12 +9,14 @@ import java.io.OutputStream;
 import java.net.HttpURLConnection;
 import java.net.URL;
 import java.nio.charset.StandardCharsets;
+
+import hcmute.edu.vn.pantrysmart.BuildConfig;
 import hcmute.edu.vn.pantrysmart.data.local.entity.PantryItem;
 
 public class GeminiFoodRecognitionService {
     private static final String TAG = "GeminiFoodAI";
 
-    private static final String API_KEY = "AIzaSyDT0UAlLDE3voVZqv8wQjkN5kNMFM8ofw0";
+    private static final String API_KEY = BuildConfig.GEMINI_API_KEY;
 
     private static final String BASE_URL = "https://generativelanguage.googleapis.com/v1beta/models/gemini-2.5-flash:generateContent?key=";
 

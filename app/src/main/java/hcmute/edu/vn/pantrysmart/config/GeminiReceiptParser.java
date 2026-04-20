@@ -22,11 +22,12 @@ import java.util.Locale;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
 
+import hcmute.edu.vn.pantrysmart.BuildConfig;
 import hcmute.edu.vn.pantrysmart.model.ScannedItem;
 
 public class GeminiReceiptParser {
     private static final String TAG = "GeminiReceiptParser";
-    private static final String API_KEY = hcmute.edu.vn.pantrysmart.BuildConfig.GEMINI_API_KEY;
+    private static final String API_KEY = BuildConfig.GEMINI_API_KEY;
     private static final String API_URL = "https://generativelanguage.googleapis.com/v1beta/models/gemini-2.5-flash:generateContent?key=";
 
     private static final ExecutorService executor = Executors.newSingleThreadExecutor();
@@ -35,6 +36,7 @@ public class GeminiReceiptParser {
 
     public interface ParseCallback {
         void onSuccess(List<ScannedItem> items);
+
         void onError(String errorMessage);
     }
 
@@ -48,11 +50,15 @@ public class GeminiReceiptParser {
                 }
 
                 String promptText = "Bạn là một trợ lý chuyên trích xuất dữ liệu từ hóa đơn siêu thị tại Việt Nam.\n" +
-                        "Tôi sẽ cung cấp cho bạn một đoạn chữ thô lấy từ hóa đơn. Nhiệm vụ của bạn là lọc và CHỈ trích xuất CÁC MẶT HÀNG THỰC PHẨM TƯƠI SỐNG, RAU CỦ, TRÁI CÂY VÀ THỊT CÁ (ví dụ: rau, thịt, cá, tôm, lẩu, trứng...).\n" +
+                        "Tôi sẽ cung cấp cho bạn một đoạn chữ thô lấy từ hóa đơn. Nhiệm vụ của bạn là lọc và CHỈ trích xuất CÁC MẶT HÀNG THỰC PHẨM TƯƠI SỐNG, RAU CỦ, TRÁI CÂY VÀ THỊT CÁ (ví dụ: rau, thịt, cá, tôm, lẩu, trứng...).\n"
+                        +
                         "1. CHỈ trích xuất tên sản phẩm thực tế thuộc nhóm thực phẩm tươi sống nói trên.\n" +
-                        "2. BỎ QUA HOÀN TOÀN hóa mỹ phẩm, dụng cụ, đồ gia dụng, và đặc biệt BỎ QUA các loại gia vị (nước mắm, bột ngọt, muối, dầu ăn, hạt nêm). BỎ QUA các từ khóa tổng kết (Phải thanh toán, Tiền mặt, Điểm, Ngày giờ, Chiết khấu, VAT, mã vạch...).\n" +
-                        "3. Trả kết quả về ĐÚNG định dạng JSON Array. Mỗi object gồm: 'name' (tên), 'quantity' (số lượng), 'unit' (đơn vị), 'price' (tổng giá: Integer), 'category' (thịt, rau, trái cây, sữa, trứng, đồ uống, khô, gia dụng, khác), 'expiry_days' (ước tính số ngày bảo quản tối đa: Integer).\n" +
-                        "Chỉ trả mảng JSON hợp lệ, không dính ```json cục bộ, không giải thích thêm.\n\n--- VĂN BẢN HÓA ĐƠN ---\n" + rawText;
+                        "2. BỎ QUA HOÀN TOÀN hóa mỹ phẩm, dụng cụ, đồ gia dụng, và đặc biệt BỎ QUA các loại gia vị (nước mắm, bột ngọt, muối, dầu ăn, hạt nêm). BỎ QUA các từ khóa tổng kết (Phải thanh toán, Tiền mặt, Điểm, Ngày giờ, Chiết khấu, VAT, mã vạch...).\n"
+                        +
+                        "3. Trả kết quả về ĐÚNG định dạng JSON Array. Mỗi object gồm: 'name' (tên), 'quantity' (số lượng), 'unit' (đơn vị), 'price' (tổng giá: Integer), 'category' (thịt, rau, trái cây, sữa, trứng, đồ uống, khô, gia dụng, khác), 'expiry_days' (ước tính số ngày bảo quản tối đa: Integer).\n"
+                        +
+                        "Chỉ trả mảng JSON hợp lệ, không dính ```json cục bộ, không giải thích thêm.\n\n--- VĂN BẢN HÓA ĐƠN ---\n"
+                        + rawText;
 
                 JSONObject textPart = new JSONObject();
                 textPart.put("text", promptText);
@@ -93,10 +99,13 @@ public class GeminiReceiptParser {
                 }
 
                 String promptText = "Bạn là một trợ lý chuyên trích xuất dữ liệu từ hóa đơn siêu thị tại Việt Nam.\n" +
-                        "Tôi sẽ cung cấp cho bạn ảnh hóa đơn siêu thị. Nhiệm vụ của bạn là lọc và CHỈ trích xuất CÁC MẶT HÀNG THỰC PHẨM TƯƠI SỐNG, RAU CỦ, TRÁI CÂY VÀ THỊT CÁ (ví dụ: rau, thịt, cá, tôm, lẩu, trứng...).\n" +
+                        "Tôi sẽ cung cấp cho bạn ảnh hóa đơn siêu thị. Nhiệm vụ của bạn là lọc và CHỈ trích xuất CÁC MẶT HÀNG THỰC PHẨM TƯƠI SỐNG, RAU CỦ, TRÁI CÂY VÀ THỊT CÁ (ví dụ: rau, thịt, cá, tôm, lẩu, trứng...).\n"
+                        +
                         "1. CHỈ trích xuất tên sản phẩm thực tế thuộc nhóm thực phẩm tươi sống nói trên.\n" +
-                        "2. BỎ QUA HOÀN TOÀN hóa mỹ phẩm, dụng cụ, đồ gia dụng, và đặc biệt BỎ QUA các loại gia vị (nước mắm, bột ngọt, muối, dầu ăn, hạt nêm). BỎ QUA các từ khóa tổng kết (Phải thanh toán, Tiền mặt, Điểm BHX, Ngày giờ, Chiết khấu, VAT, mã vạch, tên siêu thị...).\n" +
-                        "3. Trả kết quả về ĐÚNG định dạng JSON Array. Mỗi object gồm: 'name' (tên), 'quantity' (số lượng), 'price' (tổng giá: Integer), 'category' (thịt, rau, trái cây, sữa, trứng, đồ uống, khô, gia dụng, khác), 'expiry_days' (ước tính số ngày bảo quản tối đa: Integer).\n" +
+                        "2. BỎ QUA HOÀN TOÀN hóa mỹ phẩm, dụng cụ, đồ gia dụng, và đặc biệt BỎ QUA các loại gia vị (nước mắm, bột ngọt, muối, dầu ăn, hạt nêm). BỎ QUA các từ khóa tổng kết (Phải thanh toán, Tiền mặt, Điểm BHX, Ngày giờ, Chiết khấu, VAT, mã vạch, tên siêu thị...).\n"
+                        +
+                        "3. Trả kết quả về ĐÚNG định dạng JSON Array. Mỗi object gồm: 'name' (tên), 'quantity' (số lượng), 'price' (tổng giá: Integer), 'category' (thịt, rau, trái cây, sữa, trứng, đồ uống, khô, gia dụng, khác), 'expiry_days' (ước tính số ngày bảo quản tối đa: Integer).\n"
+                        +
                         "Chỉ trả mảng JSON hợp lệ, không dính ```json cục bộ, không giải thích thêm.";
 
                 JSONObject imagePart = new JSONObject();
@@ -133,7 +142,8 @@ public class GeminiReceiptParser {
         });
     }
 
-    private static void executeRequestWithRetry(JSONObject requestBody, int attempt, String imageCacheKey, ParseCallback callback) {
+    private static void executeRequestWithRetry(JSONObject requestBody, int attempt, String imageCacheKey,
+            ParseCallback callback) {
         final int MAX_RETRIES = 3;
         final long INITIAL_BACKOFF_MS = 2000;
 
@@ -157,15 +167,18 @@ public class GeminiReceiptParser {
                     StringBuilder responseString = new StringBuilder();
                     try (BufferedReader reader = new BufferedReader(new InputStreamReader(conn.getInputStream()))) {
                         String line;
-                        while ((line = reader.readLine()) != null) responseString.append(line);
+                        while ((line = reader.readLine()) != null)
+                            responseString.append(line);
                     }
 
                     JSONObject jsonResponse = new JSONObject(responseString.toString());
-                    String extractedJsonText = jsonResponse.getJSONArray("candidates").getJSONObject(0).getJSONObject("content").getJSONArray("parts").getJSONObject(0).getString("text");
+                    String extractedJsonText = jsonResponse.getJSONArray("candidates").getJSONObject(0)
+                            .getJSONObject("content").getJSONArray("parts").getJSONObject(0).getString("text");
 
                     extractedJsonText = extractedJsonText.trim();
                     if (extractedJsonText.startsWith("```")) {
-                        extractedJsonText = extractedJsonText.replaceAll("```(?:json)?\\s*", "").replaceAll("```\\s*$", "").trim();
+                        extractedJsonText = extractedJsonText.replaceAll("```(?:json)?\\s*", "")
+                                .replaceAll("```\\s*$", "").trim();
                     }
 
                     List<ScannedItem> items = parseItemsFromJson(extractedJsonText);
@@ -175,17 +188,29 @@ public class GeminiReceiptParser {
                         cache.put(imageCacheKey, new ArrayList<>(items));
                         mainHandler.post(() -> callback.onSuccess(items));
                     }
-                } else if (responseCode == 429 && attempt < MAX_RETRIES) {
+                } else if ((responseCode == 429 || responseCode == 503) && attempt < MAX_RETRIES) {
+                    // 429 = Rate Limit, 503 = Service Unavailable → retry với backoff
                     long backoffDelay = INITIAL_BACKOFF_MS * (long) Math.pow(2, attempt);
+                    Log.w(TAG, "API trả " + responseCode + ", retry lần " + (attempt + 1) + " sau " + backoffDelay + "ms");
                     Thread.sleep(backoffDelay);
                     executeRequestWithRetry(requestBody, attempt + 1, imageCacheKey, callback);
                 } else {
+                    // Đọc error body để debug
+                    String errorBody = "";
+                    try (BufferedReader er = new BufferedReader(new InputStreamReader(conn.getErrorStream()))) {
+                        StringBuilder sb = new StringBuilder();
+                        String l;
+                        while ((l = er.readLine()) != null) sb.append(l);
+                        errorBody = sb.toString();
+                    } catch (Exception ignored) {}
+                    Log.e(TAG, "API Error " + responseCode + ": " + errorBody);
                     mainHandler.post(() -> callback.onError("Lỗi API Gemini (Code: " + responseCode + ")"));
                 }
             } catch (Exception e) {
                 mainHandler.post(() -> callback.onError("Lỗi máy chủ / Network: " + e.getMessage()));
             } finally {
-                if (conn != null) conn.disconnect();
+                if (conn != null)
+                    conn.disconnect();
             }
         });
     }
@@ -196,19 +221,23 @@ public class GeminiReceiptParser {
         for (int i = 0; i < array.length(); i++) {
             JSONObject obj = array.getJSONObject(i);
             String name = obj.optString("name", "").trim();
-            if (name.isEmpty()) continue;
+            if (name.isEmpty())
+                continue;
 
             double quantity = obj.optDouble("quantity", 1);
             long price = obj.optLong("price", 0);
             String unit = obj.optString("unit", "").trim();
-            if (unit.isEmpty()) unit = guessUnit(name);
+            if (unit.isEmpty())
+                unit = guessUnit(name);
 
             String category = obj.optString("category", "").toLowerCase(Locale.ROOT).trim();
-            if (category.isEmpty()) category = guessCategory(name);
+            if (category.isEmpty())
+                category = guessCategory(name);
 
             String emoji = guessEmoji(name, category);
             int expiryDays = obj.optInt("expiry_days", 0);
-            if (expiryDays <= 0) expiryDays = guessExpiryDays(category);
+            if (expiryDays <= 0)
+                expiryDays = guessExpiryDays(category);
 
             items.add(new ScannedItem(name, quantity, unit, price, category, emoji, expiryDays));
         }
@@ -230,39 +259,57 @@ public class GeminiReceiptParser {
 
     private static String guessUnit(String name) {
         String lower = name.toLowerCase(Locale.ROOT);
-        if (lower.contains("sữa") || lower.contains("nước") || lower.contains("bia")) return "chai";
-        if (lower.contains("thịt") || lower.contains("cá") || lower.contains("khay")) return "khay";
+        if (lower.contains("sữa") || lower.contains("nước") || lower.contains("bia"))
+            return "chai";
+        if (lower.contains("thịt") || lower.contains("cá") || lower.contains("khay"))
+            return "khay";
         return "gói";
     }
 
     private static String guessCategory(String name) {
         String lower = name.toLowerCase(Locale.ROOT);
-        if (lower.matches(".*(thịt|thit|bò|bo|heo|gà|ga|vịt|vit|cá|ca|tôm|tom|mực|muc|hải sản|hai san).*")) return "thịt";
-        if (lower.matches(".*(rau|cải|cai|bắp cải|bap cai|xà lách).*")) return "rau";
-        if (lower.matches(".*(trái cây|trai cay|cam|táo|tao|xoài|xoai|chuối|chuoi).*")) return "trái cây";
-        if (lower.matches(".*(sữa|phô mai|cream|bơ|yogurt).*")) return "sữa";
+        if (lower.matches(".*(thịt|thit|bò|bo|heo|gà|ga|vịt|vit|cá|ca|tôm|tom|mực|muc|hải sản|hai san).*"))
+            return "thịt";
+        if (lower.matches(".*(rau|cải|cai|bắp cải|bap cai|xà lách).*"))
+            return "rau";
+        if (lower.matches(".*(trái cây|trai cay|cam|táo|tao|xoài|xoai|chuối|chuoi).*"))
+            return "trái cây";
+        if (lower.matches(".*(sữa|phô mai|cream|bơ|yogurt).*"))
+            return "sữa";
         return "khác";
     }
 
     private static String guessEmoji(String name, String category) {
         String lower = name.toLowerCase(Locale.ROOT);
-        if (lower.contains("trứng")) return "ic_food_egg";
-        if (lower.contains("thịt") || "thịt".equals(category)) return "ic_food_steak";
-        if (lower.contains("rau") || "rau".equals(category)) return "ic_food_lettuce";
+        if (lower.contains("trứng"))
+            return "ic_food_egg";
+        if (lower.contains("thịt") || "thịt".equals(category))
+            return "ic_food_steak";
+        if (lower.contains("rau") || "rau".equals(category))
+            return "ic_food_lettuce";
         return "ic_food_package";
     }
 
     private static int guessExpiryDays(String category) {
         switch (category) {
-            case "thịt":      return 90;
-            case "rau":       return 7;
-            case "trái cây":  return 10;
-            case "sữa":       return 7;
-            case "trứng":     return 21;
-            case "đồ uống":   return 30;
-            case "khô":       return 180;
-            case "gia dụng":  return 365;
-            default:          return 7;
+            case "thịt":
+                return 90;
+            case "rau":
+                return 7;
+            case "trái cây":
+                return 10;
+            case "sữa":
+                return 7;
+            case "trứng":
+                return 21;
+            case "đồ uống":
+                return 30;
+            case "khô":
+                return 180;
+            case "gia dụng":
+                return 365;
+            default:
+                return 7;
         }
     }
 }
