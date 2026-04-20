@@ -14,12 +14,13 @@ import hcmute.edu.vn.pantrysmart.data.local.entity.PantryItem;
 public class GeminiFoodRecognitionService {
     private static final String TAG = "GeminiFoodAI";
 
-    private static final String API_KEY = "YOUR_API_KEY";
+    private static final String API_KEY = "AIzaSyDT0UAlLDE3voVZqv8wQjkN5kNMFM8ofw0";
 
     private static final String BASE_URL = "https://generativelanguage.googleapis.com/v1beta/models/gemini-2.5-flash:generateContent?key=";
 
     public interface RecognitionCallback {
         void onSuccess(PantryItem item);
+
         void onError(String errorMessage);
     }
 
@@ -40,8 +41,9 @@ public class GeminiFoodRecognitionService {
 
                 // Phần Text (yêu cầu trả về JSON)
                 JSONObject textPart = new JSONObject();
-                textPart.put("text", "Nhận diện thực phẩm trong ảnh. Trả về định dạng JSON thuần túy (không có markdown): " +
-                        "{\"name\": \"tên\", \"quantity\": 1.0, \"unit\": \"kg\", \"category\": \"OTHER\", \"emoji\": \"🍴\"}");
+                textPart.put("text",
+                        "Nhận diện thực phẩm trong ảnh. Trả về định dạng JSON thuần túy (không có markdown): " +
+                                "{\"name\": \"tên\", \"quantity\": 1.0, \"unit\": \"kg\", \"category\": \"OTHER\", \"emoji\": \"🍴\"}");
                 parts.put(textPart);
 
                 // Phần Hình Ảnh (camelCase chuẩn)
@@ -73,7 +75,8 @@ public class GeminiFoodRecognitionService {
                     BufferedReader br = new BufferedReader(new InputStreamReader(conn.getInputStream()));
                     StringBuilder res = new StringBuilder();
                     String line;
-                    while ((line = br.readLine()) != null) res.append(line);
+                    while ((line = br.readLine()) != null)
+                        res.append(line);
 
                     JSONObject jsonResponse = new JSONObject(res.toString());
                     String text = jsonResponse.getJSONArray("candidates")
