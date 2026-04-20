@@ -3,6 +3,7 @@ package hcmute.edu.vn.pantrysmart;
 import android.os.Bundle;
 import android.view.View;
 import android.widget.ImageView;
+import android.widget.LinearLayout;
 import android.widget.TextView;
 import android.widget.Toast;
 
@@ -13,13 +14,20 @@ import androidx.core.graphics.Insets;
 import androidx.core.view.ViewCompat;
 import androidx.core.view.WindowInsetsCompat;
 import androidx.fragment.app.Fragment;
+import androidx.recyclerview.widget.LinearLayoutManager;
+import androidx.recyclerview.widget.RecyclerView;
 import androidx.work.ExistingPeriodicWorkPolicy;
 import androidx.work.PeriodicWorkRequest;
 import androidx.work.WorkManager;
 
+import com.google.android.material.bottomsheet.BottomSheetDialog;
+
+import java.util.ArrayList;
 import java.util.Calendar;
+import java.util.List;
 import java.util.concurrent.TimeUnit;
 
+import hcmute.edu.vn.pantrysmart.adapter.NotificationAdapter;
 import hcmute.edu.vn.pantrysmart.data.local.PantrySmartDatabase;
 import hcmute.edu.vn.pantrysmart.data.local.dao.PantryItemDao;
 import hcmute.edu.vn.pantrysmart.data.local.entity.PantryItem;
@@ -84,7 +92,7 @@ public class MainActivity extends AppCompatActivity {
         findViewById(R.id.searchBar)
                 .setOnClickListener(v -> Toast.makeText(this, "Tìm kiếm thực phẩm", Toast.LENGTH_SHORT).show());
         findViewById(R.id.btnNotification)
-                .setOnClickListener(v -> Toast.makeText(this, "Thông báo", Toast.LENGTH_SHORT).show());
+                .setOnClickListener(v -> showNotificationBottomSheet());
         findViewById(R.id.btnProfile)
                 .setOnClickListener(v -> showProfileMenu());
 
@@ -207,17 +215,29 @@ public class MainActivity extends AppCompatActivity {
             long now = System.currentTimeMillis();
             long twoDays = TimeUnit.DAYS.toMillis(2);
             int expiringCount = pantryDao.getExpiringItems(now, twoDays).size();
+            int expiredCount = pantryDao.getExpiredItems(now).size();
+            int notifTotal = expiringCount + expiredCount;
 
             runOnUiThread(() -> {
                 int total = totalMain + totalFreezer;
                 tvHeaderTitle.setText(getString(R.string.pantry_item_count, total));
 
-                if (expiringCount == 0) {
+                // Expiry badge (thanh cảnh báo)
+                if (expiringCount == 0 && expiredCount == 0) {
                     tvExpiryBadge.setText("An toàn");
-                    tvNotificationBadge.setVisibility(View.GONE);
+                } else if (expiredCount > 0 && expiringCount > 0) {
+                    tvExpiryBadge.setText(expiredCount + " hết hạn · " + expiringCount + " sắp hết");
+                } else if (expiredCount > 0) {
+                    tvExpiryBadge.setText(expiredCount + " hết hạn");
                 } else {
                     tvExpiryBadge.setText(expiringCount + " sắp hết");
-                    tvNotificationBadge.setText(String.valueOf(expiringCount));
+                }
+
+                // Notification badge (số trên nút chuông)
+                if (notifTotal == 0) {
+                    tvNotificationBadge.setVisibility(View.GONE);
+                } else {
+                    tvNotificationBadge.setText(String.valueOf(notifTotal));
                     tvNotificationBadge.setVisibility(View.VISIBLE);
                 }
             });
@@ -308,5 +328,65 @@ public class MainActivity extends AppCompatActivity {
             icons[i].setColorFilter(isActive ? activeColor : inactiveColor);
             labels[i].setTextColor(isActive ? activeColor : inactiveColor);
         }
+    }
+
+    /**
+     * Hiển thị BottomSheet danh sách thông báo hết hạn / sắp hết hạn.
+     */
+    private void showNotificationBottomSheet() {
+        BottomSheetDialog dialog = new BottomSheetDialog(this);
+        View sheetView = getLayoutInflater().inflate(R.layout.bottom_sheet_notifications, null);
+        dialog.setContentView(sheetView);
+
+        TextView tvCount = sheetView.findViewById(R.id.tvNotifCount);
+        LinearLayout layoutEmpty = sheetView.findViewById(R.id.layoutNotifEmpty);
+        RecyclerView rvNotifications = sheetView.findViewById(R.id.rvNotifications);
+        sheetView.findViewById(R.id.btnCloseNotif).setOnClickListener(v -> dialog.dismiss());
+
+        // Query dữ liệu trên background thread
+        PantrySmartDatabase.databaseWriteExecutor.execute(() -> {
+            long now = System.currentTimeMillis();
+            long threshold = now + TimeUnit.DAYS.toMillis(2);
+
+            // Lấy item đã hết hạn
+            List<PantryItem> expiredItems = pantryDao.getExpiredItems(now);
+            // Lấy item sắp hết hạn (2 ngày tới)
+            List<PantryItem> expiringItems = pantryDao.getExpiringItems(now,
+                    TimeUnit.DAYS.toMillis(2));
+
+            // Gộp thành danh sách NotifItem
+            List<NotificationAdapter.NotifItem> notifList = new ArrayList<>();
+
+            for (PantryItem item : expiredItems) {
+                long daysAgo = TimeUnit.MILLISECONDS.toDays(now - item.getExpiryDate());
+                notifList.add(new NotificationAdapter.NotifItem(item, true, -daysAgo));
+            }
+            for (PantryItem item : expiringItems) {
+                long daysLeft = TimeUnit.MILLISECONDS.toDays(
+                        item.getExpiryDate() - now);
+                notifList.add(new NotificationAdapter.NotifItem(item, false, daysLeft));
+            }
+
+            // Cập nhật UI trên main thread
+            runOnUiThread(() -> {
+                if (notifList.isEmpty()) {
+                    layoutEmpty.setVisibility(View.VISIBLE);
+                    rvNotifications.setVisibility(View.GONE);
+                    tvCount.setText("0");
+                } else {
+                    layoutEmpty.setVisibility(View.GONE);
+                    rvNotifications.setVisibility(View.VISIBLE);
+                    tvCount.setText(String.valueOf(notifList.size()));
+
+                    NotificationAdapter adapter = new NotificationAdapter(
+                            MainActivity.this, notifList);
+                    rvNotifications.setLayoutManager(
+                            new LinearLayoutManager(MainActivity.this));
+                    rvNotifications.setAdapter(adapter);
+                }
+            });
+        });
+
+        dialog.show();
     }
 }

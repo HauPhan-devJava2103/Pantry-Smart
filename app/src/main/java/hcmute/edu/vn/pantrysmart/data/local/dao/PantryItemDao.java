@@ -59,4 +59,8 @@ public interface PantryItemDao {
     // Vô hiệu hóa/Xóa mềm một thực phẩm (đặt is_active = 0)
     @Query("UPDATE pantry_items SET is_active = 0 WHERE id = :itemId")
     void deactivateItem(int itemId);
+
+    // Lấy thực phẩm đã hết hạn (expiryDate < now)
+    @Query("SELECT * FROM pantry_items WHERE is_active = 1 AND expiry_date IS NOT NULL AND expiry_date < :now ORDER BY expiry_date ASC")
+    List<PantryItem> getExpiredItems(long now);
 }
