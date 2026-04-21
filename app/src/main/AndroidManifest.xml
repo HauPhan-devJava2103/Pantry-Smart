@@ -49,6 +49,12 @@
         <activity
             android:name=".CookingHistoryActivity"
             android:exported="false" />
+
+        <!-- Chi tiết chi tiêu -->
+        <activity
+            android:name=".activity.ExpenseDetailActivity"
+            android:exported="false"
+            android:theme="@style/Theme.PantrySmart.Translucent" />
     </application>
 
 </manifest>

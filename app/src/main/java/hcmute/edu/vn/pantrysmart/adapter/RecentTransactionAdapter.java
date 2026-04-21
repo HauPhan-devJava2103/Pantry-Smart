@@ -19,8 +19,10 @@ import hcmute.edu.vn.pantrysmart.config.FoodIconConfig;
 import hcmute.edu.vn.pantrysmart.data.local.entity.Expense;
 
 /**
- * Adapter cho danh sách giao dịch gần đây trong BudgetFragment.
- * Mỗi item có nút Edit và Delete.
+ * Adapter cho danh sách giao dịch gần đây.
+ * Hỗ trợ hai chế độ:
+ * 1. Chỉnh sửa (BudgetFragment): Có nút Edit và Delete.
+ * 2. Chỉ xem (ExpenseDetailActivity): Ẩn nút, cho phép chạm để xem chi tiết.
  * Layout: item_recent_transaction.xml
  */
 public class RecentTransactionAdapter extends RecyclerView.Adapter<RecentTransactionAdapter.ViewHolder> {
@@ -37,6 +39,7 @@ public class RecentTransactionAdapter extends RecyclerView.Adapter<RecentTransac
     public interface OnActionListener {
         void onEdit(Expense expense);
         void onDelete(Expense expense);
+        void onClick(Expense expense);
     }
 
     // ==== Fields ====
@@ -44,6 +47,7 @@ public class RecentTransactionAdapter extends RecyclerView.Adapter<RecentTransac
     private List<Expense>          expenses;
     private final CategoryEmojiResolver emojiResolver;
     private       OnActionListener actionListener;
+    private       boolean          isReadOnly = false;
 
     // ==== Constructor ====
 
@@ -51,6 +55,14 @@ public class RecentTransactionAdapter extends RecyclerView.Adapter<RecentTransac
                                     CategoryEmojiResolver emojiResolver) {
         this.expenses      = expenses;
         this.emojiResolver = emojiResolver;
+    }
+
+    public RecentTransactionAdapter(List<Expense> expenses,
+                                    CategoryEmojiResolver emojiResolver,
+                                    boolean isReadOnly) {
+        this.expenses      = expenses;
+        this.emojiResolver = emojiResolver;
+        this.isReadOnly    = isReadOnly;
     }
 
     public void setOnActionListener(OnActionListener listener) {
@@ -93,13 +105,20 @@ public class RecentTransactionAdapter extends RecyclerView.Adapter<RecentTransac
         holder.tvAmount.setText(formatAmount(expense.getAmount()));
 
         // Nút Edit
+        holder.btnEdit.setVisibility(isReadOnly ? View.GONE : View.VISIBLE);
         holder.btnEdit.setOnClickListener(v -> {
             if (actionListener != null) actionListener.onEdit(expense);
         });
 
         // Nút Delete
+        holder.btnDelete.setVisibility(isReadOnly ? View.GONE : View.VISIBLE);
         holder.btnDelete.setOnClickListener(v -> {
             if (actionListener != null) actionListener.onDelete(expense);
+        });
+
+        // Item Click
+        holder.itemView.setOnClickListener(v -> {
+            if (actionListener != null) actionListener.onClick(expense);
         });
     }
 
