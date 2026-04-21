@@ -63,4 +63,8 @@ public interface PantryItemDao {
     // Lấy thực phẩm đã hết hạn (expiryDate < now)
     @Query("SELECT * FROM pantry_items WHERE is_active = 1 AND expiry_date IS NOT NULL AND expiry_date < :now ORDER BY expiry_date ASC")
     List<PantryItem> getExpiredItems(long now);
+
+    // Lấy thực phẩm theo danh mục
+    @Query("SELECT * FROM pantry_items WHERE is_active = 1 AND category = :category ORDER BY expiry_date ASC")
+    List<PantryItem> getItemsByCategory(String category);
 }
