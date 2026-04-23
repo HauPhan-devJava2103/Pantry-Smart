@@ -47,8 +47,6 @@ public interface ExpenseDao {
                      "WHERE expense_date >= :start AND expense_date < :end")
        double getTotalSpentForPeriod(long start, long end);
 
-
-
        // Lấy danh sách toàn bộ các danh mục chi tiêu khả dụng
        @Query("SELECT * FROM expense_categories")
        List<ExpenseCategory> getAllCategories();
@@ -64,7 +62,7 @@ public interface ExpenseDao {
        // Tổng chi tiêu theo từng ngày trong 7 ngày gần nhất (cho BarChart)
        @Query("SELECT expense_date, SUM(amount) as total FROM expenses " +
                      "WHERE expense_date >= :weekStart AND expense_date < :weekEnd " +
-                     "GROUP BY strftime('%Y-%m-%d', expense_date / 1000, 'unixepoch') " +
+                     "GROUP BY strftime('%Y-%m-%d', expense_date / 1000, 'unixepoch', 'localtime') " +
                      "ORDER BY expense_date ASC")
        List<DailyStat> getDailySpentForWeek(long weekStart, long weekEnd);
 

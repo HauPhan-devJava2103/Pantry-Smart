@@ -313,7 +313,7 @@ public class ExpenseDetailActivity extends AppCompatActivity {
                 List<ExpenseDao.WeeklyStat> weeklyStats = expenseDao.getWeeklySpentForMonth(startTime, endTime);
                 Calendar cal = Calendar.getInstance();
                 cal.setTimeInMillis(startTime);
-                int weeksInMonth = cal.getActualMaximum(Calendar.WEEK_OF_MONTH);
+                int weeksInMonth = (int) Math.ceil(cal.getActualMaximum(Calendar.DAY_OF_MONTH) / 7.0);
                 
                 runOnUiThread(() -> {
                     barChart.setVisibility(View.GONE);
@@ -411,6 +411,7 @@ public class ExpenseDetailActivity extends AppCompatActivity {
         sel.setTimeInMillis(monthStart);
         if (sel.get(Calendar.MONTH) == now.get(Calendar.MONTH) && sel.get(Calendar.YEAR) == now.get(Calendar.YEAR)) {
             currentWeekIdx = (int) ((now.getTimeInMillis() - monthStart) / 604800000);
+            currentWeekIdx = Math.max(0, Math.min(currentWeekIdx, finalWeeks - 1));
         }
 
         for (int i = 0; i < finalWeeks; i++) {

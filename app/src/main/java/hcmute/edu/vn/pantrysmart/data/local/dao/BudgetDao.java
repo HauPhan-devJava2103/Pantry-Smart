@@ -24,14 +24,17 @@ public interface BudgetDao {
     @Query("SELECT * FROM budgets WHERE month = :month AND year = :year LIMIT 1")
     Budget getBudgetForMonth(int month, int year);
 
-    // Lấy thông tin ngân sách từ tháng/năm, bao gồm danh sách các khoản chi tiêu liên quan
+    // Lấy thông tin ngân sách từ tháng/năm, bao gồm danh sách các khoản chi tiêu
+    // liên quan
     @Transaction
     @Query("SELECT * FROM budgets WHERE month = :month AND year = :year LIMIT 1")
     BudgetWithExpenses getBudgetWithExpenses(int month, int year);
 
-    // Tính tổng số tiền đã chi tiêu thực tế trong một tháng cụ thể
+    // ⚠️ DEPRECATED: Dùng JOIN nên bỏ sót expense có budget_id = NULL.
+    // Sử dụng ExpenseDao.getTotalSpentForPeriod() thay thế.
+    @Deprecated
     @Query("SELECT COALESCE(SUM(e.amount), 0) FROM expenses e " +
-           "JOIN budgets b ON e.budget_id = b.id " +
-           "WHERE b.month = :month AND b.year = :year")
+            "JOIN budgets b ON e.budget_id = b.id " +
+            "WHERE b.month = :month AND b.year = :year")
     double getTotalSpentForMonth(int month, int year);
 }

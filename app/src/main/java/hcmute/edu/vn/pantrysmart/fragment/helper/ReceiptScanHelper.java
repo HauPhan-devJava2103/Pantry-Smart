@@ -17,6 +17,10 @@ import android.widget.EditText;
 import android.widget.RadioGroup;
 import android.widget.TextView;
 import android.widget.Toast;
+import android.text.SpannableStringBuilder;
+import android.text.Spannable;
+import android.text.style.ImageSpan;
+import android.graphics.drawable.Drawable;
 
 import androidx.activity.result.ActivityResultLauncher;
 import androidx.activity.result.contract.ActivityResultContracts;
@@ -518,8 +522,25 @@ public class ReceiptScanHelper {
             double totalPrice = 0;
             int savedCount = 0;
 
+            // Tính tổng giá trước để tạo Expense
             for (ScannedItem scanned : items) {
-                // Tạo PantryItem
+                totalPrice += scanned.getPrice();
+            }
+
+            // Tạo Expense trước để lấy expense_id
+            long expenseId = -1;
+            if (totalPrice > 0) {
+                Expense expense = new Expense();
+                expense.setName("Mua sắm (quét hóa đơn) — " + items.size() + " mặt hàng");
+                expense.setAmount(totalPrice);
+                expense.setCategoryKey("SHOPPING");
+                expense.setSource("SCAN");
+                expense.setExpenseDate(now);
+                expenseId = expenseDao.insertExpense(expense);
+            }
+
+            // Tạo PantryItem và gắn expense_id
+            for (ScannedItem scanned : items) {
                 PantryItem pantryItem = new PantryItem();
                 pantryItem.setName(scanned.getName());
                 pantryItem.setEmoji(scanned.getEmoji());
@@ -529,27 +550,19 @@ public class ReceiptScanHelper {
                 pantryItem.setCategory(scanned.getCategory());
                 pantryItem.setAddedDate(now);
 
-                // Tính toán ngày hết hạn
                 Calendar cal = Calendar.getInstance();
                 cal.add(Calendar.DAY_OF_YEAR, scanned.getExpiryDays());
                 pantryItem.setExpiryDate(cal.getTimeInMillis());
 
                 pantryItem.setActive(true);
+
+                // Liên kết PantryItem với Expense
+                if (expenseId > 0) {
+                    pantryItem.setExpenseId((int) expenseId);
+                }
+
                 pantryDao.insert(pantryItem);
-
-                totalPrice += scanned.getPrice();
                 savedCount++;
-            }
-
-            // Ghi một khoản chi tiêu tổng hợp (nếu có giá)
-            if (totalPrice > 0) {
-                Expense expense = new Expense();
-                expense.setName("Mua sắm (quét hóa đơn) — " + savedCount + " mặt hàng");
-                expense.setAmount(totalPrice);
-                expense.setCategoryKey("SHOPPING");
-                expense.setSource("SCAN");
-                expense.setExpenseDate(now);
-                expenseDao.insertExpense(expense);
             }
 
             // Callback trên UI thread
@@ -557,12 +570,28 @@ public class ReceiptScanHelper {
             final double finalTotal = totalPrice;
             if (fragment.getActivity() != null) {
                 fragment.requireActivity().runOnUiThread(() -> {
-                    String msg = "✅ Đã lưu " + finalCount + " mặt hàng vào tủ lạnh";
+                    SpannableStringBuilder builder = new SpannableStringBuilder();
+                    
+                    builder.append("  Đã lưu ").append(String.valueOf(finalCount)).append(" mặt hàng vào tủ lạnh");
+                    Drawable checkIcon = ContextCompat.getDrawable(fragment.requireContext(), R.drawable.ic_toast_check);
+                    if (checkIcon != null) {
+                        checkIcon.setBounds(0, 0, checkIcon.getIntrinsicWidth(), checkIcon.getIntrinsicHeight());
+                        builder.setSpan(new ImageSpan(checkIcon, ImageSpan.ALIGN_BOTTOM), 0, 1, Spannable.SPAN_EXCLUSIVE_EXCLUSIVE);
+                    }
+
                     if (finalTotal > 0) {
                         NumberFormat fmt = NumberFormat.getNumberInstance(new Locale("vi", "VN"));
-                        msg += "\n💰 Chi tiêu: " + fmt.format((long) finalTotal) + "đ";
+                        builder.append("\n  Chi tiêu: ").append(fmt.format((long) finalTotal)).append("đ");
+                        
+                        Drawable moneyIcon = ContextCompat.getDrawable(fragment.requireContext(), R.drawable.ic_nav_budget);
+                        if (moneyIcon != null) {
+                            moneyIcon.setBounds(0, 0, moneyIcon.getIntrinsicWidth(), moneyIcon.getIntrinsicHeight());
+                            int moneyStart = builder.toString().lastIndexOf("\n") + 1;
+                            builder.setSpan(new ImageSpan(moneyIcon, ImageSpan.ALIGN_BOTTOM), moneyStart, moneyStart + 1, Spannable.SPAN_EXCLUSIVE_EXCLUSIVE);
+                        }
                     }
-                    Toast.makeText(fragment.requireContext(), msg, Toast.LENGTH_LONG).show();
+                    
+                    Toast.makeText(fragment.requireContext(), builder, Toast.LENGTH_LONG).show();
                     if (onSavedCallback != null)
                         onSavedCallback.run();
                 });

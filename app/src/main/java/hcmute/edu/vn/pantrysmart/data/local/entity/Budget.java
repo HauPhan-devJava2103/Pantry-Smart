@@ -44,8 +44,13 @@ public class Budget {
         this.monthlyLimit = monthlyLimit;
     }
 
-    public double getWeeklyLimit() { return weeklyLimit; }
-    public void setWeeklyLimit(double weeklyLimit) { this.weeklyLimit = weeklyLimit; }
+    public double getWeeklyLimit() {
+        return weeklyLimit;
+    }
+
+    public void setWeeklyLimit(double weeklyLimit) {
+        this.weeklyLimit = weeklyLimit;
+    }
 
     public int getMonth() {
         return month;

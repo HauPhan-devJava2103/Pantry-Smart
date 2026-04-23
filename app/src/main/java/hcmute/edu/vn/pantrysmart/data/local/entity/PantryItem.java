@@ -47,6 +47,10 @@ public class PantryItem {
     @ColumnInfo(name = "is_active", defaultValue = "1")
     private boolean isActive;
 
+    // Liên kết ngược với Expense (từ quét hóa đơn) — nullable
+    @ColumnInfo(name = "expense_id")
+    private Integer expenseId;
+
     public PantryItem() {
         this.storageZone = "MAIN";
         this.isActive = true;
@@ -140,6 +144,14 @@ public class PantryItem {
 
     public void setActive(boolean active) {
         isActive = active;
+    }
+
+    public Integer getExpenseId() {
+        return expenseId;
+    }
+
+    public void setExpenseId(Integer expenseId) {
+        this.expenseId = expenseId;
     }
 
     @Override
