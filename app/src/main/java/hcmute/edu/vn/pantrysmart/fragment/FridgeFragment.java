@@ -122,60 +122,59 @@ public class FridgeFragment extends Fragment {
                 }
             });
 
-    private final ActivityResultLauncher<Intent> cameraLauncher = registerForActivityResult(
-            new ActivityResultContracts.StartActivityForResult(),
+    private final ActivityResultLauncher<Intent> cameraLauncher = registerForActivityResult(new ActivityResultContracts.StartActivityForResult(),
             result -> {
-                if (result.getResultCode() == android.app.Activity.RESULT_OK && result.getData() != null) {
-                    // Lấy ảnh từ Camera trả về
-                    Bundle extras = result.getData().getExtras();
-                    if (extras != null) {
-                        android.graphics.Bitmap photo = (android.graphics.Bitmap) extras.get("data");
+                if (result.getResultCode() == android.app.Activity.RESULT_OK) {
+                    if (result.getData() != null && result.getData().getExtras() != null) {
+                        android.graphics.Bitmap photo = (android.graphics.Bitmap) result.getData().getExtras().get("data");
                         if (photo != null) {
                             String base64Image = encodeImage(photo);
 
-                            // Tạo custom AI scanning dialog với Lottie animation
+                            // Tạo dialog loading
                             Dialog aiDialog = new Dialog(requireContext());
                             aiDialog.requestWindowFeature(android.view.Window.FEATURE_NO_TITLE);
                             aiDialog.setContentView(R.layout.dialog_ai_scanning);
                             aiDialog.setCancelable(false);
                             if (aiDialog.getWindow() != null) {
-                                aiDialog.getWindow().setBackgroundDrawable(
-                                        new ColorDrawable(android.graphics.Color.TRANSPARENT));
-                                aiDialog.getWindow().setLayout(
-                                        ViewGroup.LayoutParams.WRAP_CONTENT,
-                                        ViewGroup.LayoutParams.WRAP_CONTENT);
+                                aiDialog.getWindow().setBackgroundDrawable(new ColorDrawable(android.graphics.Color.TRANSPARENT));
                             }
                             aiDialog.show();
 
-                            // 2. Gọi Service AI để nhận diện
-                            GeminiFoodRecognitionService.recognizeFood(
-                                    base64Image,
-                                    new GeminiFoodRecognitionService.RecognitionCallback() {
-                                        @Override
-                                        public void onSuccess(PantryItem item) {
-                                            if (getActivity() == null)
-                                                return;
-                                            getActivity().runOnUiThread(() -> {
-                                                if (aiDialog.isShowing())
-                                                    aiDialog.dismiss();
-                                                dialogHelper.showAIAddItemBottomSheet(item);
-                                            });
-                                        }
+                            // Gọi AI nhận diện
+                            GeminiFoodRecognitionService.recognizeFood(base64Image, new GeminiFoodRecognitionService.RecognitionCallback() {
+                                @Override
+                                public void onSuccess(List<PantryItem> items) {
+                                    if (getActivity() == null) return;
+                                    getActivity().runOnUiThread(() -> {
+                                        if (aiDialog.isShowing()) aiDialog.dismiss();
 
-                                        @Override
-                                        public void onError(String errorMessage) {
-                                            if (getActivity() == null)
-                                                return;
-                                            getActivity().runOnUiThread(() -> {
-                                                if (aiDialog.isShowing())
-                                                    aiDialog.dismiss();
-                                                Toast.makeText(requireContext(), errorMessage,
-                                                        Toast.LENGTH_SHORT).show();
-                                            });
+                                        if (items != null && !items.isEmpty()) {
+                                            dialogHelper.showAIRecognitionReviewDialog(items);
+                                        } else {
+                                            // TH 1: AI không tìm thấy món nào
+                                            Toast.makeText(requireContext(), "🔍 Không nhận diện được thực phẩm nào. Bạn hãy thử chụp rõ và gần hơn nhé!", Toast.LENGTH_LONG).show();
                                         }
                                     });
+                                }
+
+                                @Override
+                                public void onError(String errorMessage) {
+                                    if (getActivity() == null) return;
+                                    getActivity().runOnUiThread(() -> {
+                                        if (aiDialog.isShowing()) aiDialog.dismiss();
+                                        // TH 2: Lỗi kỹ thuật (Mạng, API...)
+                                        Toast.makeText(requireContext(), "⚠️ Lỗi kết nối: Không thể liên hệ với AI lúc này. Vui lòng kiểm tra mạng!", Toast.LENGTH_LONG).show();
+                                    });
+                                }
+                            });
+                        } else {
+                            // TH 3: Không lấy được dữ liệu ảnh
+                            Toast.makeText(requireContext(), "❌ Lỗi: Không nhận được dữ liệu ảnh từ Camera.", Toast.LENGTH_SHORT).show();
                         }
                     }
+                } else if (result.getResultCode() != android.app.Activity.RESULT_CANCELED) {
+                    // TH 4: Lỗi khác khi chụp ảnh
+                    Toast.makeText(requireContext(), "❌ Đã xảy ra lỗi khi chụp ảnh. Vui lòng thử lại!", Toast.LENGTH_SHORT).show();
                 }
             });
 
