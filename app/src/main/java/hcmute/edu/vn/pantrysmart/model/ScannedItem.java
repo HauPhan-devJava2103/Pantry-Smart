@@ -16,11 +16,13 @@ public class ScannedItem {
     private int expiryDays;
     private String storageZone; // "FREEZER" or "MAIN"
     private Long expiryDate; // Absolute expiry date in timestamp (added for UI edit sync)
+    private double unitPrice; // Đơn giá = price / quantity (để tính lại khi sửa số lượng)
 
     public ScannedItem() {
         this.quantity = 1;
         this.unit = "gói";
         this.price = 0;
+        this.unitPrice = 0;
         this.category = "khác";
         this.emoji = "ic_food_package";
         this.expiryDays = 7;
@@ -33,6 +35,7 @@ public class ScannedItem {
         this.quantity = quantity;
         this.unit = unit;
         this.price = price;
+        this.unitPrice = quantity > 0 ? (double) price / quantity : price;
         this.category = category;
         this.emoji = emoji;
         this.expiryDays = expiryDays;
@@ -53,6 +56,10 @@ public class ScannedItem {
 
     public void setQuantity(double quantity) {
         this.quantity = quantity;
+        // Tính lại tổng giá theo đơn giá khi số lượng thay đổi
+        if (this.unitPrice > 0) {
+            this.price = Math.round(this.unitPrice * quantity);
+        }
     }
 
     public String getUnit() {
@@ -69,6 +76,18 @@ public class ScannedItem {
 
     public void setPrice(long price) {
         this.price = price;
+        // Cập nhật đơn giá khi giá tổng thay đổi
+        if (this.quantity > 0) {
+            this.unitPrice = (double) price / this.quantity;
+        }
+    }
+
+    public double getUnitPrice() {
+        return unitPrice;
+    }
+
+    public void setUnitPrice(double unitPrice) {
+        this.unitPrice = unitPrice;
     }
 
     public String getCategory() {

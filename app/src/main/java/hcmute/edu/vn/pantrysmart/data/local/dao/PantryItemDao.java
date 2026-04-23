@@ -67,4 +67,16 @@ public interface PantryItemDao {
     // Lấy thực phẩm theo danh mục
     @Query("SELECT * FROM pantry_items WHERE is_active = 1 AND category = :category ORDER BY expiry_date ASC")
     List<PantryItem> getItemsByCategory(String category);
+
+    // Lấy danh sách PantryItem liên kết với một Expense cụ thể
+    @Query("SELECT * FROM pantry_items WHERE is_active = 1 AND expense_id = :expenseId")
+    List<PantryItem> getItemsByExpenseId(int expenseId);
+
+    // Xóa mềm tất cả PantryItem thuộc một Expense (khi xóa giao dịch quét hóa đơn)
+    @Query("UPDATE pantry_items SET is_active = 0 WHERE expense_id = :expenseId")
+    void deactivateByExpenseId(int expenseId);
+
+    // Đếm số PantryItem active thuộc một Expense
+    @Query("SELECT COUNT(*) FROM pantry_items WHERE is_active = 1 AND expense_id = :expenseId")
+    int countActiveByExpenseId(int expenseId);
 }

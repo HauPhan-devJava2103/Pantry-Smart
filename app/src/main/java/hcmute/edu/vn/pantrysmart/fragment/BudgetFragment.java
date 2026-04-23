@@ -50,9 +50,13 @@ import hcmute.edu.vn.pantrysmart.config.FoodIconConfig;
 import hcmute.edu.vn.pantrysmart.data.local.PantrySmartDatabase;
 import hcmute.edu.vn.pantrysmart.data.local.dao.BudgetDao;
 import hcmute.edu.vn.pantrysmart.data.local.dao.ExpenseDao;
+import hcmute.edu.vn.pantrysmart.data.local.dao.PantryItemDao;
 import hcmute.edu.vn.pantrysmart.data.local.entity.Budget;
 import hcmute.edu.vn.pantrysmart.data.local.entity.Expense;
 import hcmute.edu.vn.pantrysmart.data.local.entity.ExpenseCategory;
+import hcmute.edu.vn.pantrysmart.fragment.helper.BudgetBottomSheetHelper;
+import hcmute.edu.vn.pantrysmart.fragment.helper.BudgetChartHelper;
+import hcmute.edu.vn.pantrysmart.fragment.helper.BudgetDialogHelper;
 
 public class BudgetFragment extends Fragment {
 
@@ -76,6 +80,7 @@ public class BudgetFragment extends Fragment {
     private PantrySmartDatabase database;
     private BudgetDao budgetDao;
     private ExpenseDao expenseDao;
+    private PantryItemDao pantryItemDao;
     private ExecutorService executorService;
     private int currentMonth, currentYear;
 
@@ -86,8 +91,10 @@ public class BudgetFragment extends Fragment {
     private RecentTransactionAdapter transactionAdapter;
     private BudgetCategoryAdapter categoryAdapter;
 
-    // Warning flag: tránh hiện nhiều cảnh báo cùng lúc trong 1 lần load
-    private boolean hasShownWarning = false;
+    // Helpers
+    private BudgetChartHelper chartHelper;
+    private BudgetDialogHelper dialogHelper;
+    private BudgetBottomSheetHelper bottomSheetHelper;
 
     // ===================================================================
     @Nullable
@@ -102,6 +109,11 @@ public class BudgetFragment extends Fragment {
     @Override
     public void onViewCreated(@NonNull View view, @Nullable Bundle savedInstanceState) {
         super.onViewCreated(view, savedInstanceState);
+
+        // Bug #7: Khôi phục trạng thái tab sau khi xoay màn hình
+        if (savedInstanceState != null) {
+            isWeeklyMode = savedInstanceState.getBoolean("IS_WEEKLY_MODE", false);
+        }
 
         // --- Bind views ---
         tvTotalBudget = view.findViewById(R.id.tvTotalBudget);
@@ -126,12 +138,24 @@ public class BudgetFragment extends Fragment {
         database = PantrySmartDatabase.getInstance(getContext());
         budgetDao = database.budgetDao();
         expenseDao = database.expenseDao();
-        executorService = Executors.newSingleThreadExecutor();
+        pantryItemDao = database.pantryItemDao();
+        if (executorService == null || executorService.isShutdown()) {
+            executorService = Executors.newSingleThreadExecutor();
+        }
 
-        // --- Thời điểm hiện tại ---
+        // --- Lấy thời điểm hiện tại để truyền cho helper ---
         Calendar now = Calendar.getInstance();
         currentMonth = now.get(Calendar.MONTH) + 1;
         currentYear = now.get(Calendar.YEAR);
+
+        // --- Init Helpers ---
+        chartHelper = new BudgetChartHelper(barChart, barChartMonthly);
+        dialogHelper = new BudgetDialogHelper(getContext(), getActivity(), rootView, pantryItemDao, expenseDao, executorService,
+                () -> loadBudgetData(),
+                () -> { if (bottomSheetHelper != null) bottomSheetHelper.showSetBudgetBottomSheet(currentMonth, currentYear); });
+        bottomSheetHelper = new BudgetBottomSheetHelper(getContext(), getActivity(), budgetDao, expenseDao, executorService, dialogHelper, () -> loadBudgetData());
+
+
 
         // --- RecyclerView: Giao dich gan day ---
         transactionAdapter = new RecentTransactionAdapter(new ArrayList<>(),
@@ -152,12 +176,12 @@ public class BudgetFragment extends Fragment {
         transactionAdapter.setOnActionListener(new RecentTransactionAdapter.OnActionListener() {
             @Override
             public void onEdit(Expense expense) {
-                showEditExpenseBottomSheet(expense);
+                bottomSheetHelper.showEditExpenseBottomSheet(expense);
             }
 
             @Override
             public void onDelete(Expense expense) {
-                showDeleteConfirmDialog(expense);
+                dialogHelper.showDeleteConfirmDialog(expense);
             }
 
             @Override
@@ -175,10 +199,11 @@ public class BudgetFragment extends Fragment {
         rvCategoriesHorizontal.setAdapter(categoryAdapter);
 
         // --- Click listeners ---
-        fabAddExpense.setOnClickListener(v -> showAddExpenseBottomSheet());
-        btnEditBudget.setOnClickListener(v -> showSetBudgetBottomSheet());
+        fabAddExpense.setOnClickListener(v -> bottomSheetHelper.showAddExpenseBottomSheet());
+        btnEditBudget.setOnClickListener(v -> bottomSheetHelper.showSetBudgetBottomSheet(currentMonth, currentYear));
         btnViewAllTransactions.setOnClickListener(v -> {
-            android.content.Intent intent = new android.content.Intent(getContext(), hcmute.edu.vn.pantrysmart.activity.ExpenseDetailActivity.class);
+            android.content.Intent intent = new android.content.Intent(getContext(),
+                    hcmute.edu.vn.pantrysmart.activity.ExpenseDetailActivity.class);
             intent.putExtra("IS_WEEKLY_MODE", isWeeklyMode);
             startActivity(intent);
             if (getActivity() != null) {
@@ -242,8 +267,6 @@ public class BudgetFragment extends Fragment {
     // UC8 — Tải và hiển thị thống kê chi tiêu (tháng, tuần, ngày)
     // ===================================================================
     private void loadBudgetData() {
-        hasShownWarning = false;
-
         executorService.execute(() -> {
             Budget currentBudget = budgetDao.getBudgetForMonth(currentMonth, currentYear);
 
@@ -348,181 +371,21 @@ public class BudgetFragment extends Fragment {
                     if (isWeeklyMode) {
                         barChart.setVisibility(View.VISIBLE);
                         barChartMonthly.setVisibility(View.GONE);
-                        updateBarChart(dailyStats, weekStart);
+                        chartHelper.updateBarChart(dailyStats, weekStart);
                     } else {
                         barChart.setVisibility(View.GONE);
                         barChartMonthly.setVisibility(View.VISIBLE);
-                        updateBarChartMonthly(weeklyStats, weeksInMonth);
+                        chartHelper.updateBarChartMonthly(weeklyStats, weeksInMonth);
                     }
 
                     // UC10 — Cảnh báo
-                    checkBudgetWarnings(totalMonth, monthlyLimit, totalWeek, weeklyLimit);
+                    dialogHelper.checkBudgetWarnings(totalMonth, monthlyLimit, totalWeek, weeklyLimit);
                 });
             }
         });
     }
 
-    // ===================================================================
-    // BarChart — Chi tiêu 7 ngày
-    // ===================================================================
-    private void updateBarChart(List<ExpenseDao.DailyStat> dailyStats, long weekStart) {
-        // Tạo map ngày → tổng để tra cứu nhanh
-        Map<String, Double> statMap = new HashMap<>();
-        SimpleDateFormat dayFmt = new SimpleDateFormat("yyyy-MM-dd", Locale.getDefault());
-        if (dailyStats != null) {
-            for (ExpenseDao.DailyStat stat : dailyStats) {
-                statMap.put(dayFmt.format(stat.expense_date), stat.total);
-            }
-        }
 
-        // Tạo 7 entries cho 7 ngày (Thứ 2 → CN)
-        final String[] dayLabels = { "T2", "T3", "T4", "T5", "T6", "T7", "CN" };
-        List<BarEntry> entries = new ArrayList<>();
-
-        Calendar cal = Calendar.getInstance();
-        cal.setTimeInMillis(weekStart);
-
-        for (int i = 0; i < 7; i++) {
-            String key = dayFmt.format(cal.getTime());
-            double val = statMap.containsKey(key) ? statMap.get(key) : 0;
-            entries.add(new BarEntry(i, (float) val));
-            cal.add(Calendar.DAY_OF_MONTH, 1);
-        }
-
-        BarDataSet dataSet = new BarDataSet(entries, "");
-        dataSet.setColor(Color.parseColor("#00BC7D"));
-        dataSet.setDrawValues(false); // Tắt nhãn giá trị trên cột
-
-        BarData barData = new BarData(dataSet);
-        barData.setBarWidth(0.5f);
-        barChart.setData(barData);
-
-        // Cấu hình trục X
-        XAxis xAxis = barChart.getXAxis();
-        xAxis.setValueFormatter(new ValueFormatter() {
-            @Override
-            public String getFormattedValue(float value) {
-                int idx = (int) value;
-                return (idx >= 0 && idx < 7) ? dayLabels[idx] : "";
-            }
-        });
-        xAxis.setPosition(XAxis.XAxisPosition.BOTTOM);
-        xAxis.setDrawGridLines(false);
-        xAxis.setGranularity(1f);
-        xAxis.setTextColor(Color.parseColor("#99A1AF"));
-        xAxis.setTextSize(10f);
-        xAxis.setAxisMinimum(-0.5f);
-        xAxis.setAxisMaximum(6.5f);
-
-        // Ẩn các thành phần thừa
-        configureChartCommon(barChart);
-        barChart.animateY(400);
-        barChart.invalidate();
-    }
-
-    // ===================================================================
-    // BarChart — Chi tiêu tháng (4~5 tuần)
-    // ===================================================================
-    private void updateBarChartMonthly(List<ExpenseDao.WeeklyStat> weeklyStats, int weeksInMonth) {
-        weeksInMonth = Math.max(4, Math.min(weeksInMonth, 5));
-
-        Map<Integer, Double> statMap = new HashMap<>();
-        if (weeklyStats != null) {
-            for (ExpenseDao.WeeklyStat stat : weeklyStats) {
-                statMap.put(stat.week_index, stat.total);
-            }
-        }
-
-        final int finalWeeks = weeksInMonth;
-        final String[] weekLabels = new String[finalWeeks];
-        List<BarEntry> entries = new ArrayList<>();
-
-        // Tìm tuần hiện tại
-        Calendar now = Calendar.getInstance();
-        Calendar monthStartCal = Calendar.getInstance();
-        monthStartCal.set(Calendar.DAY_OF_MONTH, 1);
-        monthStartCal.set(Calendar.HOUR_OF_DAY, 0);
-        monthStartCal.set(Calendar.MINUTE, 0);
-        monthStartCal.set(Calendar.SECOND, 0);
-        monthStartCal.set(Calendar.MILLISECOND, 0);
-        int currentWeekIdx = (int) ((now.getTimeInMillis() - monthStartCal.getTimeInMillis()) / 604800000);
-
-        for (int i = 0; i < finalWeeks; i++) {
-            weekLabels[i] = "Tuần " + (i + 1);
-            double val = statMap.containsKey(i) ? statMap.get(i) : 0;
-            entries.add(new BarEntry(i, (float) val));
-        }
-
-        BarDataSet dataSet = new BarDataSet(entries, "");
-        dataSet.setDrawValues(false);
-
-        // Highlight tuần hiện tại (nếu là tháng hiện tại)
-        int[] colors = new int[finalWeeks];
-        for (int i = 0; i < finalWeeks; i++) {
-            if (currentWeekIdx == -1) {
-                // Không phải tháng hiện tại -> tất cả màu chính
-                colors[i] = Color.parseColor("#00BC7D");
-            } else {
-                // Có highlight tuần này
-                colors[i] = (i == currentWeekIdx)
-                        ? Color.parseColor("#00BC7D")
-                        : Color.parseColor("#86EFAC"); // Màu xanh nhạt nhưng rõ hơn (#A7F3D0 cũ quá mờ)
-            }
-        }
-        dataSet.setColors(colors);
-
-        BarData barData = new BarData(dataSet);
-        barData.setBarWidth(0.7f); // Tăng độ rộng cột cho "đầy đặn" hơn
-        barChartMonthly.setData(barData);
-
-        // Cấu hình trục X
-        XAxis xAxis = barChartMonthly.getXAxis();
-        xAxis.setValueFormatter(new ValueFormatter() {
-            @Override
-            public String getFormattedValue(float value) {
-                int idx = (int) value;
-                return (idx >= 0 && idx < finalWeeks) ? weekLabels[idx] : "";
-            }
-        });
-        xAxis.setPosition(XAxis.XAxisPosition.BOTTOM);
-        xAxis.setDrawGridLines(false);
-        xAxis.setGranularity(1f);
-        xAxis.setTextColor(Color.parseColor("#99A1AF"));
-        xAxis.setTextSize(10f);
-        xAxis.setAxisMinimum(-0.5f);
-        xAxis.setAxisMaximum(finalWeeks - 0.5f);
-
-        configureChartCommon(barChartMonthly);
-        barChartMonthly.animateY(600);
-        barChartMonthly.invalidate();
-    }
-
-    // ===================================================================
-    // Cấu hình chung cho biểu đồ
-    // ===================================================================
-    private void configureChartCommon(BarChart chart) {
-        chart.getAxisLeft().setDrawGridLines(false);
-        chart.getAxisLeft().setTextColor(Color.parseColor("#99A1AF"));
-        chart.getAxisLeft().setTextSize(9f);
-        chart.getAxisLeft().setValueFormatter(new ValueFormatter() {
-            @Override
-            public String getFormattedValue(float value) {
-                if (value == 0)
-                    return "0";
-                if (value >= 1_000_000)
-                    return (int) (value / 1_000_000) + "tr";
-                if (value >= 1_000)
-                    return (int) (value / 1_000) + "k";
-                return String.valueOf((int) value);
-            }
-        });
-        chart.getAxisRight().setEnabled(false);
-        chart.getDescription().setEnabled(false);
-        chart.getLegend().setEnabled(false);
-        chart.setTouchEnabled(false);
-        chart.setDrawGridBackground(false);
-        chart.setExtraBottomOffset(4f);
-    }
 
     // ===================================================================
     // Progress bar ngân sách tháng
@@ -538,16 +401,16 @@ public class BudgetFragment extends Fragment {
 
             if (totalSpent >= limit) {
                 progressBarMonthly.setProgressTintList(
-                        ColorStateList.valueOf(Color.parseColor("#C62828")));
-                tvRemaining.setTextColor(Color.parseColor("#FF6B6B"));
+                        android.content.res.ColorStateList.valueOf(android.graphics.Color.parseColor("#C62828")));
+                tvRemaining.setTextColor(android.graphics.Color.parseColor("#FF6B6B"));
             } else if (totalSpent >= limit * 0.8) {
                 progressBarMonthly.setProgressTintList(
-                        ColorStateList.valueOf(Color.parseColor("#F57C00")));
-                tvRemaining.setTextColor(Color.WHITE);
+                        android.content.res.ColorStateList.valueOf(android.graphics.Color.parseColor("#F57C00")));
+                tvRemaining.setTextColor(android.graphics.Color.WHITE);
             } else {
                 progressBarMonthly.setProgressTintList(
-                        ColorStateList.valueOf(Color.parseColor("#4CAF50")));
-                tvRemaining.setTextColor(Color.WHITE);
+                        android.content.res.ColorStateList.valueOf(android.graphics.Color.parseColor("#4CAF50")));
+                tvRemaining.setTextColor(android.graphics.Color.WHITE);
             }
         } else {
             tvRemaining.setText("—");
@@ -555,463 +418,14 @@ public class BudgetFragment extends Fragment {
         }
     }
 
-    // ===================================================================
-    // UC10 — Cảnh báo vượt ngân sách
-    // ===================================================================
-    private void checkBudgetWarnings(double monthSpent, double monthLimit,
-            double weekSpent, double weekLimit) {
-        if (hasShownWarning)
-            return;
-
-        if (monthLimit > 0 && monthSpent >= monthLimit) {
-            hasShownWarning = true;
-            showOverBudgetAlert("Vượt ngân sách tháng!",
-                    "Đã chi: " + formatCurrency(monthSpent)
-                            + "\nGiới hạn: " + formatCurrency(monthLimit)
-                            + "\n\nHãy kiểm soát chi tiêu ngay!");
-
-        } else if (weekLimit > 0 && weekSpent >= weekLimit) {
-            hasShownWarning = true;
-            showOverBudgetAlert("Vượt ngân sách tuần!",
-                    "Chi tiêu tuần: " + formatCurrency(weekSpent)
-                            + "\nGiới hạn tuần: " + formatCurrency(weekLimit));
-
-        } else if (monthLimit > 0 && monthSpent >= monthLimit * 0.8) {
-            hasShownWarning = true;
-            showWarningSnackbar("Đã dùng "
-                    + (int) ((monthSpent / monthLimit) * 100) + "% ngân sách tháng!", false);
-
-        } else if (weekLimit > 0 && weekSpent >= weekLimit * 0.8) {
-            hasShownWarning = true;
-            showWarningSnackbar("Đã dùng "
-                    + (int) ((weekSpent / weekLimit) * 100) + "% ngân sách tuần!", false);
-        }
-    }
-
-    private void showOverBudgetAlert(String title, String message) {
-        if (getContext() == null)
-            return;
-        new AlertDialog.Builder(getContext())
-                .setTitle(title)
-                .setIcon(R.drawable.ic_toast_alert)
-                .setMessage(message)
-                .setPositiveButton("Đã hiểu", null)
-                .setNegativeButton("Điều chỉnh ngân sách", (d, w) -> showSetBudgetBottomSheet())
-                .show();
-    }
-
-    private void showWarningSnackbar(String message, boolean isError) {
-        if (rootView == null)
-            return;
-        int color = isError ? Color.parseColor("#C62828") : Color.parseColor("#F57C00");
-        Snackbar sb = Snackbar.make(rootView, message, Snackbar.LENGTH_LONG);
-        sb.getView().setBackgroundColor(color);
-        sb.show();
-    }
-
-    // ===================================================================
-    // UC9 — Thiết lập ngân sách tuần / tháng
-    // ===================================================================
-    private void showSetBudgetBottomSheet() {
-        BottomSheetDialog dialog = new BottomSheetDialog(requireContext());
-        View sheetView = LayoutInflater.from(getContext())
-                .inflate(R.layout.bottom_sheet_set_budget, null);
-        dialog.setContentView(sheetView);
-
-        EditText etMonthly = sheetView.findViewById(R.id.etMonthlyLimit);
-        EditText etWeekly = sheetView.findViewById(R.id.etWeeklyLimit);
-        Button btnSave = sheetView.findViewById(R.id.btnSaveBudget);
-        TextView tvMonthLabel = sheetView.findViewById(R.id.tvBudgetMonthLabel);
-
-        tvMonthLabel.setText("Tháng " + currentMonth + " / " + currentYear);
-
-        // Quick chips tháng
-        long[] mAmts = { 1_000_000, 2_000_000, 3_000_000, 5_000_000, 10_000_000 };
-        int[] mIds = { R.id.mChip1tr, R.id.mChip2tr, R.id.mChip3tr, R.id.mChip5tr, R.id.mChip10tr };
-        for (int i = 0; i < mIds.length; i++) {
-            final long val = mAmts[i];
-            sheetView.findViewById(mIds[i]).setOnClickListener(v -> etMonthly.setText(String.valueOf(val)));
-        }
-
-        // Quick chips tuần
-        long[] wAmts = { 200_000, 300_000, 500_000, 750_000, 1_000_000 };
-        int[] wIds = { R.id.wChip200k, R.id.wChip300k, R.id.wChip500k, R.id.wChip750k, R.id.wChip1tr };
-        for (int i = 0; i < wIds.length; i++) {
-            final long val = wAmts[i];
-            sheetView.findViewById(wIds[i]).setOnClickListener(v -> etWeekly.setText(String.valueOf(val)));
-        }
-
-        // Pre-populate
-        executorService.execute(() -> {
-            Budget existing = budgetDao.getBudgetForMonth(currentMonth, currentYear);
-            if (getActivity() != null) {
-                getActivity().runOnUiThread(() -> {
-                    if (existing != null) {
-                        if (existing.getMonthlyLimit() > 0)
-                            etMonthly.setText(String.valueOf((long) existing.getMonthlyLimit()));
-                        if (existing.getWeeklyLimit() > 0)
-                            etWeekly.setText(String.valueOf((long) existing.getWeeklyLimit()));
-                    }
-                });
-            }
-        });
-
-        btnSave.setOnClickListener(v -> {
-            String mStr = etMonthly.getText().toString().trim();
-            String wStr = etWeekly.getText().toString().trim();
-
-            if (TextUtils.isEmpty(mStr)) {
-                etMonthly.setError("Vui lòng nhập ngân sách tháng");
-                return;
-            }
-            double monthlyLimit;
-            try {
-                monthlyLimit = Double.parseDouble(mStr);
-                if (monthlyLimit <= 0)
-                    throw new NumberFormatException();
-            } catch (NumberFormatException e) {
-                etMonthly.setError("Số tiền không hợp lệ");
-                return;
-            }
-
-            double weeklyLimit = 0;
-            if (!TextUtils.isEmpty(wStr)) {
-                try {
-                    weeklyLimit = Double.parseDouble(wStr);
-                    if (weeklyLimit < 0)
-                        throw new NumberFormatException();
-                } catch (NumberFormatException e) {
-                    etWeekly.setError("Số tiền không hợp lệ");
-                    return;
-                }
-                if (weeklyLimit > monthlyLimit) {
-                    etWeekly.setError("Không được lớn hơn ngân sách tháng");
-                    return;
-                }
-            }
-
-            btnSave.setEnabled(false);
-            btnSave.setText("Đang lưu...");
-            final double finalWeekly = weeklyLimit;
-
-            executorService.execute(() -> {
-                Budget existing = budgetDao.getBudgetForMonth(currentMonth, currentYear);
-                if (existing != null) {
-                    existing.setMonthlyLimit(monthlyLimit);
-                    existing.setWeeklyLimit(finalWeekly);
-                    budgetDao.update(existing);
-                } else {
-                    Budget b = new Budget();
-                    b.setMonth(currentMonth);
-                    b.setYear(currentYear);
-                    b.setMonthlyLimit(monthlyLimit);
-                    b.setWeeklyLimit(finalWeekly);
-                    budgetDao.insert(b);
-                }
-                if (getActivity() != null) {
-                    getActivity().runOnUiThread(() -> {
-                        showCustomToast("Đã lưu ngân sách!", R.drawable.ic_toast_check);
-                        dialog.dismiss();
-                        loadBudgetData();
-                    });
-                }
-            });
-        });
-
-        dialog.show();
-    }
-
-    // ===================================================================
-    // Thêm chi tiêu
-    // ===================================================================
-    private void showAddExpenseBottomSheet() {
-        BottomSheetDialog dialog = new BottomSheetDialog(requireContext());
-        View sheetView = LayoutInflater.from(getContext())
-                .inflate(R.layout.bottom_sheet_add_expense, null);
-        dialog.setContentView(sheetView);
-
-        EditText etExpenseName = sheetView.findViewById(R.id.etExpenseName);
-        EditText etExpenseAmount = sheetView.findViewById(R.id.etExpenseAmount);
-        TextView tvSelectDate = sheetView.findViewById(R.id.tvSelectDate);
-        Button btnSaveExpense = sheetView.findViewById(R.id.btnSaveExpense);
-
-        Calendar calendar = Calendar.getInstance();
-        SimpleDateFormat dateFormat = new SimpleDateFormat("dd/MM/yyyy", Locale.getDefault());
-        tvSelectDate.setText(dateFormat.format(calendar.getTime()));
-
-        tvSelectDate.setOnClickListener(v -> new DatePickerDialog(requireContext(), (vw, year, month, day) -> {
-            calendar.set(year, month, day);
-            tvSelectDate.setText(dateFormat.format(calendar.getTime()));
-        }, calendar.get(Calendar.YEAR),
-                calendar.get(Calendar.MONTH),
-                calendar.get(Calendar.DAY_OF_MONTH)).show());
-
-        int[] chipIds = { R.id.chip20k, R.id.chip50k, R.id.chip100k, R.id.chip150k, R.id.chip200k, R.id.chip300k };
-        int[] chipAmounts = { 20000, 50000, 100000, 150000, 200000, 300000 };
-        for (int i = 0; i < chipIds.length; i++) {
-            final int amount = chipAmounts[i];
-            sheetView.findViewById(chipIds[i])
-                    .setOnClickListener(v -> etExpenseAmount.setText(String.valueOf(amount)));
-        }
-
-        final String[] selectedCategory = { "SHOPPING" };
-        LinearLayout btnShopping = sheetView.findViewById(R.id.btnCatShopping);
-        LinearLayout btnDelivery = sheetView.findViewById(R.id.btnCatDelivery);
-        LinearLayout btnSnacks = sheetView.findViewById(R.id.btnCatSnacks);
-        LinearLayout btnOthers = sheetView.findViewById(R.id.btnCatOthers);
-        LinearLayout[] catBtns = { btnShopping, btnDelivery, btnSnacks, btnOthers };
-        String[] catKeys = { "SHOPPING", "DELIVERY", "SNACK", "OTHER" };
-
-        View.OnClickListener catClick = v -> {
-            for (int i = 0; i < catBtns.length; i++) {
-                LinearLayout btn = catBtns[i];
-                TextView txt = (TextView) btn.getChildAt(1);
-                if (btn == v) {
-                    selectedCategory[0] = catKeys[i];
-                    btn.setBackgroundResource(R.drawable.bg_category_selected);
-                    txt.setTextColor(Color.parseColor("#00BC7D"));
-                } else {
-                    btn.setBackgroundResource(R.drawable.bg_category_unselected);
-                    txt.setTextColor(Color.parseColor("#4A5565"));
-                }
-            }
-        };
-        for (LinearLayout b : catBtns)
-            b.setOnClickListener(catClick);
-
-        btnSaveExpense.setOnClickListener(v -> {
-            String name = etExpenseName.getText().toString().trim();
-            String amountStr = etExpenseAmount.getText().toString().trim();
-
-            if (TextUtils.isEmpty(name)) {
-                etExpenseName.setError("Vui lòng nhập tên chi tiêu");
-                return;
-            }
-            if (TextUtils.isEmpty(amountStr)) {
-                etExpenseAmount.setError("Vui lòng nhập số tiền");
-                return;
-            }
-            double amount;
-            try {
-                amount = Double.parseDouble(amountStr);
-                if (amount <= 0)
-                    throw new NumberFormatException();
-            } catch (NumberFormatException e) {
-                etExpenseAmount.setError("Số tiền không hợp lệ");
-                return;
-            }
-
-            btnSaveExpense.setEnabled(false);
-            btnSaveExpense.setText("Đang lưu...");
-
-            executorService.execute(() -> {
-                Expense expense = new Expense();
-                expense.setName(name);
-                expense.setAmount(amount);
-                expense.setCategoryKey(selectedCategory[0]);
-                expense.setExpenseDate(calendar.getTimeInMillis());
-
-                Budget currentBudget = budgetDao.getBudgetForMonth(currentMonth, currentYear);
-                if (currentBudget != null)
-                    expense.setBudgetId(currentBudget.getId());
-
-                expenseDao.insertExpense(expense);
-
-                if (getActivity() != null) {
-                    getActivity().runOnUiThread(() -> {
-                        showCustomToast("Đã thêm khoản chi!", R.drawable.ic_toast_check);
-                        dialog.dismiss();
-                        loadBudgetData();
-                    });
-                }
-            });
-        });
-
-        dialog.show();
-    }
-
-    // ===================================================================
-    // Sửa giao dịch — pre-fill bottom sheet với dữ liệu expense cũ
-    // ===================================================================
-    private void showEditExpenseBottomSheet(Expense expense) {
-        BottomSheetDialog dialog = new BottomSheetDialog(requireContext());
-        View sheetView = LayoutInflater.from(getContext())
-                .inflate(R.layout.bottom_sheet_add_expense, null);
-        dialog.setContentView(sheetView);
-
-        // Override tiêu đề thành "Sửa chi tiêu"
-        TextView tvTitle = sheetView.findViewWithTag("titleText");
-        // Tìm TextView đầu tiên là tiêu đề (layout_marginStart=20dp, text=Thêm chi
-        // tiêu)
-        // Dùng cách trực tiếp tìm qua thứ tự view — thay text thủ công
-        LinearLayout root = (LinearLayout) sheetView;
-        if (root.getChildCount() >= 2 && root.getChildAt(1) instanceof TextView) {
-            ((TextView) root.getChildAt(1)).setText("Sửa chi tiêu");
-        }
-
-        EditText etExpenseName = sheetView.findViewById(R.id.etExpenseName);
-        EditText etExpenseAmount = sheetView.findViewById(R.id.etExpenseAmount);
-        TextView tvSelectDate = sheetView.findViewById(R.id.tvSelectDate);
-        Button btnSave = sheetView.findViewById(R.id.btnSaveExpense);
-
-        // Pre-fill dữ liệu cũ
-        etExpenseName.setText(expense.getName());
-        etExpenseAmount.setText(String.valueOf((long) expense.getAmount()));
-        btnSave.setText("Lưu thay đổi");
-
-        Calendar calendar = Calendar.getInstance();
-        calendar.setTimeInMillis(expense.getExpenseDate());
-        SimpleDateFormat dateFormat = new SimpleDateFormat("dd/MM/yyyy", Locale.getDefault());
-        tvSelectDate.setText(dateFormat.format(calendar.getTime()));
-
-        tvSelectDate.setOnClickListener(v -> new DatePickerDialog(requireContext(), (vw, year, month, day) -> {
-            calendar.set(year, month, day);
-            tvSelectDate.setText(dateFormat.format(calendar.getTime()));
-        }, calendar.get(Calendar.YEAR),
-                calendar.get(Calendar.MONTH),
-                calendar.get(Calendar.DAY_OF_MONTH)).show());
-
-        // Quick chips số tiền
-        int[] chipIds = { R.id.chip20k, R.id.chip50k, R.id.chip100k, R.id.chip150k, R.id.chip200k, R.id.chip300k };
-        int[] chipAmounts = { 20000, 50000, 100000, 150000, 200000, 300000 };
-        for (int i = 0; i < chipIds.length; i++) {
-            final int amount = chipAmounts[i];
-            sheetView.findViewById(chipIds[i])
-                    .setOnClickListener(v -> etExpenseAmount.setText(String.valueOf(amount)));
-        }
-
-        // Chọn danh mục — pre-select danh mục cũ
-        final String[] selectedCategory = { expense.getCategoryKey() };
-        LinearLayout btnShopping = sheetView.findViewById(R.id.btnCatShopping);
-        LinearLayout btnDelivery = sheetView.findViewById(R.id.btnCatDelivery);
-        LinearLayout btnSnacks = sheetView.findViewById(R.id.btnCatSnacks);
-        LinearLayout btnOthers = sheetView.findViewById(R.id.btnCatOthers);
-        LinearLayout[] catBtns = { btnShopping, btnDelivery, btnSnacks, btnOthers };
-        String[] catKeys = { "SHOPPING", "DELIVERY", "SNACK", "OTHER" };
-
-        // Áp dụng trạng thái ban đầu dựa trên danh mục của expense cũ
-        for (int i = 0; i < catBtns.length; i++) {
-            LinearLayout btn = catBtns[i];
-            TextView txt = (TextView) btn.getChildAt(1);
-            if (catKeys[i].equals(expense.getCategoryKey())) {
-                btn.setBackgroundResource(R.drawable.bg_category_selected);
-                txt.setTextColor(Color.parseColor("#00BC7D"));
-            } else {
-                btn.setBackgroundResource(R.drawable.bg_category_unselected);
-                txt.setTextColor(Color.parseColor("#4A5565"));
-            }
-        }
-
-        View.OnClickListener catClick = v -> {
-            for (int i = 0; i < catBtns.length; i++) {
-                LinearLayout btn = catBtns[i];
-                TextView txt = (TextView) btn.getChildAt(1);
-                if (btn == v) {
-                    selectedCategory[0] = catKeys[i];
-                    btn.setBackgroundResource(R.drawable.bg_category_selected);
-                    txt.setTextColor(Color.parseColor("#00BC7D"));
-                } else {
-                    btn.setBackgroundResource(R.drawable.bg_category_unselected);
-                    txt.setTextColor(Color.parseColor("#4A5565"));
-                }
-            }
-        };
-        for (LinearLayout b : catBtns)
-            b.setOnClickListener(catClick);
-
-        // Lưu thay đổi
-        btnSave.setOnClickListener(v -> {
-            String name = etExpenseName.getText().toString().trim();
-            String amountStr = etExpenseAmount.getText().toString().trim();
-
-            if (TextUtils.isEmpty(name)) {
-                etExpenseName.setError("Vui lòng nhập tên chi tiêu");
-                return;
-            }
-            if (TextUtils.isEmpty(amountStr)) {
-                etExpenseAmount.setError("Vui lòng nhập số tiền");
-                return;
-            }
-            double amount;
-            try {
-                amount = Double.parseDouble(amountStr);
-                if (amount <= 0)
-                    throw new NumberFormatException();
-            } catch (NumberFormatException e) {
-                etExpenseAmount.setError("Số tiền không hợp lệ");
-                return;
-            }
-
-            btnSave.setEnabled(false);
-            btnSave.setText("Đang lưu...");
-
-            executorService.execute(() -> {
-                // Cập nhật trực tiếp vào đối tượng expense (giữ nguyên id, budget_id)
-                expense.setName(name);
-                expense.setAmount(amount);
-                expense.setCategoryKey(selectedCategory[0]);
-                expense.setExpenseDate(calendar.getTimeInMillis());
-                expenseDao.updateExpense(expense);
-
-                if (getActivity() != null) {
-                    getActivity().runOnUiThread(() -> {
-                        showCustomToast("Đã cập nhật!", R.drawable.ic_toast_check);
-                        dialog.dismiss();
-                        loadBudgetData();
-                    });
-                }
-            });
-        });
-
-        dialog.show();
-    }
-
-    // ===================================================================
-    // Xóa giao dịch — xác nhận trước khi xóa
-    // ===================================================================
-    private void showDeleteConfirmDialog(Expense expense) {
-        if (getContext() == null)
-            return;
-        new AlertDialog.Builder(getContext())
-                .setTitle("Xóa giao dịch")
-                .setMessage("Bạn có chắc muốn xóa khoản chi\n\""
-                        + expense.getName() + "\" — "
-                        + formatCurrency(expense.getAmount()) + " không?")
-                .setPositiveButton("Xóa", (dialog, which) -> {
-                    executorService.execute(() -> {
-                        expenseDao.deleteExpense(expense);
-                        if (getActivity() != null) {
-                            getActivity().runOnUiThread(() -> {
-                                showCustomToast("Đã xóa giao dịch", R.drawable.ic_toast_delete);
-                                loadBudgetData();
-                            });
-                        }
-                    });
-                })
-                .setNegativeButton("Hủy", null)
-                .show();
-    }
-
-    // ===================================================================
-    // Helpers
-    // ===================================================================
-    
-    private void showCustomToast(String message, int iconResId) {
-        if (getContext() == null) return;
-        android.view.View layout = android.view.LayoutInflater.from(getContext()).inflate(R.layout.custom_toast, null);
-        android.widget.TextView text = layout.findViewById(R.id.toastText);
-        text.setText(message);
-        android.widget.ImageView icon = layout.findViewById(R.id.toastIcon);
-        icon.setImageResource(iconResId);
-
-        Toast toast = new Toast(getContext());
-        toast.setDuration(Toast.LENGTH_SHORT);
-        toast.setView(layout);
-        toast.show();
-    }
-
     private String formatCurrency(double amount) {
         return String.format(Locale.getDefault(), "%,.0f đ", amount);
+    }
+
+    @Override
+    public void onSaveInstanceState(@NonNull Bundle outState) {
+        super.onSaveInstanceState(outState);
+        outState.putBoolean("IS_WEEKLY_MODE", isWeeklyMode);
     }
 
     @Override

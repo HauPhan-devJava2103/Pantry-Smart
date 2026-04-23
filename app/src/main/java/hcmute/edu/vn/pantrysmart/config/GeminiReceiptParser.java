@@ -55,7 +55,7 @@ public class GeminiReceiptParser {
                         "1. CHỈ trích xuất tên sản phẩm thực tế thuộc nhóm thực phẩm tươi sống nói trên.\n" +
                         "2. BỎ QUA HOÀN TOÀN hóa mỹ phẩm, dụng cụ, đồ gia dụng, và đặc biệt BỎ QUA các loại gia vị (nước mắm, bột ngọt, muối, dầu ăn, hạt nêm). BỎ QUA các từ khóa tổng kết (Phải thanh toán, Tiền mặt, Điểm, Ngày giờ, Chiết khấu, VAT, mã vạch...).\n"
                         +
-                        "3. Trả kết quả về ĐÚNG định dạng JSON Array. Mỗi object gồm: 'name' (tên), 'quantity' (số lượng), 'unit' (đơn vị), 'price' (tổng giá: Integer), 'category' (thịt, rau, trái cây, sữa, trứng, đồ uống, khô, gia dụng, khác), 'expiry_days' (ước tính số ngày bảo quản tối đa: Integer).\n"
+                        "3. Trả kết quả về ĐÚNG định dạng JSON Array. Mỗi object gồm: 'name' (tên), 'quantity' (số lượng), 'unit' (nếu hóa đơn không ghi rõ, hãy suy luận đơn vị hợp lý nhất: ví dụ 'kg' cho thịt/rau củ/trái cây, 'bó' cho rau xanh, 'vỉ' cho trứng, 'hộp'/'chai' cho sữa, 'gói' cho đồ khô), 'price' (tổng giá: Integer), 'category' (thịt, rau, trái cây, sữa, trứng, đồ uống, khô, gia dụng, khác), 'expiry_days' (ước tính số ngày bảo quản tối đa: Integer).\n"
                         +
                         "Chỉ trả mảng JSON hợp lệ, không dính ```json cục bộ, không giải thích thêm.\n\n--- VĂN BẢN HÓA ĐƠN ---\n"
                         + rawText;
@@ -104,7 +104,7 @@ public class GeminiReceiptParser {
                         "1. CHỈ trích xuất tên sản phẩm thực tế thuộc nhóm thực phẩm tươi sống nói trên.\n" +
                         "2. BỎ QUA HOÀN TOÀN hóa mỹ phẩm, dụng cụ, đồ gia dụng, và đặc biệt BỎ QUA các loại gia vị (nước mắm, bột ngọt, muối, dầu ăn, hạt nêm). BỎ QUA các từ khóa tổng kết (Phải thanh toán, Tiền mặt, Điểm BHX, Ngày giờ, Chiết khấu, VAT, mã vạch, tên siêu thị...).\n"
                         +
-                        "3. Trả kết quả về ĐÚNG định dạng JSON Array. Mỗi object gồm: 'name' (tên), 'quantity' (số lượng), 'price' (tổng giá: Integer), 'category' (thịt, rau, trái cây, sữa, trứng, đồ uống, khô, gia dụng, khác), 'expiry_days' (ước tính số ngày bảo quản tối đa: Integer).\n"
+                        "3. Trả kết quả về ĐÚNG định dạng JSON Array. Mỗi object gồm: 'name' (tên), 'quantity' (số lượng), 'unit' (nếu hóa đơn không ghi rõ, hãy suy luận đơn vị hợp lý nhất: ví dụ 'kg' cho thịt/rau củ/trái cây, 'bó' cho rau xanh, 'vỉ' cho trứng, 'hộp'/'chai' cho sữa, 'gói' cho đồ khô), 'price' (tổng giá: Integer), 'category' (thịt, rau, trái cây, sữa, trứng, đồ uống, khô, gia dụng, khác), 'expiry_days' (ước tính số ngày bảo quản tối đa: Integer).\n"
                         +
                         "Chỉ trả mảng JSON hợp lệ, không dính ```json cục bộ, không giải thích thêm.";
 
@@ -248,10 +248,29 @@ public class GeminiReceiptParser {
 
     private static String guessUnit(String name) {
         String lower = name.toLowerCase(Locale.ROOT);
-        if (lower.contains("sữa") || lower.contains("nước") || lower.contains("bia"))
+        
+        // Đồ uống, chất lỏng
+        if (lower.matches(".*(sữa|nước|bia|trà|cafe|yogurt).*"))
             return "chai";
-        if (lower.contains("thịt") || lower.contains("cá") || lower.contains("khay"))
+            
+        // Trứng
+        if (lower.contains("trứng"))
+            return "vỉ";
+            
+        // Rau lá thường bán theo bó
+        if (lower.matches(".*(rau|cải|hành|ngò|mồng tơi|xà lách|húng).*"))
+            return "bó";
+            
+        // Trái cây, thịt, cá, củ quả tươi thường bán theo kg
+        if (lower.matches(".*(thịt|bò|heo|gà|vịt|cá|tôm|mực|khoai|cà|táo|cam|nho|dưa|chuối|xoài).*"))
+            return "kg";
+            
+        // Đóng gói sẵn
+        if (lower.contains("khay"))
             return "khay";
+        if (lower.contains("hộp"))
+            return "hộp";
+            
         return "gói";
     }
 

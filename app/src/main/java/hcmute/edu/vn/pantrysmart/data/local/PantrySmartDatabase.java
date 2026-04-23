@@ -29,7 +29,7 @@ import hcmute.edu.vn.pantrysmart.data.local.entity.PantryItem;
                 Budget.class,
                 Expense.class,
                 ExpenseCategory.class
-}, version = 9, exportSchema = false)
+}, version = 10, exportSchema = false)
 public abstract class PantrySmartDatabase extends RoomDatabase {
 
         // DAOs
@@ -125,46 +125,63 @@ public abstract class PantrySmartDatabase extends RoomDatabase {
 
                         // Ngăn chính (MAIN)
                         db.execSQL("INSERT INTO pantry_items (name, emoji, image_path, quantity, unit, expiry_date, added_date, storage_zone, category, is_active) VALUES "
-                                        + "('Gạo', 'ic_food_bread', NULL, 5, 'kg', " + (now + 90 * oneDay) + ", " + now + ", 'MAIN', 'khô', 1)");
+                                        + "('Gạo', 'ic_food_bread', NULL, 5, 'kg', " + (now + 90 * oneDay) + ", " + now
+                                        + ", 'MAIN', 'khô', 1)");
 
                         db.execSQL("INSERT INTO pantry_items (name, emoji, image_path, quantity, unit, expiry_date, added_date, storage_zone, category, is_active) VALUES "
-                                        + "('Hành tây', 'ic_food_onion', NULL, 3, 'củ', " + (now + 10 * oneDay) + ", " + now + ", 'MAIN', 'rau', 1)");
+                                        + "('Hành tây', 'ic_food_onion', NULL, 3, 'củ', " + (now + 10 * oneDay) + ", "
+                                        + now + ", 'MAIN', 'rau', 1)");
 
                         db.execSQL("INSERT INTO pantry_items (name, emoji, image_path, quantity, unit, expiry_date, added_date, storage_zone, category, is_active) VALUES "
-                                        + "('Tỏi', 'ic_food_garlic', NULL, 1, 'củ', " + (now + 14 * oneDay) + ", " + now + ", 'MAIN', 'rau', 1)");
+                                        + "('Tỏi', 'ic_food_garlic', NULL, 1, 'củ', " + (now + 14 * oneDay) + ", " + now
+                                        + ", 'MAIN', 'rau', 1)");
 
                         db.execSQL("INSERT INTO pantry_items (name, emoji, image_path, quantity, unit, expiry_date, added_date, storage_zone, category, is_active) VALUES "
-                                        + "('Cà chua', 'ic_food_tomato', NULL, 4, 'quả', " + (now + 5 * oneDay) + ", " + now + ", 'MAIN', 'rau', 1)");
+                                        + "('Cà chua', 'ic_food_tomato', NULL, 4, 'quả', " + (now + 5 * oneDay) + ", "
+                                        + now + ", 'MAIN', 'rau', 1)");
 
                         db.execSQL("INSERT INTO pantry_items (name, emoji, image_path, quantity, unit, expiry_date, added_date, storage_zone, category, is_active) VALUES "
-                                        + "('Nước mắm', 'ic_food_sauce', NULL, 1, 'chai', " + (now + 180 * oneDay) + ", " + now + ", 'MAIN', 'gia vị', 1)");
+                                        + "('Nước mắm', 'ic_food_sauce', NULL, 1, 'chai', " + (now + 180 * oneDay)
+                                        + ", " + now + ", 'MAIN', 'gia vị', 1)");
 
                         db.execSQL("INSERT INTO pantry_items (name, emoji, image_path, quantity, unit, expiry_date, added_date, storage_zone, category, is_active) VALUES "
-                                        + "('Trứng gà', 'ic_food_egg', NULL, 10, 'quả', " + (now + 14 * oneDay) + ", " + now + ", 'MAIN', 'protein', 1)");
+                                        + "('Trứng gà', 'ic_food_egg', NULL, 10, 'quả', " + (now + 14 * oneDay) + ", "
+                                        + now + ", 'MAIN', 'protein', 1)");
 
                         db.execSQL("INSERT INTO pantry_items (name, emoji, image_path, quantity, unit, expiry_date, added_date, storage_zone, category, is_active) VALUES "
-                                        + "('Đậu phụ', 'ic_food_cheese', NULL, 2, 'miếng', " + (now + 3 * oneDay) + ", " + now + ", 'MAIN', 'protein', 1)");
+                                        + "('Đậu phụ', 'ic_food_cheese', NULL, 2, 'miếng', " + (now + 3 * oneDay) + ", "
+                                        + now + ", 'MAIN', 'protein', 1)");
 
                         // Ngăn đông (FREEZER)
                         db.execSQL("INSERT INTO pantry_items (name, emoji, image_path, quantity, unit, expiry_date, added_date, storage_zone, category, is_active) VALUES "
-                                        + "('Thịt bò', 'ic_food_steak', NULL, 0.5, 'kg', " + (now + 30 * oneDay) + ", " + now + ", 'FREEZER', 'thịt', 1)");
+                                        + "('Thịt bò', 'ic_food_steak', NULL, 0.5, 'kg', " + (now + 30 * oneDay) + ", "
+                                        + now + ", 'FREEZER', 'thịt', 1)");
 
                         db.execSQL("INSERT INTO pantry_items (name, emoji, image_path, quantity, unit, expiry_date, added_date, storage_zone, category, is_active) VALUES "
-                                        + "('Cá basa', 'ic_food_fish', NULL, 0.4, 'kg', " + (now + 20 * oneDay) + ", " + now + ", 'FREEZER', 'hải sản', 1)");
+                                        + "('Cá basa', 'ic_food_fish', NULL, 0.4, 'kg', " + (now + 20 * oneDay) + ", "
+                                        + now + ", 'FREEZER', 'hải sản', 1)");
 
                         db.execSQL("INSERT INTO pantry_items (name, emoji, image_path, quantity, unit, expiry_date, added_date, storage_zone, category, is_active) VALUES "
-                                        + "('Tôm sú', 'ic_food_shrimp', NULL, 0.3, 'kg', " + (now + 15 * oneDay) + ", " + now + ", 'FREEZER', 'hải sản', 1)");
+                                        + "('Tôm sú', 'ic_food_shrimp', NULL, 0.3, 'kg', " + (now + 15 * oneDay) + ", "
+                                        + now + ", 'FREEZER', 'hải sản', 1)");
                         // Chi tiêu mẫu trong tuần hiện tại (để test biểu đồ & giao dịch gần đây)
                         // budget_id = 1 vì vừa insert budget ở trên
                         long today = System.currentTimeMillis();
                         long d = 86400000L; // 1 ngày
-                        db.execSQL("INSERT INTO expenses (budget_id, name, amount, category_key, expense_date, source) VALUES (1,'Chợ Long Biên'," + 85000 + ",'SHOPPING'," + (today - 0 * d) + ",'MANUAL')");
-                        db.execSQL("INSERT INTO expenses (budget_id, name, amount, category_key, expense_date, source) VALUES (1,'Baemin cơm trưa'," + 45000 + ",'DELIVERY'," + (today - 1 * d) + ",'MANUAL')");
-                        db.execSQL("INSERT INTO expenses (budget_id, name, amount, category_key, expense_date, source) VALUES (1,'Siêu thị VinMart'," + 185000 + ",'SHOPPING'," + (today - 2 * d) + ",'MANUAL')");
-                        db.execSQL("INSERT INTO expenses (budget_id, name, amount, category_key, expense_date, source) VALUES (1,'Snack Oreo'," + 25000 + ",'SNACK'," + (today - 2 * d) + ",'MANUAL')");
-                        db.execSQL("INSERT INTO expenses (budget_id, name, amount, category_key, expense_date, source) VALUES (1,'Grab Food phở'," + 65000 + ",'DELIVERY'," + (today - 3 * d) + ",'MANUAL')");
-                        db.execSQL("INSERT INTO expenses (budget_id, name, amount, category_key, expense_date, source) VALUES (1,'Rau củ quả'," + 75000 + ",'SHOPPING'," + (today - 4 * d) + ",'MANUAL')");
-                        db.execSQL("INSERT INTO expenses (budget_id, name, amount, category_key, expense_date, source) VALUES (1,'Phí ship hàng online'," + 30000 + ",'OTHER'," + (today - 5 * d) + ",'MANUAL')");
+                        db.execSQL("INSERT INTO expenses (budget_id, name, amount, category_key, expense_date, source) VALUES (1,'Chợ Long Biên',"
+                                        + 85000 + ",'SHOPPING'," + (today - 0 * d) + ",'MANUAL')");
+                        db.execSQL("INSERT INTO expenses (budget_id, name, amount, category_key, expense_date, source) VALUES (1,'Baemin cơm trưa',"
+                                        + 45000 + ",'DELIVERY'," + (today - 1 * d) + ",'MANUAL')");
+                        db.execSQL("INSERT INTO expenses (budget_id, name, amount, category_key, expense_date, source) VALUES (1,'Siêu thị VinMart',"
+                                        + 185000 + ",'SHOPPING'," + (today - 2 * d) + ",'MANUAL')");
+                        db.execSQL("INSERT INTO expenses (budget_id, name, amount, category_key, expense_date, source) VALUES (1,'Snack Oreo',"
+                                        + 25000 + ",'SNACK'," + (today - 2 * d) + ",'MANUAL')");
+                        db.execSQL("INSERT INTO expenses (budget_id, name, amount, category_key, expense_date, source) VALUES (1,'Grab Food phở',"
+                                        + 65000 + ",'DELIVERY'," + (today - 3 * d) + ",'MANUAL')");
+                        db.execSQL("INSERT INTO expenses (budget_id, name, amount, category_key, expense_date, source) VALUES (1,'Rau củ quả',"
+                                        + 75000 + ",'SHOPPING'," + (today - 4 * d) + ",'MANUAL')");
+                        db.execSQL("INSERT INTO expenses (budget_id, name, amount, category_key, expense_date, source) VALUES (1,'Phí ship hàng online',"
+                                        + 30000 + ",'OTHER'," + (today - 5 * d) + ",'MANUAL')");
                 }
 
         };
