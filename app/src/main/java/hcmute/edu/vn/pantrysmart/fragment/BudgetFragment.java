@@ -565,25 +565,25 @@ public class BudgetFragment extends Fragment {
 
         if (monthLimit > 0 && monthSpent >= monthLimit) {
             hasShownWarning = true;
-            showOverBudgetAlert("🚨 Vượt ngân sách tháng!",
+            showOverBudgetAlert("Vượt ngân sách tháng!",
                     "Đã chi: " + formatCurrency(monthSpent)
                             + "\nGiới hạn: " + formatCurrency(monthLimit)
                             + "\n\nHãy kiểm soát chi tiêu ngay!");
 
         } else if (weekLimit > 0 && weekSpent >= weekLimit) {
             hasShownWarning = true;
-            showOverBudgetAlert("⚠️ Vượt ngân sách tuần!",
+            showOverBudgetAlert("Vượt ngân sách tuần!",
                     "Chi tiêu tuần: " + formatCurrency(weekSpent)
                             + "\nGiới hạn tuần: " + formatCurrency(weekLimit));
 
         } else if (monthLimit > 0 && monthSpent >= monthLimit * 0.8) {
             hasShownWarning = true;
-            showWarningSnackbar("⚡ Đã dùng "
+            showWarningSnackbar("Đã dùng "
                     + (int) ((monthSpent / monthLimit) * 100) + "% ngân sách tháng!", false);
 
         } else if (weekLimit > 0 && weekSpent >= weekLimit * 0.8) {
             hasShownWarning = true;
-            showWarningSnackbar("⚡ Đã dùng "
+            showWarningSnackbar("Đã dùng "
                     + (int) ((weekSpent / weekLimit) * 100) + "% ngân sách tuần!", false);
         }
     }
