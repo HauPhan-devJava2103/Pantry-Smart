@@ -44,7 +44,7 @@ public class GeminiFoodRecognitionService {
                                 "Danh mục (category) CHỈ ĐƯỢC chọn một trong: DAIRY, VEGETABLE, FRUIT, MEAT, SEAFOOD, DRINK, SPICE, OTHER. " +
                                 "Trường 'emoji' hãy trả về tên icon phù hợp (ví dụ: ic_food_broccoli, ic_food_steak, ic_food_apple, ic_food_milk, ic_food_package). " +
                                 "Trả về DUY NHẤT một JSON array thuần túy, không bao gồm markdown hay văn bản giải thích: " +
-                                "[{\"name\": \"tên\", \"quantity\": 1.0, \"unit\": \"kg/cái\", \"category\": \"VEGETABLE\", \"emoji\": \"ic_food_broccoli\"}]");
+                                "[{\"name\": \"Tên thực phẩm\", \"quantity\": 1.0, \"unit\": \"kg\", \"category\": \"VEGETABLE\", \"emoji\": \"ic_food_broccoli\"}]");
                 parts.put(textPart);
 
                 JSONObject imagePart = new JSONObject();
