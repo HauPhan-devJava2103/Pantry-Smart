@@ -4,6 +4,7 @@ import android.app.DatePickerDialog;
 import android.app.Dialog;
 import android.graphics.Color;
 import android.graphics.drawable.ColorDrawable;
+import android.provider.Contacts;
 import android.view.Gravity;
 import android.view.View;
 import android.view.ViewGroup;
@@ -572,110 +573,69 @@ public class FridgeDialogHelper {
     }
 
     /**
-     * Lưu toàn bộ danh sách thực phẩm AI đã xác nhận vào Database.
-     */
-    private void saveAIItemsToDatabase(java.util.List<hcmute.edu.vn.pantrysmart.model.ScannedItem> items) {
-        PantrySmartDatabase.databaseWriteExecutor.execute(() -> {
-            long now = System.currentTimeMillis();
-            for (hcmute.edu.vn.pantrysmart.model.ScannedItem scanned : items) {
-                PantryItem pantryItem = new PantryItem();
-                pantryItem.setName(scanned.getName());
-                pantryItem.setEmoji(scanned.getEmoji());
-                pantryItem.setQuantity(scanned.getQuantity());
-                pantryItem.setUnit(scanned.getUnit());
-                pantryItem.setStorageZone(scanned.getStorageZone() != null ? scanned.getStorageZone() : "MAIN");
-                pantryItem.setCategory(scanned.getCategory());
-                pantryItem.setAddedDate(now);
-
-                // Tính toán ngày hết hạn (Mặc định 7 ngày nếu không có dữ liệu)
-                java.util.Calendar cal = java.util.Calendar.getInstance();
-                int days = scanned.getExpiryDays() > 0 ? scanned.getExpiryDays() : 7;
-                cal.add(java.util.Calendar.DAY_OF_YEAR, days);
-                pantryItem.setExpiryDate(cal.getTimeInMillis());
-
-                pantryItem.setActive(true);
-                pantryDao.insert(pantryItem);
-            }
-
-            if (fragment.getActivity() != null) {
-                fragment.getActivity().runOnUiThread(() -> {
-                    onDataChanged.run(); // Load lại giao diện tủ lạnh
-                    android.widget.Toast.makeText(fragment.requireContext(),
-                            "✅ Đã thêm " + items.size() + " món vào tủ lạnh", android.widget.Toast.LENGTH_LONG).show();
-                });
-            }
-        });
-    }
-
-    /**
-     * Dùng BottomSheet để chỉnh sửa TOÀN BỘ thông tin món đồ AI vừa quét (cho phép sửa ngày, danh mục, ngăn chứa)
+     * Chỉnh sửa TOÀN BỘ thông tin thực phẩm AI vừa quét (bao gồm giá tiền)
      */
     private void showEditScannedItemBottomSheet(hcmute.edu.vn.pantrysmart.model.ScannedItem item, int position, hcmute.edu.vn.pantrysmart.adapter.ScannedReviewAdapter adapter) {
         com.google.android.material.bottomsheet.BottomSheetDialog editDialog = new com.google.android.material.bottomsheet.BottomSheetDialog(fragment.requireContext());
-        android.view.View sheetView = fragment.getLayoutInflater().inflate(R.layout.bottom_sheet_edit_item, null);
+        android.view.View sheetView = fragment.getLayoutInflater().inflate(R.layout.bottom_sheet_ai_recognition_edit_item, null);
         editDialog.setContentView(sheetView);
 
-        // 1. Bind Views
+        // --- 1. Ánh xạ View (ID khớp 100% với XML) ---
         android.widget.EditText etName = sheetView.findViewById(R.id.etItemName);
         android.widget.EditText etQty = sheetView.findViewById(R.id.etItemQuantity);
         android.widget.EditText etUnit = sheetView.findViewById(R.id.etItemUnit);
-        android.widget.TextView tvExpiryDate = sheetView.findViewById(R.id.tvExpiryDate);
+        android.widget.EditText etPrice = sheetView.findViewById(R.id.etItemPrice);
+        android.widget.TextView tvExpiry = sheetView.findViewById(R.id.tvExpiryDate);
         android.widget.ImageView imgIcon = sheetView.findViewById(R.id.imgSelectedIcon);
         android.widget.FrameLayout btnSelectEmoji = sheetView.findViewById(R.id.btnSelectEmoji);
-        android.widget.TextView btnSave = sheetView.findViewById(R.id.btnSaveEdit);
         android.widget.TextView btnZoneMain = sheetView.findViewById(R.id.btnZoneMain);
         android.widget.TextView btnZoneFreezer = sheetView.findViewById(R.id.btnZoneFreezer);
+        android.widget.TextView btnSave = sheetView.findViewById(R.id.btnSaveEdit);
 
-        // 2. Load dữ liệu ban đầu
+        // --- 2. Load dữ liệu ban đầu ---
         etName.setText(item.getName());
-        double qty = item.getQuantity();
-        etQty.setText(qty == (long) qty ? String.valueOf((long) qty) : String.valueOf(qty));
+        etQty.setText(String.valueOf(item.getQuantity()));
         etUnit.setText(item.getUnit());
+        etPrice.setText(String.valueOf((long) item.getPrice()));
         imgIcon.setImageResource(hcmute.edu.vn.pantrysmart.config.FoodIconConfig.safeIcon(item.getEmoji()));
 
-        // Hạn sử dụng (Date Picker)
+        // Hạn sử dụng
         java.text.SimpleDateFormat sdf = new java.text.SimpleDateFormat("dd/MM/yyyy", java.util.Locale.getDefault());
-        java.util.Calendar expiryCal = java.util.Calendar.getInstance();
+        java.util.Calendar cal = java.util.Calendar.getInstance();
         if (item.getExpiryDate() != null) {
-            expiryCal.setTimeInMillis(item.getExpiryDate());
-            tvExpiryDate.setText(sdf.format(expiryCal.getTime()));
-        } else {
-            tvExpiryDate.setText("Chọn ngày");
+            cal.setTimeInMillis(item.getExpiryDate());
+            tvExpiry.setText(sdf.format(cal.getTime()));
         }
 
-        tvExpiryDate.setOnClickListener(v -> {
+        tvExpiry.setOnClickListener(v -> {
             new android.app.DatePickerDialog(fragment.requireContext(), (view, year, month, dayOfMonth) -> {
-                expiryCal.set(year, month, dayOfMonth, 23, 59, 59);
-                tvExpiryDate.setText(sdf.format(expiryCal.getTime()));
-                item.setExpiryDate(expiryCal.getTimeInMillis());
-
-                // Tính lại expiryDays để hàm lưu chung (saveAIItemsToDatabase) hoạt động đúng
-                long diff = expiryCal.getTimeInMillis() - System.currentTimeMillis();
-                item.setExpiryDays(Math.max(1, (int) (diff / (1000 * 60 * 60 * 24))));
-            }, expiryCal.get(java.util.Calendar.YEAR), expiryCal.get(java.util.Calendar.MONTH), expiryCal.get(java.util.Calendar.DAY_OF_MONTH)).show();
+                cal.set(year, month, dayOfMonth, 23, 59, 59);
+                tvExpiry.setText(sdf.format(cal.getTime()));
+                item.setExpiryDate(cal.getTimeInMillis());
+            }, cal.get(java.util.Calendar.YEAR), cal.get(java.util.Calendar.MONTH), cal.get(java.util.Calendar.DAY_OF_MONTH)).show();
         });
 
-        // Danh mục (Chips)
-        android.widget.TextView[] categoryChips = {
+        // Danh mục Chips
+        android.widget.TextView[] chips = {
                 sheetView.findViewById(R.id.chipDairy), sheetView.findViewById(R.id.chipVegetable),
                 sheetView.findViewById(R.id.chipFruit), sheetView.findViewById(R.id.chipMeat),
                 sheetView.findViewById(R.id.chipSeafood), sheetView.findViewById(R.id.chipDrink),
                 sheetView.findViewById(R.id.chipSpice), sheetView.findViewById(R.id.chipOther)
         };
-        String[] categoryKeys = { "DAIRY", "VEGETABLE", "FRUIT", "MEAT", "SEAFOOD", "DRINK", "SPICE", "OTHER" };
-        final String[] selectedCategory = { item.getCategory() != null ? item.getCategory().toUpperCase() : "OTHER" };
-        highlightCategoryChip(categoryChips, categoryKeys, selectedCategory[0]);
+        String[] keys = {"DAIRY", "VEGETABLE", "FRUIT", "MEAT", "SEAFOOD", "DRINK", "SPICE", "OTHER"};
+        final String[] selectedCategory = {item.getCategory() != null ? item.getCategory().toUpperCase() : "OTHER"};
+        highlightCategoryChip(chips, keys, selectedCategory[0]);
 
-        for (int i = 0; i < categoryChips.length; i++) {
-            final int index = i;
-            categoryChips[i].setOnClickListener(v -> {
-                selectedCategory[0] = categoryKeys[index];
-                highlightCategoryChip(categoryChips, categoryKeys, selectedCategory[0]);
+        for (int i = 0; i < chips.length; i++) {
+            final int idx = i;
+            chips[i].setOnClickListener(v -> {
+                selectedCategory[0] = keys[idx];
+                highlightCategoryChip(chips, keys, selectedCategory[0]);
             });
         }
 
         // Ngăn chứa (Zone)
-        final String[] selectedZone = { item.getStorageZone() != null ? item.getStorageZone() : "MAIN" };
+        final String[] selectedZone = {item.getStorageZone() != null ? item.getStorageZone() : "MAIN"};
         java.lang.Runnable updateZoneUI = () -> {
             boolean isFreezer = "FREEZER".equals(selectedZone[0]);
             btnZoneFreezer.setBackgroundResource(isFreezer ? R.drawable.bg_edit_zone_active : R.drawable.bg_edit_zone_inactive);
@@ -687,28 +647,25 @@ public class FridgeDialogHelper {
         btnZoneMain.setOnClickListener(v -> { selectedZone[0] = "MAIN"; updateZoneUI.run(); });
         btnZoneFreezer.setOnClickListener(v -> { selectedZone[0] = "FREEZER"; updateZoneUI.run(); });
 
-        // Icon (Emoji Picker)
-        final String[] selectedEmoji = { item.getEmoji() };
+        // Emoji Picker
         btnSelectEmoji.setOnClickListener(v -> {
-            hcmute.edu.vn.pantrysmart.adapter.EmojiPickerDialog.show(fragment.requireContext(), selectedEmoji[0], emoji -> {
-                selectedEmoji[0] = emoji;
+            hcmute.edu.vn.pantrysmart.adapter.EmojiPickerDialog.show(fragment.requireContext(), item.getEmoji(), emoji -> {
+                item.setEmoji(emoji);
                 imgIcon.setImageResource(hcmute.edu.vn.pantrysmart.config.FoodIconConfig.safeIcon(emoji));
             });
         });
 
-        // 3. Logic Lưu thay đổi vào Object (Chưa lưu DB)
+        // --- 3. Lưu thay đổi ---
         btnSave.setOnClickListener(v -> {
-            String name = etName.getText().toString().trim();
-            if (name.isEmpty()) { etName.setError("Nhập tên"); return; }
-
-            item.setName(name);
-            try {
-                item.setQuantity(Double.parseDouble(etQty.getText().toString().trim()));
-            } catch (Exception ignored) {}
+            item.setName(etName.getText().toString().trim());
             item.setUnit(etUnit.getText().toString().trim());
-            item.setEmoji(selectedEmoji[0]);
             item.setCategory(selectedCategory[0]);
             item.setStorageZone(selectedZone[0]);
+            try {
+                item.setQuantity(Double.parseDouble(etQty.getText().toString().trim()));
+                String pStr = etPrice.getText().toString().trim();
+                item.setPrice(pStr.isEmpty() ? 0 : Long.parseLong(pStr));
+            } catch (Exception ignored) {}
 
             adapter.notifyItemChanged(position);
             editDialog.dismiss();
@@ -716,5 +673,60 @@ public class FridgeDialogHelper {
 
         sheetView.findViewById(R.id.btnCloseEditSheet).setOnClickListener(v -> editDialog.dismiss());
         editDialog.show();
+    }
+
+    /**
+     * Lưu thực phẩm vào Database và tự động tạo khoản chi tiêu nếu có giá tiền.
+     */
+    private void saveAIItemsToDatabase(java.util.List<hcmute.edu.vn.pantrysmart.model.ScannedItem> items) {
+        PantrySmartDatabase.databaseWriteExecutor.execute(() -> {
+            long now = System.currentTimeMillis();
+            double totalPrice = 0;
+
+            for (hcmute.edu.vn.pantrysmart.model.ScannedItem scanned : items) {
+                // 1. Lưu vào PantryItem (Kho)
+                PantryItem pantryItem = new PantryItem();
+                pantryItem.setName(scanned.getName());
+                pantryItem.setEmoji(scanned.getEmoji());
+                pantryItem.setQuantity(scanned.getQuantity());
+                pantryItem.setUnit(scanned.getUnit());
+                pantryItem.setCategory(scanned.getCategory());
+                pantryItem.setStorageZone(scanned.getStorageZone() != null ? scanned.getStorageZone() : "MAIN");
+                pantryItem.setAddedDate(now);
+
+                if (scanned.getExpiryDate() != null) {
+                    pantryItem.setExpiryDate(scanned.getExpiryDate());
+                } else {
+                    java.util.Calendar c = java.util.Calendar.getInstance();
+                    c.add(java.util.Calendar.DAY_OF_YEAR, 7);
+                    pantryItem.setExpiryDate(c.getTimeInMillis());
+                }
+
+                pantryItem.setActive(true);
+                pantryDao.insert(pantryItem);
+
+                // 2. Cộng dồn giá tiền
+                totalPrice += scanned.getPrice();
+            }
+
+            // 3. Nếu người dùng có nhập giá (>0), tự động lưu vào Budget (Expense)
+            if (totalPrice > 0) {
+                hcmute.edu.vn.pantrysmart.data.local.entity.Expense expense = new hcmute.edu.vn.pantrysmart.data.local.entity.Expense();
+                expense.setName("Mua thực phẩm (AI Recognition)");
+                expense.setAmount(totalPrice);
+                expense.setCategoryKey("SHOPPING");
+                expense.setSource("SCAN"); // Đánh dấu nguồn từ việc quét
+                expense.setExpenseDate(now);
+                PantrySmartDatabase.getInstance(fragment.requireContext()).expenseDao().insertExpense(expense);
+            }
+
+            if (fragment.getActivity() != null) {
+                fragment.getActivity().runOnUiThread(() -> {
+                    onDataChanged.run();
+                    android.widget.Toast.makeText(fragment.requireContext(),
+                            "✅ Đã nạp " + items.size() + " món vào tủ lạnh", android.widget.Toast.LENGTH_LONG).show();
+                });
+            }
+        });
     }
 }
