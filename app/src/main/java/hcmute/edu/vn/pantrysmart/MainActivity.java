@@ -240,7 +240,7 @@ public class MainActivity extends AppCompatActivity {
     /**
      * Update header stats from database (item count + expiry badge).
      */
-    private void updateHeaderStats() {
+    public void updateHeaderStats() {
         PantrySmartDatabase.databaseWriteExecutor.execute(() -> {
             int totalMain = pantryDao.countItemsByZone("MAIN");
             int totalFreezer = pantryDao.countItemsByZone("FREEZER");

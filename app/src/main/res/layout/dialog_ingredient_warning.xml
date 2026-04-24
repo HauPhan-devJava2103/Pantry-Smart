@@ -1,0 +1,122 @@
+<?xml version="1.0" encoding="utf-8"?>
+<LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    android:layout_width="match_parent"
+    android:layout_height="wrap_content"
+    android:background="@drawable/bg_dialog_exit"
+    android:gravity="center_horizontal"
+    android:orientation="vertical"
+    android:paddingHorizontal="24dp"
+    android:paddingTop="28dp"
+    android:paddingBottom="20dp">
+
+    <!-- Icon cảnh báo trong vòng tròn vàng -->
+    <FrameLayout
+        android:layout_width="88dp"
+        android:layout_height="88dp"
+        android:background="@drawable/bg_warning_icon_circle">
+
+        <ImageView
+            android:layout_width="44dp"
+            android:layout_height="44dp"
+            android:layout_gravity="center"
+            android:src="@drawable/ic_toast_alert"
+            android:importantForAccessibility="no" />
+    </FrameLayout>
+
+    <!-- Tiêu đề -->
+    <TextView
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_marginTop="16dp"
+        android:fontFamily="sans-serif-medium"
+        android:text="Số lượng vượt tồn kho"
+        android:textColor="#E65100"
+        android:textSize="19sp"
+        android:textStyle="bold" />
+
+    <!-- Mô tả -->
+    <TextView
+        android:id="@+id/tvWarningDesc"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_marginTop="6dp"
+        android:gravity="center"
+        android:lineSpacingExtra="3dp"
+        android:text="Một số nguyên liệu vượt quá số lượng hiện có trong tủ lạnh:"
+        android:textColor="#6B7280"
+        android:textSize="13sp" />
+
+    <!-- Danh sách nguyên liệu cảnh báo (ScrollView nếu nhiều) -->
+    <ScrollView
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:layout_marginTop="14dp"
+        android:maxHeight="200dp"
+        android:fadeScrollbars="true">
+
+        <LinearLayout
+            android:id="@+id/llWarningItems"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:orientation="vertical" />
+    </ScrollView>
+
+    <!-- Ghi chú -->
+    <TextView
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:layout_marginTop="12dp"
+        android:background="@drawable/bg_warning_item_row"
+        android:drawablePadding="8dp"
+        android:fontFamily="sans-serif"
+        android:gravity="center_vertical"
+        android:lineSpacingExtra="2dp"
+        android:padding="10dp"
+        android:text="Nếu tiếp tục, phần vượt quá sẽ được trừ hết về 0 và xóa khỏi tủ lạnh."
+        android:textColor="#E65100"
+        android:textSize="12sp" />
+
+    <!-- Divider -->
+    <View
+        android:layout_width="match_parent"
+        android:layout_height="1dp"
+        android:layout_marginTop="16dp"
+        android:background="#F0F0F0" />
+
+    <!-- Hai nút hành động -->
+    <LinearLayout
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:layout_marginTop="16dp"
+        android:orientation="horizontal">
+
+        <!-- Nút Sửa lại -->
+        <TextView
+            android:id="@+id/btnWarningCancel"
+            android:layout_width="0dp"
+            android:layout_height="48dp"
+            android:layout_marginEnd="8dp"
+            android:layout_weight="1"
+            android:background="@drawable/bg_btn_exit_cancel"
+            android:fontFamily="sans-serif-medium"
+            android:gravity="center"
+            android:text="Sửa lại"
+            android:textColor="#374151"
+            android:textSize="15sp" />
+
+        <!-- Nút Vẫn trừ -->
+        <TextView
+            android:id="@+id/btnWarningConfirm"
+            android:layout_width="0dp"
+            android:layout_height="48dp"
+            android:layout_marginStart="8dp"
+            android:layout_weight="1"
+            android:background="@drawable/bg_btn_warning_confirm"
+            android:fontFamily="sans-serif-medium"
+            android:gravity="center"
+            android:text="Vẫn trừ"
+            android:textColor="#FFFFFF"
+            android:textSize="15sp" />
+    </LinearLayout>
+
+</LinearLayout>

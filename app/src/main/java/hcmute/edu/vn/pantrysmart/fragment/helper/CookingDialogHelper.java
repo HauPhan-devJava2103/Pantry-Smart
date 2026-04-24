@@ -150,18 +150,77 @@ public class CookingDialogHelper {
                     android.os.Looper.getMainLooper());
 
             if (warnings.length() > 0) {
+                // Tạo danh sách cảnh báo chi tiết cho custom dialog
+                final List<String[]> warningDetails = new ArrayList<>();
+                for (DeductRow row : rows) {
+                    double amount;
+                    try {
+                        String text = row.etQty.getText().toString().replace(",", ".").trim();
+                        amount = text.isEmpty() ? 0 : Double.parseDouble(text);
+                    } catch (NumberFormatException e) {
+                        amount = 0;
+                    }
+                    if (amount <= 0) continue;
+
+                    PantryItem item = dao.findByName(row.ingredientName);
+                    if (item == null) {
+                        warningDetails.add(new String[]{
+                                row.ingredientName,
+                                "không có trong tủ"
+                        });
+                    } else {
+                        double converted = convertToItemUnit(amount, row.unit, item.getUnit());
+                        if (converted > item.getQuantity()) {
+                            String pantryQty = formatQty(item.getQuantity()) + " " +
+                                    (item.getUnit() != null ? item.getUnit() : "");
+                            String requestQty = formatQty(amount) + " " + row.unit;
+                            warningDetails.add(new String[]{
+                                    row.ingredientName,
+                                    "còn " + pantryQty.trim() + " / cần " + requestQty.trim()
+                            });
+                        }
+                    }
+                }
+
                 mainHandler.post(() -> {
-                    new android.app.AlertDialog.Builder(context)
-                            .setTitle("Số lượng vượt quá")
-                            .setMessage("Một số nguyên liệu vượt quá tồn kho:\n\n" +
-                                    warnings.toString().trim() +
-                                    "\n\nBạn vẫn muốn trừ? (phần vượt sẽ bị xoá khỏi tủ)")
-                            .setPositiveButton("Vẫn trừ", (d, w) -> {
+                    Dialog warningDialog = new Dialog(context);
+                    warningDialog.requestWindowFeature(Window.FEATURE_NO_TITLE);
+                    warningDialog.setContentView(R.layout.dialog_ingredient_warning);
+
+                    if (warningDialog.getWindow() != null) {
+                        warningDialog.getWindow().setBackgroundDrawable(
+                                new ColorDrawable(Color.TRANSPARENT));
+                        warningDialog.getWindow().setLayout(
+                                LinearLayout.LayoutParams.MATCH_PARENT,
+                                LinearLayout.LayoutParams.WRAP_CONTENT);
+                    }
+                    warningDialog.setCancelable(false);
+
+                    // Populate danh sách nguyên liệu cảnh báo
+                    LinearLayout llItems = warningDialog.findViewById(R.id.llWarningItems);
+                    LayoutInflater inflater = LayoutInflater.from(context);
+                    for (String[] detail : warningDetails) {
+                        View itemView = inflater.inflate(
+                                R.layout.item_warning_ingredient, llItems, false);
+                        ((TextView) itemView.findViewById(R.id.tvWarningName))
+                                .setText(detail[0]);
+                        ((TextView) itemView.findViewById(R.id.tvWarningDetail))
+                                .setText(detail[1]);
+                        llItems.addView(itemView);
+                    }
+
+                    warningDialog.findViewById(R.id.btnWarningCancel)
+                            .setOnClickListener(v -> warningDialog.dismiss());
+
+                    warningDialog.findViewById(R.id.btnWarningConfirm)
+                            .setOnClickListener(v -> {
+                                warningDialog.dismiss();
                                 dialog.dismiss();
-                                deductIngredients(context, dishName, imageUrl, recipeJson, rows, onComplete);
-                            })
-                            .setNegativeButton("Sửa lại", null)
-                            .show();
+                                deductIngredients(context, dishName, imageUrl,
+                                        recipeJson, rows, onComplete);
+                            });
+
+                    warningDialog.show();
                 });
             } else {
                 mainHandler.post(() -> {
@@ -306,9 +365,9 @@ public class CookingDialogHelper {
      * Quy đổi đơn vị từ công thức sang đơn vị trong tủ lạnh.
      *
      * Hỗ trợ:
-     * - Khối lượng: g ↔ kg
-     * - Thể tích: ml ↔ l/lít
-     * - Đồng nghĩa: quả=trái, muỗng=thìa/thìa cà phê
+     * - Khối lượng: g - kg
+     * - Thể tích: ml - l/lít
+     * - Đồng nghĩa: quả=trái, muỗng=thìa
      * - Đếm được cùng loại: củ, tép, con, lát... → 1:1
      */
     private static double convertToItemUnit(double amount, String recipeUnit, String pantryUnit) {
@@ -346,7 +405,7 @@ public class CookingDialogHelper {
 
     /**
      * Chuẩn hoá đơn vị: gộp các tên đồng nghĩa về 1 dạng.
-     * "trái" → "quả", "lít" → "l", "thìa" → "muỗng", v.v.
+     * "trái" - "quả", "lít" - "l", "thìa" - "muỗng", v.v.
      */
     private static String normalize(String unit) {
         if (unit == null)

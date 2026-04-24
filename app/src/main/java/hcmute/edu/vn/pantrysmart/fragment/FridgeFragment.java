@@ -38,6 +38,7 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.concurrent.TimeUnit;
 
+import hcmute.edu.vn.pantrysmart.MainActivity;
 import hcmute.edu.vn.pantrysmart.R;
 import hcmute.edu.vn.pantrysmart.adapter.PantryItemAdapter;
 import hcmute.edu.vn.pantrysmart.config.FoodIconConfig;
@@ -871,6 +872,11 @@ public class FridgeFragment extends Fragment {
                 tvStatTotal.setText(String.valueOf(totalItems));
                 tvStatExpiring.setText(String.valueOf(expiring.size()));
                 tvStatExpired.setText(String.valueOf(finalExpiredCount));
+
+                // Cap nhat header cua MainActivity
+                if (getActivity() instanceof MainActivity) {
+                    ((MainActivity) getActivity()).updateHeaderStats();
+                }
             });
         });
     }
