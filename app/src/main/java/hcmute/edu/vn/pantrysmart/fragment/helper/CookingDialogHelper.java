@@ -4,6 +4,8 @@ import android.app.Dialog;
 import android.content.Context;
 import android.graphics.Color;
 import android.graphics.drawable.ColorDrawable;
+import android.os.Handler;
+import android.os.Looper;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.Window;
@@ -112,20 +114,29 @@ public class CookingDialogHelper {
     private static void validateAndDeduct(Context context, Dialog dialog,
             String dishName, String imageUrl, String recipeJson,
             List<DeductRow> rows, Runnable onComplete) {
+
+        // THU THẬP GIÁ TRỊ EDITTEXT TRÊN UI THREAD TRƯỚC
+        final double[] amounts = new double[rows.size()];
+        for (int i = 0; i < rows.size(); i++) {
+            try {
+                String text = rows.get(i).etQty.getText().toString()
+                        .replace(",", ".").trim();
+                amounts[i] = text.isEmpty() ? 0 : Double.parseDouble(text);
+            } catch (NumberFormatException e) {
+                amounts[i] = 0;
+            }
+        }
+
         PantrySmartDatabase db = PantrySmartDatabase.getInstance(context);
         PantryItemDao dao = db.pantryItemDao();
 
         PantrySmartDatabase.databaseWriteExecutor.execute(() -> {
             StringBuilder warnings = new StringBuilder();
+            final List<String[]> warningDetails = new ArrayList<>();
 
-            for (DeductRow row : rows) {
-                double amount;
-                try {
-                    String text = row.etQty.getText().toString().replace(",", ".").trim();
-                    amount = text.isEmpty() ? 0 : Double.parseDouble(text);
-                } catch (NumberFormatException e) {
-                    amount = 0;
-                }
+            for (int i = 0; i < rows.size(); i++) {
+                DeductRow row = rows.get(i);
+                double amount = amounts[i];
                 if (amount <= 0)
                     continue;
 
@@ -133,55 +144,30 @@ public class CookingDialogHelper {
                 if (item == null) {
                     warnings.append("• ").append(row.ingredientName)
                             .append(" — không có trong tủ\n");
+                    warningDetails.add(new String[]{
+                            row.ingredientName,
+                            "không có trong tủ"
+                    });
                 } else {
                     double converted = convertToItemUnit(amount, row.unit, item.getUnit());
                     if (converted > item.getQuantity()) {
-                        String pantryInfo = formatQty(item.getQuantity()) + " " +
+                        String pantryQty = formatQty(item.getQuantity()) + " " +
                                 (item.getUnit() != null ? item.getUnit() : "");
+                        String requestQty = formatQty(amount) + " " + row.unit;
                         warnings.append("• ").append(row.ingredientName)
-                                .append(" — chỉ còn ").append(pantryInfo.trim())
-                                .append(" (bạn nhập ").append(formatQty(amount))
-                                .append(" ").append(row.unit).append(")\n");
+                                .append(" — chỉ còn ").append(pantryQty.trim())
+                                .append(" (cần ").append(requestQty.trim()).append(")\n");
+                        warningDetails.add(new String[]{
+                                row.ingredientName,
+                                "còn " + pantryQty.trim() + " / cần " + requestQty.trim()
+                        });
                     }
                 }
             }
 
-            android.os.Handler mainHandler = new android.os.Handler(
-                    android.os.Looper.getMainLooper());
+            Handler mainHandler = new Handler(Looper.getMainLooper());
 
             if (warnings.length() > 0) {
-                // Tạo danh sách cảnh báo chi tiết cho custom dialog
-                final List<String[]> warningDetails = new ArrayList<>();
-                for (DeductRow row : rows) {
-                    double amount;
-                    try {
-                        String text = row.etQty.getText().toString().replace(",", ".").trim();
-                        amount = text.isEmpty() ? 0 : Double.parseDouble(text);
-                    } catch (NumberFormatException e) {
-                        amount = 0;
-                    }
-                    if (amount <= 0) continue;
-
-                    PantryItem item = dao.findByName(row.ingredientName);
-                    if (item == null) {
-                        warningDetails.add(new String[]{
-                                row.ingredientName,
-                                "không có trong tủ"
-                        });
-                    } else {
-                        double converted = convertToItemUnit(amount, row.unit, item.getUnit());
-                        if (converted > item.getQuantity()) {
-                            String pantryQty = formatQty(item.getQuantity()) + " " +
-                                    (item.getUnit() != null ? item.getUnit() : "");
-                            String requestQty = formatQty(amount) + " " + row.unit;
-                            warningDetails.add(new String[]{
-                                    row.ingredientName,
-                                    "còn " + pantryQty.trim() + " / cần " + requestQty.trim()
-                            });
-                        }
-                    }
-                }
-
                 mainHandler.post(() -> {
                     Dialog warningDialog = new Dialog(context);
                     warningDialog.requestWindowFeature(Window.FEATURE_NO_TITLE);
@@ -217,7 +203,7 @@ public class CookingDialogHelper {
                                 warningDialog.dismiss();
                                 dialog.dismiss();
                                 deductIngredients(context, dishName, imageUrl,
-                                        recipeJson, rows, onComplete);
+                                        recipeJson, rows, amounts, onComplete);
                             });
 
                     warningDialog.show();
@@ -225,7 +211,8 @@ public class CookingDialogHelper {
             } else {
                 mainHandler.post(() -> {
                     dialog.dismiss();
-                    deductIngredients(context, dishName, imageUrl, recipeJson, rows, onComplete);
+                    deductIngredients(context, dishName, imageUrl,
+                            recipeJson, rows, amounts, onComplete);
                 });
             }
         });
@@ -252,10 +239,10 @@ public class CookingDialogHelper {
         return sb.length() > 0 ? sb.toString() : "1";
     }
 
-    // Thực hiện trừ nguyên liệu trong DB theo số lượng người dùng đã chỉnh.
+    // Thực hiện trừ nguyên liệu trong DB theo số lượng đã thu thập.
     private static void deductIngredients(Context context, String dishName,
             String imageUrl, String recipeJson,
-            List<DeductRow> rows, Runnable onComplete) {
+            List<DeductRow> rows, double[] amounts, Runnable onComplete) {
         PantrySmartDatabase db = PantrySmartDatabase.getInstance(context);
         PantryItemDao dao = db.pantryItemDao();
 
@@ -263,44 +250,45 @@ public class CookingDialogHelper {
             int deducted = 0;
             List<DeductedInfo> deductedItems = new ArrayList<>();
 
-            for (DeductRow row : rows) {
-                // Đọc số lượng người dùng đã chỉnh trong EditText
-                double amount;
-                try {
-                    String text = row.etQty.getText().toString().replace(",", ".").trim();
-                    amount = text.isEmpty() ? 0 : Double.parseDouble(text);
-                } catch (NumberFormatException e) {
-                    amount = 0;
-                }
+            // BƯỚC 1: Thu thập thông tin trừ (CHƯA xóa/update DB)
+            List<Object[]> pendingActions = new ArrayList<>();
+            for (int i = 0; i < rows.size(); i++) {
+                DeductRow row = rows.get(i);
+                double amount = amounts[i];
 
                 if (amount <= 0)
                     continue;
 
                 PantryItem item = dao.findByName(row.ingredientName);
                 if (item != null && item.getQuantity() > 0) {
-                    // Quy đổi đơn vị công thức → đơn vị tủ lạnh
                     double converted = convertToItemUnit(amount, row.unit, item.getUnit());
-                    // Làm tròn 2 chữ số để tránh lỗi floating-point (4.7213... → 4.72)
                     double newQty = Math.round(Math.max(0, item.getQuantity() - converted) * 100.0) / 100.0;
 
-                    if (newQty <= 0) {
-                        dao.delete(item);
-                    } else {
-                        item.setQuantity(newQty);
-                        dao.update(item);
-                    }
                     deducted++;
-
-                    // Ghi lại thông tin đã trừ
                     deductedItems.add(new DeductedInfo(
                             row.ingredientName, amount, row.unit,
                             item.getId()));
+
+                    // Lưu hành động chờ: [item, newQty]
+                    pendingActions.add(new Object[]{item, newQty});
                 }
             }
 
-            // LƯU LỊCH SỬ NẤU ĂN
+            // BƯỚC 2: LƯU LỊCH SỬ TRƯỚC (khi PantryItem vẫn còn trong DB)
             if (deducted > 0) {
                 saveCookingLog(db, dishName, imageUrl, recipeJson, deducted, deductedItems);
+            }
+
+            // BƯỚC 3: Giờ mới trừ/xóa nguyên liệu
+            for (Object[] action : pendingActions) {
+                PantryItem item = (PantryItem) action[0];
+                double newQty = (double) action[1];
+                if (newQty <= 0) {
+                    dao.delete(item);
+                } else {
+                    item.setQuantity(newQty);
+                    dao.update(item);
+                }
             }
 
             final int count = deducted;
@@ -308,11 +296,17 @@ public class CookingDialogHelper {
             android.os.Handler mainHandler = new android.os.Handler(
                     android.os.Looper.getMainLooper());
             mainHandler.post(() -> {
-                Toast.makeText(context,
-                        "Đã trừ " + count + " nguyên liệu cho \"" + dishName + "\"",
-                        Toast.LENGTH_SHORT).show();
+                try {
+                    Toast.makeText(context,
+                            "Đã trừ " + count + " nguyên liệu cho \"" + dishName + "\"",
+                            Toast.LENGTH_SHORT).show();
+                } catch (Exception ignored) {
+                }
                 if (onComplete != null) {
-                    onComplete.run();
+                    try {
+                        onComplete.run();
+                    } catch (Exception ignored) {
+                    }
                 }
             });
         });

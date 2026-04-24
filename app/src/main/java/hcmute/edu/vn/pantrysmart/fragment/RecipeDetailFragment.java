@@ -147,17 +147,21 @@ public class RecipeDetailFragment extends Fragment {
 
         view.findViewById(R.id.btnFinishCooking).setOnClickListener(v -> {
             if (dialogIngredients != null && dialogIngredients.length > 0) {
-                // Build recipe JSON để lưu lịch sử
+                // Build recipe JSON de luu lich su
                 String recipeJson = buildRecipeJson(dishName, description,
                         cookingTime, difficulty, imageSearch,
                         dialogIngredients, dialogSteps);
 
                 CookingDialogHelper.showDeductDialog(
-                        requireContext(), dishName, dialogIngredients,
+                        v.getContext(), dishName, dialogIngredients,
                         currentImageUrl, recipeJson,
-                        () -> requireActivity().getSupportFragmentManager().popBackStack());
+                        () -> {
+                            if (isAdded() && getActivity() != null) {
+                                getActivity().getSupportFragmentManager().popBackStack();
+                            }
+                        });
             } else {
-                Toast.makeText(requireContext(),
+                Toast.makeText(v.getContext(),
                         "Không có nguyên liệu để trừ", Toast.LENGTH_SHORT).show();
             }
         });
