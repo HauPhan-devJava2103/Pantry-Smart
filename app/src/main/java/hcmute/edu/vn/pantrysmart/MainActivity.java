@@ -8,6 +8,7 @@ import android.widget.TextView;
 import android.widget.Toast;
 
 import androidx.activity.EdgeToEdge;
+import androidx.activity.OnBackPressedCallback;
 import androidx.appcompat.app.AlertDialog;
 import androidx.appcompat.app.AppCompatActivity;
 import androidx.core.graphics.Insets;
@@ -125,6 +126,37 @@ public class MainActivity extends AppCompatActivity {
                 "expiry_check",
                 ExistingPeriodicWorkPolicy.KEEP,
                 expiryWork);
+
+        // 3. Xu ly nhan Back — canh bao truoc khi thoat
+        getOnBackPressedDispatcher().addCallback(this,
+                new OnBackPressedCallback(true) {
+                    @Override
+                    public void handleOnBackPressed() {
+                        showExitConfirmDialog();
+                    }
+                });
+    }
+
+    // Dialog xac nhan thoat ung dung
+    private void showExitConfirmDialog() {
+        View dialogView = getLayoutInflater().inflate(R.layout.dialog_exit_confirm, null);
+
+        AlertDialog dialog = new AlertDialog.Builder(this)
+                .setView(dialogView)
+                .setCancelable(true)
+                .create();
+
+        if (dialog.getWindow() != null) {
+            dialog.getWindow().setBackgroundDrawableResource(android.R.color.transparent);
+        }
+
+        dialogView.findViewById(R.id.btnExitCancel).setOnClickListener(v -> dialog.dismiss());
+        dialogView.findViewById(R.id.btnExitConfirm).setOnClickListener(v -> {
+            dialog.dismiss();
+            finish();
+        });
+
+        dialog.show();
     }
 
     /**
@@ -149,8 +181,8 @@ public class MainActivity extends AppCompatActivity {
 
     // Menu tài khoản — BottomSheet hiện đại
     private void showProfileMenu() {
-        com.google.android.material.bottomsheet.BottomSheetDialog sheet =
-                new com.google.android.material.bottomsheet.BottomSheetDialog(this);
+        com.google.android.material.bottomsheet.BottomSheetDialog sheet = new com.google.android.material.bottomsheet.BottomSheetDialog(
+                this);
         View sheetView = getLayoutInflater().inflate(R.layout.bottom_sheet_profile, null);
         sheet.setContentView(sheetView);
 
