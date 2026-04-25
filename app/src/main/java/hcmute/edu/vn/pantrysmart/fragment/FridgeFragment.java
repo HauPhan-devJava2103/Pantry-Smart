@@ -8,6 +8,7 @@ import android.content.pm.PackageManager;
 import android.graphics.Bitmap;
 import android.graphics.Color;
 import android.graphics.drawable.ColorDrawable;
+import android.net.Uri;
 import android.os.Bundle;
 import android.provider.MediaStore;
 import android.util.Base64;
@@ -30,6 +31,7 @@ import androidx.activity.result.contract.ActivityResultContracts;
 import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
 import androidx.core.content.ContextCompat;
+import androidx.core.content.FileProvider;
 import androidx.fragment.app.Fragment;
 import androidx.recyclerview.widget.LinearLayoutManager;
 import androidx.recyclerview.widget.RecyclerView;
@@ -38,6 +40,7 @@ import com.google.android.material.bottomsheet.BottomSheetDialog;
 import com.google.android.material.dialog.MaterialAlertDialogBuilder;
 
 import java.io.ByteArrayOutputStream;
+import java.io.File;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.concurrent.TimeUnit;
@@ -128,9 +131,9 @@ public class FridgeFragment extends Fragment {
             });
 
     // URI tạm để lưu ảnh camera (FileProvider)
-    private android.net.Uri cameraPhotoUri;
+    private Uri cameraPhotoUri;
 
-    private final ActivityResultLauncher<android.net.Uri> cameraLauncher = registerForActivityResult(
+    private final ActivityResultLauncher<Uri> cameraLauncher = registerForActivityResult(
             new ActivityResultContracts.TakePicture(),
             success -> {
                 Log.d("FridgeAI", "Camera callback: success=" + success + ", uri=" + cameraPhotoUri);
@@ -164,7 +167,7 @@ public class FridgeFragment extends Fragment {
         aiDialog.setContentView(R.layout.dialog_ai_scanning);
         aiDialog.setCancelable(false);
         if (aiDialog.getWindow() != null) {
-            aiDialog.getWindow().setBackgroundDrawable(new ColorDrawable(android.graphics.Color.TRANSPARENT));
+            aiDialog.getWindow().setBackgroundDrawable(new ColorDrawable(Color.TRANSPARENT));
         }
         aiDialog.show();
 
@@ -203,10 +206,10 @@ public class FridgeFragment extends Fragment {
     private void openCamera() {
         try {
             // Tạo file tạm mới MỖI LẦN chụp để tránh cache
-            java.io.File photoFile = new java.io.File(
+            File photoFile = new File(
                     requireContext().getCacheDir(),
                     "ai_photo_" + System.currentTimeMillis() + ".jpg");
-            cameraPhotoUri = androidx.core.content.FileProvider.getUriForFile(
+            cameraPhotoUri = FileProvider.getUriForFile(
                     requireContext(),
                     "hcmute.edu.vn.pantrysmart.fileprovider",
                     photoFile);
