@@ -237,33 +237,46 @@ public class FridgeDialogHelper {
         // 5. Logic LƯU (Pantry + Budget)
         btnSave.setOnClickListener(v -> {
             String name = etItemName.getText().toString().trim();
-            if (name.isEmpty()) { etItemName.setError("Nhập tên thực phẩm"); return; }
+            if (name.isEmpty()) {
+                etItemName.setError("Nhập tên thực phẩm");
+                return;
+            }
 
             String priceStr = etItemPrice.getText().toString().trim();
             long priceValue = priceStr.isEmpty() ? 0 : Long.parseLong(priceStr);
 
             newItem.setName(name);
             newItem.setEmoji(selectedEmoji[0]);
-            newItem.setQuantity(Double.parseDouble(etItemQuantity.getText().toString()));
+            try {
+                newItem.setQuantity(Double.parseDouble(etItemQuantity.getText().toString()));
+            } catch (Exception e) {
+                newItem.setQuantity(1.0);
+            }
             newItem.setUnit(etItemUnit.getText().toString().trim());
             newItem.setCategory(selectedCategory[0]);
             newItem.setStorageZone(selectedZone[0]);
 
             btnSave.setEnabled(false);
             PantrySmartDatabase.databaseWriteExecutor.execute(() -> {
-                // Lưu vào kho
-                pantryDao.insert(newItem);
-
-                // Nếu có giá tiền, lưu vào Ngân sách (Expense)
+                // BƯỚC 1: Nếu có nhập giá tiền (>0), tạo và lưu mục Chi tiêu (Expense) TRƯỚC
                 if (priceValue > 0) {
                     hcmute.edu.vn.pantrysmart.data.local.entity.Expense expense = new hcmute.edu.vn.pantrysmart.data.local.entity.Expense();
                     expense.setName("Mua thực phẩm: " + name);
                     expense.setAmount((double) priceValue);
                     expense.setCategoryKey("SHOPPING");
-                    expense.setSource("MANUAL");
+                    expense.setSource("SCAN");
                     expense.setExpenseDate(System.currentTimeMillis());
-                    PantrySmartDatabase.getInstance(fragment.requireContext()).expenseDao().insertExpense(expense);
+
+                    // Lưu vào Database và lấy mã ID tự sinh trả về
+                    long generatedId = PantrySmartDatabase.getInstance(fragment.requireContext())
+                            .expenseDao().insertExpense(expense);
+
+                    // Gán ID vừa lấy được vào thực phẩm để tạo mối liên kết "xóa hàng loạt"
+                    newItem.setExpenseId((int) generatedId);
                 }
+
+                // BƯỚC 2: Sau khi đã có expenseId (nếu có), mới lưu thực phẩm vào kho
+                pantryDao.insert(newItem);
 
                 if (fragment.getActivity() != null) {
                     fragment.getActivity().runOnUiThread(() -> {
@@ -663,15 +676,35 @@ public class FridgeDialogHelper {
     }
 
     /**
-     * Lưu thực phẩm vào Database và tự động tạo khoản chi tiêu nếu có giá tiền.
+     * Lưu thực phẩm AI vào kho và liên kết với Ngân sách để hỗ trợ xóa hàng loạt.
      */
     private void saveAIItemsToDatabase(java.util.List<hcmute.edu.vn.pantrysmart.model.ScannedItem> items) {
         PantrySmartDatabase.databaseWriteExecutor.execute(() -> {
             long now = System.currentTimeMillis();
-            double totalPrice = 0;
 
+            // 1. Tính tổng tiền của tất cả các món vừa quét
+            double totalBill = 0;
+            for (hcmute.edu.vn.pantrysmart.model.ScannedItem s : items) {
+                totalBill += s.getPrice();
+            }
+
+            // 2. Nếu tổng tiền > 0, tạo mục Chi tiêu (Expense) TRƯỚC để lấy ID liên kết
+            Integer generatedExpenseId = null;
+            if (totalBill > 0) {
+                hcmute.edu.vn.pantrysmart.data.local.entity.Expense expense = new hcmute.edu.vn.pantrysmart.data.local.entity.Expense();
+                expense.setName("Mua thực phẩm (AI Recognition)");
+                expense.setAmount(totalBill);
+                expense.setCategoryKey("SHOPPING");
+                expense.setSource("SCAN"); // Bắt buộc là SCAN để kích hoạt logic xóa hàng loạt của team
+                expense.setExpenseDate(now);
+
+                // Lưu và lấy ID tự sinh
+                long id = PantrySmartDatabase.getInstance(fragment.requireContext()).expenseDao().insertExpense(expense);
+                generatedExpenseId = (int) id;
+            }
+
+            // 3. Lưu từng thực phẩm vào kho và gắn expenseId
             for (hcmute.edu.vn.pantrysmart.model.ScannedItem scanned : items) {
-                // 1. Lưu vào PantryItem (Kho)
                 PantryItem pantryItem = new PantryItem();
                 pantryItem.setName(scanned.getName());
                 pantryItem.setEmoji(scanned.getEmoji());
@@ -680,6 +713,9 @@ public class FridgeDialogHelper {
                 pantryItem.setCategory(scanned.getCategory());
                 pantryItem.setStorageZone(scanned.getStorageZone() != null ? scanned.getStorageZone() : "MAIN");
                 pantryItem.setAddedDate(now);
+
+                // Gán ID liên kết (Sợi dây kết nối Fridge và Budget)
+                pantryItem.setExpenseId(generatedExpenseId);
 
                 if (scanned.getExpiryDate() != null) {
                     pantryItem.setExpiryDate(scanned.getExpiryDate());
@@ -691,25 +727,11 @@ public class FridgeDialogHelper {
 
                 pantryItem.setActive(true);
                 pantryDao.insert(pantryItem);
-
-                // 2. Cộng dồn giá tiền
-                totalPrice += scanned.getPrice();
-            }
-
-            // 3. Nếu người dùng có nhập giá (>0), tự động lưu vào Budget (Expense)
-            if (totalPrice > 0) {
-                hcmute.edu.vn.pantrysmart.data.local.entity.Expense expense = new hcmute.edu.vn.pantrysmart.data.local.entity.Expense();
-                expense.setName("Mua thực phẩm (AI Recognition)");
-                expense.setAmount(totalPrice);
-                expense.setCategoryKey("SHOPPING");
-                expense.setSource("SCAN"); // Đánh dấu nguồn từ việc quét
-                expense.setExpenseDate(now);
-                PantrySmartDatabase.getInstance(fragment.requireContext()).expenseDao().insertExpense(expense);
             }
 
             if (fragment.getActivity() != null) {
                 fragment.getActivity().runOnUiThread(() -> {
-                    onDataChanged.run();
+                    onDataChanged.run(); // Load lại giao diện tủ lạnh
                     android.widget.Toast.makeText(fragment.requireContext(),
                             "✅ Đã nạp " + items.size() + " món vào tủ lạnh", android.widget.Toast.LENGTH_LONG).show();
                 });
