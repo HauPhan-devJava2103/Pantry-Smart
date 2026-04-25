@@ -30,7 +30,7 @@ public interface BudgetDao {
     @Query("SELECT * FROM budgets WHERE month = :month AND year = :year LIMIT 1")
     BudgetWithExpenses getBudgetWithExpenses(int month, int year);
 
-    // ⚠️ DEPRECATED: Dùng JOIN nên bỏ sót expense có budget_id = NULL.
+    // DEPRECATED: Dùng JOIN nên bỏ sót expense có budget_id = NULL.
     // Sử dụng ExpenseDao.getTotalSpentForPeriod() thay thế.
     @Deprecated
     @Query("SELECT COALESCE(SUM(e.amount), 0) FROM expenses e " +

@@ -29,9 +29,8 @@ public class BudgetChartHelper {
         this.barChartMonthly = barChartMonthly;
     }
 
-    // ===================================================================
+    
     // BarChart — Chi tiêu 7 ngày
-    // ===================================================================
     public void updateBarChart(List<ExpenseDao.DailyStat> dailyStats, long weekStart) {
         // Tạo map ngày → tổng để tra cứu nhanh
         Map<String, Double> statMap = new HashMap<>();
@@ -87,9 +86,9 @@ public class BudgetChartHelper {
         barChart.invalidate();
     }
 
-    // ===================================================================
+    
     // BarChart — Chi tiêu tháng (4~5 tuần)
-    // ===================================================================
+    
     public void updateBarChartMonthly(List<ExpenseDao.WeeklyStat> weeklyStats, int weeksInMonth) {
         weeksInMonth = Math.max(4, Math.min(weeksInMonth, 5));
 
@@ -165,9 +164,9 @@ public class BudgetChartHelper {
         barChartMonthly.invalidate();
     }
 
-    // ===================================================================
+    
     // Cấu hình chung cho biểu đồ
-    // ===================================================================
+    
     private void configureChartCommon(BarChart chart) {
         chart.getAxisLeft().setDrawGridLines(false);
         chart.getAxisLeft().setTextColor(Color.parseColor("#99A1AF"));

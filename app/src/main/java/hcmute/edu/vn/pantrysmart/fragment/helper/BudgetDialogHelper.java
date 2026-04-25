@@ -5,6 +5,7 @@ import android.content.Context;
 import android.graphics.Color;
 import android.view.LayoutInflater;
 import android.view.View;
+import android.widget.ImageView;
 import android.widget.TextView;
 import android.widget.Toast;
 
@@ -50,9 +51,7 @@ public class BudgetDialogHelper {
         this.hasShownWarning = hasShownWarning;
     }
 
-    // ===================================================================
     // Cảnh báo vượt ngân sách
-    // ===================================================================
     public void checkBudgetWarnings(double monthSpent, double monthLimit,
             double weekSpent, double weekLimit) {
         if (hasShownWarning)
@@ -91,7 +90,7 @@ public class BudgetDialogHelper {
         View dialogView = LayoutInflater.from(context)
                 .inflate(R.layout.dialog_budget_alert, null);
 
-        ((android.widget.ImageView) dialogView.findViewById(R.id.imgDialogIcon)).setImageResource(iconResId);
+        ((ImageView) dialogView.findViewById(R.id.imgDialogIcon)).setImageResource(iconResId);
         ((TextView) dialogView.findViewById(R.id.tvDialogTitle)).setText(title);
         ((TextView) dialogView.findViewById(R.id.tvDialogMessage)).setText(message);
 
@@ -106,7 +105,8 @@ public class BudgetDialogHelper {
         dialogView.findViewById(R.id.btnDialogPrimary).setOnClickListener(v -> dialog.dismiss());
         dialogView.findViewById(R.id.btnDialogSecondary).setOnClickListener(v -> {
             dialog.dismiss();
-            if (onEditBudgetClicked != null) onEditBudgetClicked.run();
+            if (onEditBudgetClicked != null)
+                onEditBudgetClicked.run();
         });
 
         dialog.show();
@@ -121,9 +121,8 @@ public class BudgetDialogHelper {
         sb.show();
     }
 
-    // ===================================================================
     // Xóa giao dịch — xác nhận trước khi xóa
-    // ===================================================================
+
     public void showDeleteConfirmDialog(Expense expense) {
         if (context == null)
             return;
@@ -132,7 +131,8 @@ public class BudgetDialogHelper {
         if ("SCAN".equals(expense.getSource())) {
             executorService.execute(() -> {
                 int pantryCount = pantryItemDao.countActiveByExpenseId(expense.getId());
-                if (activity == null) return;
+                if (activity == null)
+                    return;
 
                 activity.runOnUiThread(() -> {
                     if (pantryCount > 0) {
@@ -151,7 +151,7 @@ public class BudgetDialogHelper {
         View dialogView = LayoutInflater.from(context)
                 .inflate(R.layout.dialog_confirm, null);
 
-        ((android.widget.ImageView) dialogView.findViewById(R.id.imgDialogIcon))
+        ((ImageView) dialogView.findViewById(R.id.imgDialogIcon))
                 .setImageResource(R.drawable.ic_budget_warning);
         ((TextView) dialogView.findViewById(R.id.tvDialogTitle)).setText("Xóa giao dịch quét hóa đơn");
         ((TextView) dialogView.findViewById(R.id.tvDialogMessage)).setText(
@@ -175,8 +175,14 @@ public class BudgetDialogHelper {
             dialog.getWindow().setBackgroundDrawableResource(android.R.color.transparent);
         }
 
-        btnDanger.setOnClickListener(v -> { dialog.dismiss(); deleteExpenseWithPantry(expense, true); });
-        btnNeutral.setOnClickListener(v -> { dialog.dismiss(); deleteExpenseWithPantry(expense, false); });
+        btnDanger.setOnClickListener(v -> {
+            dialog.dismiss();
+            deleteExpenseWithPantry(expense, true);
+        });
+        btnNeutral.setOnClickListener(v -> {
+            dialog.dismiss();
+            deleteExpenseWithPantry(expense, false);
+        });
         dialogView.findViewById(R.id.btnDialogCancel).setOnClickListener(v -> dialog.dismiss());
 
         dialog.show();
@@ -186,7 +192,7 @@ public class BudgetDialogHelper {
         View dialogView = LayoutInflater.from(context)
                 .inflate(R.layout.dialog_confirm, null);
 
-        ((android.widget.ImageView) dialogView.findViewById(R.id.imgDialogIcon))
+        ((ImageView) dialogView.findViewById(R.id.imgDialogIcon))
                 .setImageResource(R.drawable.ic_toast_alert);
         ((TextView) dialogView.findViewById(R.id.tvDialogTitle)).setText("Xóa giao dịch");
         ((TextView) dialogView.findViewById(R.id.tvDialogMessage)).setText(
@@ -205,7 +211,10 @@ public class BudgetDialogHelper {
             dialog.getWindow().setBackgroundDrawableResource(android.R.color.transparent);
         }
 
-        btnDanger.setOnClickListener(v -> { dialog.dismiss(); deleteExpenseWithPantry(expense, false); });
+        btnDanger.setOnClickListener(v -> {
+            dialog.dismiss();
+            deleteExpenseWithPantry(expense, false);
+        });
         dialogView.findViewById(R.id.btnDialogCancel).setOnClickListener(v -> dialog.dismiss());
 
         dialog.show();
@@ -224,21 +233,20 @@ public class BudgetDialogHelper {
                             : "Đã xóa giao dịch";
                     showCustomToast(msg, R.drawable.ic_toast_delete);
                     hasShownWarning = false;
-                    if (onDataChanged != null) onDataChanged.run();
+                    if (onDataChanged != null)
+                        onDataChanged.run();
                 });
             }
         });
     }
 
-    // ===================================================================
     // Helpers
-    // ===================================================================
 
     public void showCustomToast(String message, int iconResId) {
         if (context == null)
             return;
-        android.view.View layout = android.view.LayoutInflater.from(context).inflate(R.layout.custom_toast, null);
-        android.widget.TextView text = layout.findViewById(R.id.toastText);
+        View layout = LayoutInflater.from(context).inflate(R.layout.custom_toast, null);
+        TextView text = layout.findViewById(R.id.toastText);
         text.setText(message);
         android.widget.ImageView icon = layout.findViewById(R.id.toastIcon);
         icon.setImageResource(iconResId);

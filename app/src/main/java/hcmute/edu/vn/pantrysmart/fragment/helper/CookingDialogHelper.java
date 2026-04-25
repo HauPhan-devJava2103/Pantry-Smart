@@ -144,7 +144,7 @@ public class CookingDialogHelper {
                 if (item == null) {
                     warnings.append("• ").append(row.ingredientName)
                             .append(" — không có trong tủ\n");
-                    warningDetails.add(new String[]{
+                    warningDetails.add(new String[] {
                             row.ingredientName,
                             "không có trong tủ"
                     });
@@ -154,10 +154,10 @@ public class CookingDialogHelper {
                         String pantryQty = formatQty(item.getQuantity()) + " " +
                                 (item.getUnit() != null ? item.getUnit() : "");
                         String requestQty = formatQty(amount) + " " + row.unit;
-                        warnings.append("• ").append(row.ingredientName)
+                        warnings.append(". ").append(row.ingredientName)
                                 .append(" — chỉ còn ").append(pantryQty.trim())
                                 .append(" (cần ").append(requestQty.trim()).append(")\n");
-                        warningDetails.add(new String[]{
+                        warningDetails.add(new String[] {
                                 row.ingredientName,
                                 "còn " + pantryQty.trim() + " / cần " + requestQty.trim()
                         });
@@ -270,7 +270,7 @@ public class CookingDialogHelper {
                             item.getId()));
 
                     // Lưu hành động chờ: [item, newQty]
-                    pendingActions.add(new Object[]{item, newQty});
+                    pendingActions.add(new Object[] { item, newQty });
                 }
             }
 

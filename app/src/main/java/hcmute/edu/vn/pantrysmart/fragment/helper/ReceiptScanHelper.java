@@ -120,7 +120,7 @@ public class ReceiptScanHelper {
                 });
     }
 
-    // ========================= PUBLIC API =========================
+    //  PUBLIC API 
 
     /** Mở Camera để chụp ảnh hóa đơn */
     public void openCamera() {
@@ -137,7 +137,7 @@ public class ReceiptScanHelper {
         galleryLauncher.launch("image/*");
     }
 
-    // ========================= CAMERA =========================
+    //  CAMERA 
 
     private void launchCamera() {
         try {
@@ -164,7 +164,7 @@ public class ReceiptScanHelper {
         return new File(cacheDir, "receipt_" + System.currentTimeMillis() + ".jpg");
     }
 
-    // ========================= PROCESS IMAGE =========================
+    //  PROCESS IMAGE 
 
     private void processUri(Uri uri) {
         showLoadingDialog();
@@ -256,7 +256,7 @@ public class ReceiptScanHelper {
         }
     }
 
-    // ========================= LOADING DIALOG =========================
+    //  LOADING DIALOG 
 
     private void showLoadingDialog() {
         if (fragment.getActivity() == null)
@@ -286,7 +286,7 @@ public class ReceiptScanHelper {
         });
     }
 
-    // ========================= REVIEW DIALOG =========================
+    //  REVIEW DIALOG 
 
     private void showReviewDialog(List<ScannedItem> items) {
         if (fragment.getActivity() == null)
@@ -504,7 +504,7 @@ public class ReceiptScanHelper {
         btn.setText("Thêm tất cả (" + count + ")");
     }
 
-    // ========================= SAVE TO DATABASE =========================
+    //  SAVE TO DATABASE 
 
     /**
      * Lưu toàn bộ danh sách vào:
@@ -599,7 +599,7 @@ public class ReceiptScanHelper {
         });
     }
 
-    // ========================= UTILS =========================
+    //  UTILS 
 
     private void showToast(String message) {
         if (fragment.getActivity() != null) {

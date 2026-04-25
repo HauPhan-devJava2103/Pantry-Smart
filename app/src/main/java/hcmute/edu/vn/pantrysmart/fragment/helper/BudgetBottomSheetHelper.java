@@ -48,9 +48,8 @@ public class BudgetBottomSheetHelper {
         this.onDataChanged = onDataChanged;
     }
 
-    // ===================================================================
+
     // UC9 — Thiết lập ngân sách tuần / tháng
-    // ===================================================================
     public void showSetBudgetBottomSheet(int currentMonth, int currentYear) {
         BottomSheetDialog dialog = new BottomSheetDialog(context);
         View sheetView = LayoutInflater.from(context)
@@ -161,9 +160,7 @@ public class BudgetBottomSheetHelper {
         dialog.show();
     }
 
-    // ===================================================================
     // Thêm chi tiêu
-    // ===================================================================
     public void showAddExpenseBottomSheet() {
         BottomSheetDialog dialog = new BottomSheetDialog(context);
         View sheetView = LayoutInflater.from(context)
@@ -274,9 +271,7 @@ public class BudgetBottomSheetHelper {
         dialog.show();
     }
 
-    // ===================================================================
     // Sửa giao dịch — pre-fill bottom sheet với dữ liệu expense cũ
-    // ===================================================================
     public void showEditExpenseBottomSheet(Expense expense) {
         BottomSheetDialog dialog = new BottomSheetDialog(context);
         View sheetView = LayoutInflater.from(context)

@@ -32,37 +32,40 @@ public class RecentTransactionAdapter extends RecyclerView.Adapter<RecentTransac
     /** Cung cấp emoji và label theo categoryKey từ bên ngoài adapter */
     public interface CategoryEmojiResolver {
         String getEmoji(String categoryKey);
+
         String getLabel(String categoryKey);
     }
 
     /** Callback khi người dùng nhấn nút Edit hoặc Delete */
     public interface OnActionListener {
         void onEdit(Expense expense);
+
         void onDelete(Expense expense);
+
         void onClick(Expense expense);
     }
 
     // ==== Fields ====
 
-    private List<Expense>          expenses;
+    private List<Expense> expenses;
     private final CategoryEmojiResolver emojiResolver;
-    private       OnActionListener actionListener;
-    private       boolean          isReadOnly = false;
+    private OnActionListener actionListener;
+    private boolean isReadOnly = false;
 
     // ==== Constructor ====
 
     public RecentTransactionAdapter(List<Expense> expenses,
-                                    CategoryEmojiResolver emojiResolver) {
-        this.expenses      = expenses;
+            CategoryEmojiResolver emojiResolver) {
+        this.expenses = expenses;
         this.emojiResolver = emojiResolver;
     }
 
     public RecentTransactionAdapter(List<Expense> expenses,
-                                    CategoryEmojiResolver emojiResolver,
-                                    boolean isReadOnly) {
-        this.expenses      = expenses;
+            CategoryEmojiResolver emojiResolver,
+            boolean isReadOnly) {
+        this.expenses = expenses;
         this.emojiResolver = emojiResolver;
-        this.isReadOnly    = isReadOnly;
+        this.isReadOnly = isReadOnly;
     }
 
     public void setOnActionListener(OnActionListener listener) {
@@ -96,7 +99,7 @@ public class RecentTransactionAdapter extends RecyclerView.Adapter<RecentTransac
         holder.tvName.setText(expense.getName());
 
         // "Danh mục • dd/MM"
-        String label   = emojiResolver.getLabel(expense.getCategoryKey());
+        String label = emojiResolver.getLabel(expense.getCategoryKey());
         String dateStr = new SimpleDateFormat("dd/MM", Locale.getDefault())
                 .format(new Date(expense.getExpenseDate()));
         holder.tvInfo.setText((label != null ? label : "Khác") + " • " + dateStr);
@@ -107,18 +110,21 @@ public class RecentTransactionAdapter extends RecyclerView.Adapter<RecentTransac
         // Nút Edit
         holder.btnEdit.setVisibility(isReadOnly ? View.GONE : View.VISIBLE);
         holder.btnEdit.setOnClickListener(v -> {
-            if (actionListener != null) actionListener.onEdit(expense);
+            if (actionListener != null)
+                actionListener.onEdit(expense);
         });
 
         // Nút Delete
         holder.btnDelete.setVisibility(isReadOnly ? View.GONE : View.VISIBLE);
         holder.btnDelete.setOnClickListener(v -> {
-            if (actionListener != null) actionListener.onDelete(expense);
+            if (actionListener != null)
+                actionListener.onDelete(expense);
         });
 
         // Item Click
         holder.itemView.setOnClickListener(v -> {
-            if (actionListener != null) actionListener.onClick(expense);
+            if (actionListener != null)
+                actionListener.onClick(expense);
         });
     }
 
@@ -137,16 +143,16 @@ public class RecentTransactionAdapter extends RecyclerView.Adapter<RecentTransac
 
     static class ViewHolder extends RecyclerView.ViewHolder {
         ImageView imgIcon;
-        TextView  tvName, tvInfo, tvAmount;
+        TextView tvName, tvInfo, tvAmount;
         ImageView btnEdit, btnDelete;
 
         ViewHolder(@NonNull View itemView) {
             super(itemView);
-            imgIcon   = itemView.findViewById(R.id.imgTransactionIcon);
-            tvName    = itemView.findViewById(R.id.tvTransactionName);
-            tvInfo    = itemView.findViewById(R.id.tvTransactionInfo);
-            tvAmount  = itemView.findViewById(R.id.tvTransactionAmount);
-            btnEdit   = itemView.findViewById(R.id.btnEditTransaction);
+            imgIcon = itemView.findViewById(R.id.imgTransactionIcon);
+            tvName = itemView.findViewById(R.id.tvTransactionName);
+            tvInfo = itemView.findViewById(R.id.tvTransactionInfo);
+            tvAmount = itemView.findViewById(R.id.tvTransactionAmount);
+            btnEdit = itemView.findViewById(R.id.btnEditTransaction);
             btnDelete = itemView.findViewById(R.id.btnDeleteTransaction);
         }
     }

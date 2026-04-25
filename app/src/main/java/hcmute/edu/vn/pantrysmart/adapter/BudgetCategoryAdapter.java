@@ -26,23 +26,23 @@ import hcmute.edu.vn.pantrysmart.data.local.entity.ExpenseCategory;
  */
 public class BudgetCategoryAdapter extends RecyclerView.Adapter<BudgetCategoryAdapter.ViewHolder> {
 
-    private List<ExpenseCategory>       categories;
+    private List<ExpenseCategory> categories;
     private List<ExpenseDao.CategoryStat> stats;
-    private double                      totalMonthSpent;
+    private double totalMonthSpent;
 
     public BudgetCategoryAdapter(List<ExpenseCategory> categories,
-                                  List<ExpenseDao.CategoryStat> stats,
-                                  double totalMonthSpent) {
-        this.categories      = categories;
-        this.stats           = stats;
+            List<ExpenseDao.CategoryStat> stats,
+            double totalMonthSpent) {
+        this.categories = categories;
+        this.stats = stats;
         this.totalMonthSpent = totalMonthSpent;
     }
 
     public void update(List<ExpenseCategory> categories,
-                       List<ExpenseDao.CategoryStat> stats,
-                       double totalMonthSpent) {
-        this.categories      = categories;
-        this.stats           = stats;
+            List<ExpenseDao.CategoryStat> stats,
+            double totalMonthSpent) {
+        this.categories = categories;
+        this.stats = stats;
         this.totalMonthSpent = totalMonthSpent;
         notifyDataSetChanged();
     }
@@ -91,15 +91,15 @@ public class BudgetCategoryAdapter extends RecyclerView.Adapter<BudgetCategoryAd
     }
 
     static class ViewHolder extends RecyclerView.ViewHolder {
-        ImageView                imgIcon;
-        TextView                 tvName, tvSpent;
-        LinearProgressIndicator  progressBar;
+        ImageView imgIcon;
+        TextView tvName, tvSpent;
+        LinearProgressIndicator progressBar;
 
         ViewHolder(@NonNull View itemView) {
             super(itemView);
-            imgIcon     = itemView.findViewById(R.id.imgCategoryIcon);
-            tvName      = itemView.findViewById(R.id.tvCategoryName);
-            tvSpent     = itemView.findViewById(R.id.tvCategorySpent);
+            imgIcon = itemView.findViewById(R.id.imgCategoryIcon);
+            tvName = itemView.findViewById(R.id.tvCategoryName);
+            tvSpent = itemView.findViewById(R.id.tvCategorySpent);
             progressBar = itemView.findViewById(R.id.progressBarCategory);
         }
     }

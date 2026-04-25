@@ -1,14 +1,18 @@
 package hcmute.edu.vn.pantrysmart.fragment.helper;
 
+import android.app.AlertDialog;
 import android.app.DatePickerDialog;
 import android.app.Dialog;
 import android.graphics.Color;
 import android.graphics.drawable.ColorDrawable;
 import android.provider.Contacts;
+import android.util.DisplayMetrics;
 import android.view.Gravity;
+import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
 import android.view.Window;
+import android.view.WindowManager;
 import android.widget.EditText;
 import android.widget.FrameLayout;
 import android.widget.ImageView;
@@ -23,6 +27,7 @@ import com.google.android.material.bottomsheet.BottomSheetDialog;
 import com.google.android.material.dialog.MaterialAlertDialogBuilder;
 
 import java.text.SimpleDateFormat;
+import java.util.ArrayList;
 import java.util.Calendar;
 import java.util.List;
 import java.util.Locale;
@@ -30,10 +35,13 @@ import java.util.Locale;
 import hcmute.edu.vn.pantrysmart.R;
 import hcmute.edu.vn.pantrysmart.adapter.EmojiPickerDialog;
 import hcmute.edu.vn.pantrysmart.adapter.PantryItemAdapter;
+import hcmute.edu.vn.pantrysmart.adapter.ScannedReviewAdapter;
 import hcmute.edu.vn.pantrysmart.config.FoodIconConfig;
 import hcmute.edu.vn.pantrysmart.data.local.PantrySmartDatabase;
 import hcmute.edu.vn.pantrysmart.data.local.dao.PantryItemDao;
+import hcmute.edu.vn.pantrysmart.data.local.entity.Expense;
 import hcmute.edu.vn.pantrysmart.data.local.entity.PantryItem;
+import hcmute.edu.vn.pantrysmart.model.ScannedItem;
 
 /**
  * Helper quản lý các Dialog của FridgeFragment:
@@ -144,7 +152,8 @@ public class FridgeDialogHelper {
      * Hiển thị BottomSheet để thêm mới thực phẩm thủ công.
      */
     public void showAddItemBottomSheet() {
-        if (fragment.getContext() == null) return;
+        if (fragment.getContext() == null)
+            return;
 
         // 1. Khởi tạo đối tượng mới với các giá trị mặc định
         PantryItem newItem = new PantryItem();
@@ -161,7 +170,8 @@ public class FridgeDialogHelper {
 
         // 2. Bind views
         TextView tvSheetTitle = sheetView.findViewById(R.id.tvEditSheetTitle);
-        if (tvSheetTitle != null) tvSheetTitle.setText("Thêm thực phẩm thủ công");
+        if (tvSheetTitle != null)
+            tvSheetTitle.setText("Thêm thực phẩm thủ công");
 
         EditText etItemName = sheetView.findViewById(R.id.etItemName);
         EditText etItemQuantity = sheetView.findViewById(R.id.etItemQuantity);
@@ -198,9 +208,11 @@ public class FridgeDialogHelper {
         final String[] selectedZone = { newItem.getStorageZone() };
         Runnable updateZoneUI = () -> {
             boolean isFreezer = "FREEZER".equals(selectedZone[0]);
-            btnZoneFreezer.setBackgroundResource(isFreezer ? R.drawable.bg_edit_zone_active : R.drawable.bg_edit_zone_inactive);
+            btnZoneFreezer.setBackgroundResource(
+                    isFreezer ? R.drawable.bg_edit_zone_active : R.drawable.bg_edit_zone_inactive);
             btnZoneFreezer.setTextColor(isFreezer ? Color.WHITE : Color.parseColor("#4A5565"));
-            btnZoneMain.setBackgroundResource(!isFreezer ? R.drawable.bg_edit_zone_active : R.drawable.bg_edit_zone_inactive);
+            btnZoneMain.setBackgroundResource(
+                    !isFreezer ? R.drawable.bg_edit_zone_active : R.drawable.bg_edit_zone_inactive);
             btnZoneMain.setTextColor(!isFreezer ? Color.WHITE : Color.parseColor("#4A5565"));
         };
         updateZoneUI.run();
@@ -213,8 +225,14 @@ public class FridgeDialogHelper {
                 highlightCategoryChip(categoryChips, categoryKeys, categoryKeys[index]);
             });
         }
-        btnZoneMain.setOnClickListener(v -> { selectedZone[0] = "MAIN"; updateZoneUI.run(); });
-        btnZoneFreezer.setOnClickListener(v -> { selectedZone[0] = "FREEZER"; updateZoneUI.run(); });
+        btnZoneMain.setOnClickListener(v -> {
+            selectedZone[0] = "MAIN";
+            updateZoneUI.run();
+        });
+        btnZoneFreezer.setOnClickListener(v -> {
+            selectedZone[0] = "FREEZER";
+            updateZoneUI.run();
+        });
 
         Calendar expiryCal = Calendar.getInstance();
         SimpleDateFormat sdf = new SimpleDateFormat("dd/MM/yyyy", Locale.getDefault());
@@ -223,7 +241,8 @@ public class FridgeDialogHelper {
                 expiryCal.set(year, month, dayOfMonth, 23, 59, 59);
                 tvExpiryDate.setText(sdf.format(expiryCal.getTime()));
                 newItem.setExpiryDate(expiryCal.getTimeInMillis());
-            }, expiryCal.get(Calendar.YEAR), expiryCal.get(Calendar.MONTH), expiryCal.get(Calendar.DAY_OF_MONTH)).show();
+            }, expiryCal.get(Calendar.YEAR), expiryCal.get(Calendar.MONTH), expiryCal.get(Calendar.DAY_OF_MONTH))
+                    .show();
         });
 
         final String[] selectedEmoji = { newItem.getEmoji() };
@@ -260,7 +279,7 @@ public class FridgeDialogHelper {
             PantrySmartDatabase.databaseWriteExecutor.execute(() -> {
                 // BƯỚC 1: Nếu có nhập giá tiền (>0), tạo và lưu mục Chi tiêu (Expense) TRƯỚC
                 if (priceValue > 0) {
-                    hcmute.edu.vn.pantrysmart.data.local.entity.Expense expense = new hcmute.edu.vn.pantrysmart.data.local.entity.Expense();
+                    Expense expense = new Expense();
                     expense.setName("Mua thực phẩm: " + name);
                     expense.setAmount((double) priceValue);
                     expense.setCategoryKey("SHOPPING");
@@ -330,7 +349,7 @@ public class FridgeDialogHelper {
         // Nút Lưu
         TextView btnSaveEdit = sheetView.findViewById(R.id.btnSaveEdit);
 
-        // ---- Refill dữ liệu vào form ----
+        // Refill dữ liệu vào form
 
         imgSelectedIcon.setImageResource(FoodIconConfig.safeIcon(item.getEmoji()));
         etItemName.setText(item.getName());
@@ -347,7 +366,7 @@ public class FridgeDialogHelper {
             tvExpiryDate.setText(sdf.format(expiryCal.getTime()));
         }
 
-        // ---- Logic chọn danh mục ----
+        // Logic chọn danh mục
 
         TextView[] categoryChips = {
                 chipDairy, chipVegetable, chipFruit, chipMeat,
@@ -370,7 +389,7 @@ public class FridgeDialogHelper {
             });
         }
 
-        // ---- Logic chọn ngăn chứa ----
+        // Logic chọn ngăn chứa
 
         final String[] selectedZone = {
                 item.getStorageZone() != null ? item.getStorageZone() : "MAIN"
@@ -422,7 +441,7 @@ public class FridgeDialogHelper {
             });
         });
 
-        // ---- LOGIC LƯU ----
+        // LOGIC LƯU
 
         btnSaveEdit.setOnClickListener(v -> {
             String name = etItemName.getText().toString().trim();
@@ -498,23 +517,24 @@ public class FridgeDialogHelper {
     /**
      * Hiển thị Dialog xem lại danh sách nhiều thực phẩm AI vừa nhận diện được.
      */
-    public void showAIRecognitionReviewDialog(java.util.List<hcmute.edu.vn.pantrysmart.data.local.entity.PantryItem> items) {
-        if (fragment.getActivity() == null || items == null || items.isEmpty()) return;
+    public void showAIRecognitionReviewDialog(List<PantryItem> items) {
+        if (fragment.getActivity() == null || items == null || items.isEmpty())
+            return;
 
         // 1. Inflate layout review
-        android.view.View dialogView = android.view.LayoutInflater.from(fragment.requireContext())
+        View dialogView = LayoutInflater.from(fragment.requireContext())
                 .inflate(R.layout.dialog_review_scanned_items, null);
 
         // 2. Thiết lập tiêu đề và mô tả
-        android.widget.TextView tvSubtitle = dialogView.findViewById(R.id.tvReviewSubtitle);
+        TextView tvSubtitle = dialogView.findViewById(R.id.tvReviewSubtitle);
         if (tvSubtitle != null) {
             tvSubtitle.setText("Gemini đã tìm thấy " + items.size() + " thực phẩm.");
         }
 
         // 3. Chuyển đổi sang ScannedItem
-        java.util.List<hcmute.edu.vn.pantrysmart.model.ScannedItem> scannedItems = new java.util.ArrayList<>();
-        for (hcmute.edu.vn.pantrysmart.data.local.entity.PantryItem p : items) {
-            hcmute.edu.vn.pantrysmart.model.ScannedItem s = new hcmute.edu.vn.pantrysmart.model.ScannedItem();
+        List<ScannedItem> scannedItems = new ArrayList<>();
+        for (PantryItem p : items) {
+            ScannedItem s = new ScannedItem();
             s.setName(p.getName());
             s.setQuantity(p.getQuantity());
             s.setUnit(p.getUnit());
@@ -525,20 +545,20 @@ public class FridgeDialogHelper {
         }
 
         // 4. Thiết lập RecyclerView
-        androidx.recyclerview.widget.RecyclerView rv = dialogView.findViewById(R.id.rvReviewScannedItems);
+        RecyclerView rv = dialogView.findViewById(R.id.rvReviewScannedItems);
 
-        final hcmute.edu.vn.pantrysmart.adapter.ScannedReviewAdapter[] adapterArr = {null};
+        final ScannedReviewAdapter[] adapterArr = { null };
 
-        adapterArr[0] = new hcmute.edu.vn.pantrysmart.adapter.ScannedReviewAdapter(scannedItems, (item, position) -> {
+        adapterArr[0] = new ScannedReviewAdapter(scannedItems, (item, position) -> {
             showEditScannedItemBottomSheet(item, position, adapterArr[0]);
         });
 
-        hcmute.edu.vn.pantrysmart.adapter.ScannedReviewAdapter adapter = adapterArr[0];
-        rv.setLayoutManager(new androidx.recyclerview.widget.LinearLayoutManager(fragment.requireContext()));
+        ScannedReviewAdapter adapter = adapterArr[0];
+        rv.setLayoutManager(new LinearLayoutManager(fragment.requireContext()));
         rv.setAdapter(adapter);
 
         // 5. Khởi tạo Dialog
-        android.app.AlertDialog dialog = new android.app.AlertDialog.Builder(fragment.requireContext())
+        AlertDialog dialog = new AlertDialog.Builder(fragment.requireContext())
                 .setView(dialogView)
                 .setCancelable(true)
                 .create();
@@ -547,7 +567,7 @@ public class FridgeDialogHelper {
         }
 
         // 6. Nút Thêm tất cả
-        android.widget.TextView btnSaveAll = dialogView.findViewById(R.id.btnSaveAllScanned);
+        TextView btnSaveAll = dialogView.findViewById(R.id.btnSaveAllScanned);
         if (btnSaveAll != null) {
             btnSaveAll.setText("Nạp " + scannedItems.size() + " món vào tủ lạnh");
             btnSaveAll.setOnClickListener(v -> {
@@ -557,7 +577,7 @@ public class FridgeDialogHelper {
         }
 
         // Nút Hủy
-        android.view.View btnCancel = dialogView.findViewById(R.id.btnCancelReview);
+        View btnCancel = dialogView.findViewById(R.id.btnCancelReview);
         if (btnCancel != null) {
             btnCancel.setOnClickListener(v -> dialog.dismiss());
         }
@@ -565,65 +585,65 @@ public class FridgeDialogHelper {
         dialog.show();
 
         // Giới hạn chiều cao dialog
-        android.util.DisplayMetrics dm = fragment.getResources().getDisplayMetrics();
+        DisplayMetrics dm = fragment.getResources().getDisplayMetrics();
         int maxHeight = (int) (dm.heightPixels * 0.85);
         if (dialog.getWindow() != null) {
-            dialog.getWindow().setLayout(android.view.WindowManager.LayoutParams.MATCH_PARENT, maxHeight);
+            dialog.getWindow().setLayout(WindowManager.LayoutParams.MATCH_PARENT, maxHeight);
         }
     }
 
     /**
      * Chỉnh sửa TOÀN BỘ thông tin thực phẩm AI vừa quét (bao gồm giá tiền)
      */
-    private void showEditScannedItemBottomSheet(hcmute.edu.vn.pantrysmart.model.ScannedItem item, int position, hcmute.edu.vn.pantrysmart.adapter.ScannedReviewAdapter adapter) {
-        com.google.android.material.bottomsheet.BottomSheetDialog editDialog = new com.google.android.material.bottomsheet.BottomSheetDialog(fragment.requireContext());
-        android.view.View sheetView = fragment.getLayoutInflater().inflate(R.layout.bottom_sheet_ai_recognition_edit_item, null);
+    private void showEditScannedItemBottomSheet(ScannedItem item, int position, ScannedReviewAdapter adapter) {
+        BottomSheetDialog editDialog = new BottomSheetDialog(fragment.requireContext());
+        View sheetView = fragment.getLayoutInflater().inflate(R.layout.bottom_sheet_ai_recognition_edit_item, null);
         editDialog.setContentView(sheetView);
 
         // --- 1. Ánh xạ View (ID khớp 100% với XML) ---
-        android.widget.EditText etName = sheetView.findViewById(R.id.etItemName);
-        android.widget.EditText etQty = sheetView.findViewById(R.id.etItemQuantity);
-        android.widget.EditText etUnit = sheetView.findViewById(R.id.etItemUnit);
-        android.widget.EditText etPrice = sheetView.findViewById(R.id.etItemPrice);
-        android.widget.TextView tvExpiry = sheetView.findViewById(R.id.tvExpiryDate);
-        android.widget.ImageView imgIcon = sheetView.findViewById(R.id.imgSelectedIcon);
-        android.widget.FrameLayout btnSelectEmoji = sheetView.findViewById(R.id.btnSelectEmoji);
-        android.widget.TextView btnZoneMain = sheetView.findViewById(R.id.btnZoneMain);
-        android.widget.TextView btnZoneFreezer = sheetView.findViewById(R.id.btnZoneFreezer);
-        android.widget.TextView btnSave = sheetView.findViewById(R.id.btnSaveEdit);
+        EditText etName = sheetView.findViewById(R.id.etItemName);
+        EditText etQty = sheetView.findViewById(R.id.etItemQuantity);
+        EditText etUnit = sheetView.findViewById(R.id.etItemUnit);
+        EditText etPrice = sheetView.findViewById(R.id.etItemPrice);
+        TextView tvExpiry = sheetView.findViewById(R.id.tvExpiryDate);
+        ImageView imgIcon = sheetView.findViewById(R.id.imgSelectedIcon);
+        FrameLayout btnSelectEmoji = sheetView.findViewById(R.id.btnSelectEmoji);
+        TextView btnZoneMain = sheetView.findViewById(R.id.btnZoneMain);
+        TextView btnZoneFreezer = sheetView.findViewById(R.id.btnZoneFreezer);
+        TextView btnSave = sheetView.findViewById(R.id.btnSaveEdit);
 
         // --- 2. Load dữ liệu ban đầu ---
         etName.setText(item.getName());
         etQty.setText(String.valueOf(item.getQuantity()));
         etUnit.setText(item.getUnit());
         etPrice.setText(String.valueOf((long) item.getPrice()));
-        imgIcon.setImageResource(hcmute.edu.vn.pantrysmart.config.FoodIconConfig.safeIcon(item.getEmoji()));
+        imgIcon.setImageResource(FoodIconConfig.safeIcon(item.getEmoji()));
 
         // Hạn sử dụng
-        java.text.SimpleDateFormat sdf = new java.text.SimpleDateFormat("dd/MM/yyyy", java.util.Locale.getDefault());
-        java.util.Calendar cal = java.util.Calendar.getInstance();
+        SimpleDateFormat sdf = new SimpleDateFormat("dd/MM/yyyy", Locale.getDefault());
+        Calendar cal = Calendar.getInstance();
         if (item.getExpiryDate() != null) {
             cal.setTimeInMillis(item.getExpiryDate());
             tvExpiry.setText(sdf.format(cal.getTime()));
         }
 
         tvExpiry.setOnClickListener(v -> {
-            new android.app.DatePickerDialog(fragment.requireContext(), (view, year, month, dayOfMonth) -> {
+            new DatePickerDialog(fragment.requireContext(), (view, year, month, dayOfMonth) -> {
                 cal.set(year, month, dayOfMonth, 23, 59, 59);
                 tvExpiry.setText(sdf.format(cal.getTime()));
                 item.setExpiryDate(cal.getTimeInMillis());
-            }, cal.get(java.util.Calendar.YEAR), cal.get(java.util.Calendar.MONTH), cal.get(java.util.Calendar.DAY_OF_MONTH)).show();
+            }, cal.get(Calendar.YEAR), cal.get(Calendar.MONTH), cal.get(Calendar.DAY_OF_MONTH)).show();
         });
 
         // Danh mục Chips
-        android.widget.TextView[] chips = {
+        TextView[] chips = {
                 sheetView.findViewById(R.id.chipDairy), sheetView.findViewById(R.id.chipVegetable),
                 sheetView.findViewById(R.id.chipFruit), sheetView.findViewById(R.id.chipMeat),
                 sheetView.findViewById(R.id.chipSeafood), sheetView.findViewById(R.id.chipDrink),
                 sheetView.findViewById(R.id.chipSpice), sheetView.findViewById(R.id.chipOther)
         };
-        String[] keys = {"DAIRY", "VEGETABLE", "FRUIT", "MEAT", "SEAFOOD", "DRINK", "SPICE", "OTHER"};
-        final String[] selectedCategory = {item.getCategory() != null ? item.getCategory().toUpperCase() : "OTHER"};
+        String[] keys = { "DAIRY", "VEGETABLE", "FRUIT", "MEAT", "SEAFOOD", "DRINK", "SPICE", "OTHER" };
+        final String[] selectedCategory = { item.getCategory() != null ? item.getCategory().toUpperCase() : "OTHER" };
         highlightCategoryChip(chips, keys, selectedCategory[0]);
 
         for (int i = 0; i < chips.length; i++) {
@@ -635,24 +655,35 @@ public class FridgeDialogHelper {
         }
 
         // Ngăn chứa (Zone)
-        final String[] selectedZone = {item.getStorageZone() != null ? item.getStorageZone() : "MAIN"};
+        final String[] selectedZone = { item.getStorageZone() != null ? item.getStorageZone() : "MAIN" };
         java.lang.Runnable updateZoneUI = () -> {
             boolean isFreezer = "FREEZER".equals(selectedZone[0]);
-            btnZoneFreezer.setBackgroundResource(isFreezer ? R.drawable.bg_edit_zone_active : R.drawable.bg_edit_zone_inactive);
-            btnZoneFreezer.setTextColor(isFreezer ? android.graphics.Color.WHITE : android.graphics.Color.parseColor("#4A5565"));
-            btnZoneMain.setBackgroundResource(!isFreezer ? R.drawable.bg_edit_zone_active : R.drawable.bg_edit_zone_inactive);
-            btnZoneMain.setTextColor(!isFreezer ? android.graphics.Color.WHITE : android.graphics.Color.parseColor("#4A5565"));
+            btnZoneFreezer.setBackgroundResource(
+                    isFreezer ? R.drawable.bg_edit_zone_active : R.drawable.bg_edit_zone_inactive);
+            btnZoneFreezer.setTextColor(
+                    isFreezer ? Color.WHITE : Color.parseColor("#4A5565"));
+            btnZoneMain.setBackgroundResource(
+                    !isFreezer ? R.drawable.bg_edit_zone_active : R.drawable.bg_edit_zone_inactive);
+            btnZoneMain.setTextColor(
+                    !isFreezer ? Color.WHITE : Color.parseColor("#4A5565"));
         };
         updateZoneUI.run();
-        btnZoneMain.setOnClickListener(v -> { selectedZone[0] = "MAIN"; updateZoneUI.run(); });
-        btnZoneFreezer.setOnClickListener(v -> { selectedZone[0] = "FREEZER"; updateZoneUI.run(); });
+        btnZoneMain.setOnClickListener(v -> {
+            selectedZone[0] = "MAIN";
+            updateZoneUI.run();
+        });
+        btnZoneFreezer.setOnClickListener(v -> {
+            selectedZone[0] = "FREEZER";
+            updateZoneUI.run();
+        });
 
         // Emoji Picker
         btnSelectEmoji.setOnClickListener(v -> {
-            hcmute.edu.vn.pantrysmart.adapter.EmojiPickerDialog.show(fragment.requireContext(), item.getEmoji(), emoji -> {
-                item.setEmoji(emoji);
-                imgIcon.setImageResource(hcmute.edu.vn.pantrysmart.config.FoodIconConfig.safeIcon(emoji));
-            });
+            EmojiPickerDialog.show(fragment.requireContext(), item.getEmoji(),
+                    emoji -> {
+                        item.setEmoji(emoji);
+                        imgIcon.setImageResource(FoodIconConfig.safeIcon(emoji));
+                    });
         });
 
         // --- 3. Lưu thay đổi ---
@@ -665,7 +696,8 @@ public class FridgeDialogHelper {
                 item.setQuantity(Double.parseDouble(etQty.getText().toString().trim()));
                 String pStr = etPrice.getText().toString().trim();
                 item.setPrice(pStr.isEmpty() ? 0 : Long.parseLong(pStr));
-            } catch (Exception ignored) {}
+            } catch (Exception ignored) {
+            }
 
             adapter.notifyItemChanged(position);
             editDialog.dismiss();
@@ -678,7 +710,7 @@ public class FridgeDialogHelper {
     /**
      * Lưu thực phẩm AI vào kho và liên kết với Ngân sách để hỗ trợ xóa hàng loạt.
      */
-    private void saveAIItemsToDatabase(java.util.List<hcmute.edu.vn.pantrysmart.model.ScannedItem> items) {
+    private void saveAIItemsToDatabase(java.util.List<ScannedItem> items) {
         PantrySmartDatabase.databaseWriteExecutor.execute(() -> {
             long now = System.currentTimeMillis();
 
@@ -691,7 +723,7 @@ public class FridgeDialogHelper {
             // 2. Nếu tổng tiền > 0, tạo mục Chi tiêu (Expense) TRƯỚC để lấy ID liên kết
             Integer generatedExpenseId = null;
             if (totalBill > 0) {
-                hcmute.edu.vn.pantrysmart.data.local.entity.Expense expense = new hcmute.edu.vn.pantrysmart.data.local.entity.Expense();
+                Expense expense = new Expense();
                 expense.setName("Mua thực phẩm (AI Recognition)");
                 expense.setAmount(totalBill);
                 expense.setCategoryKey("SHOPPING");
@@ -699,12 +731,13 @@ public class FridgeDialogHelper {
                 expense.setExpenseDate(now);
 
                 // Lưu và lấy ID tự sinh
-                long id = PantrySmartDatabase.getInstance(fragment.requireContext()).expenseDao().insertExpense(expense);
+                long id = PantrySmartDatabase.getInstance(fragment.requireContext()).expenseDao()
+                        .insertExpense(expense);
                 generatedExpenseId = (int) id;
             }
 
             // 3. Lưu từng thực phẩm vào kho và gắn expenseId
-            for (hcmute.edu.vn.pantrysmart.model.ScannedItem scanned : items) {
+            for (ScannedItem scanned : items) {
                 PantryItem pantryItem = new PantryItem();
                 pantryItem.setName(scanned.getName());
                 pantryItem.setEmoji(scanned.getEmoji());
@@ -720,8 +753,8 @@ public class FridgeDialogHelper {
                 if (scanned.getExpiryDate() != null) {
                     pantryItem.setExpiryDate(scanned.getExpiryDate());
                 } else {
-                    java.util.Calendar c = java.util.Calendar.getInstance();
-                    c.add(java.util.Calendar.DAY_OF_YEAR, 7);
+                    Calendar c = Calendar.getInstance();
+                    c.add(Calendar.DAY_OF_YEAR, 7);
                     pantryItem.setExpiryDate(c.getTimeInMillis());
                 }
 
@@ -732,8 +765,8 @@ public class FridgeDialogHelper {
             if (fragment.getActivity() != null) {
                 fragment.getActivity().runOnUiThread(() -> {
                     onDataChanged.run(); // Load lại giao diện tủ lạnh
-                    android.widget.Toast.makeText(fragment.requireContext(),
-                            "✅ Đã nạp " + items.size() + " món vào tủ lạnh", android.widget.Toast.LENGTH_LONG).show();
+                    Toast.makeText(fragment.requireContext(),
+                            "Đã nạp " + items.size() + " món vào tủ lạnh", Toast.LENGTH_LONG).show();
                 });
             }
         });

@@ -5,4 +5,8 @@
     <cache-path
         name="receipt_images"
         path="receipt_images/" />
+    <!-- Ảnh AI camera (lưu trực tiếp trong cache root) -->
+    <cache-path
+        name="ai_camera"
+        path="." />
 </paths>

@@ -1,5 +1,6 @@
 package hcmute.edu.vn.pantrysmart;
 
+import android.content.Intent;
 import android.os.Bundle;
 import android.view.View;
 import android.widget.ImageView;
@@ -28,6 +29,7 @@ import java.util.Calendar;
 import java.util.List;
 import java.util.concurrent.TimeUnit;
 
+import hcmute.edu.vn.pantrysmart.activity.CookingHistoryActivity;
 import hcmute.edu.vn.pantrysmart.adapter.NotificationAdapter;
 import hcmute.edu.vn.pantrysmart.data.local.PantrySmartDatabase;
 import hcmute.edu.vn.pantrysmart.data.local.dao.PantryItemDao;
@@ -100,10 +102,7 @@ public class MainActivity extends AppCompatActivity {
         // Bottom Navigation
         findViewById(R.id.navTabFridge).setOnClickListener(v -> switchTab(0));
         findViewById(R.id.navTabSuggest).setOnClickListener(v -> switchTab(1));
-        findViewById(R.id.navTabBudget).setOnClickListener(v -> {
-            switchTab(2);
-            Toast.makeText(this, "Ngân sách - Sắp ra mắt", Toast.LENGTH_SHORT).show();
-        });
+        findViewById(R.id.navTabBudget).setOnClickListener(v -> switchTab(2));
 
         // Load default tab
         if (savedInstanceState == null) {
@@ -161,7 +160,7 @@ public class MainActivity extends AppCompatActivity {
 
     /**
      * Tính khoảng thời gian (ms) từ bây giờ đến giờ mục tiêu.
-     * Nếu giờ mục tiêu đã qua hôm nay → tính đến hôm sau.
+     * Nếu giờ mục tiêu đã qua hôm nay -> tính đến hôm sau.
      */
     private long calculateDelayTo(int targetHour, int targetMinute) {
         Calendar now = Calendar.getInstance();
@@ -181,7 +180,7 @@ public class MainActivity extends AppCompatActivity {
 
     // Menu tài khoản — BottomSheet hiện đại
     private void showProfileMenu() {
-        com.google.android.material.bottomsheet.BottomSheetDialog sheet = new com.google.android.material.bottomsheet.BottomSheetDialog(
+        BottomSheetDialog sheet = new BottomSheetDialog(
                 this);
         View sheetView = getLayoutInflater().inflate(R.layout.bottom_sheet_profile, null);
         sheet.setContentView(sheetView);
@@ -194,7 +193,7 @@ public class MainActivity extends AppCompatActivity {
         // Lịch sử nấu ăn
         sheetView.findViewById(R.id.menuCookingHistory).setOnClickListener(v -> {
             sheet.dismiss();
-            startActivity(new android.content.Intent(this, CookingHistoryActivity.class));
+            startActivity(new Intent(this, CookingHistoryActivity.class));
         });
 
         sheet.show();

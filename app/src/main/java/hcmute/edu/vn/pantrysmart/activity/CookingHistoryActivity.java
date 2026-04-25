@@ -1,9 +1,12 @@
-package hcmute.edu.vn.pantrysmart;
+package hcmute.edu.vn.pantrysmart.activity;
 
 import android.graphics.Color;
 import android.os.Bundle;
 import android.view.View;
 import android.widget.TextView;
+import android.widget.Toast;
+
+import hcmute.edu.vn.pantrysmart.R;
 
 import androidx.appcompat.app.AppCompatActivity;
 import androidx.recyclerview.widget.LinearLayoutManager;
@@ -160,8 +163,8 @@ public class CookingHistoryActivity extends AppCompatActivity {
                     .commit();
 
         } catch (Exception e) {
-            android.widget.Toast.makeText(this,
-                    "Không thể mở lại công thức", android.widget.Toast.LENGTH_SHORT).show();
+            Toast.makeText(this,
+                    "Không thể mở lại công thức", Toast.LENGTH_SHORT).show();
         }
     }
 

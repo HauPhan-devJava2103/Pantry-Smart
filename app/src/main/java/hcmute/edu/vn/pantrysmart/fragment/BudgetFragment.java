@@ -96,7 +96,7 @@ public class BudgetFragment extends Fragment {
     private BudgetDialogHelper dialogHelper;
     private BudgetBottomSheetHelper bottomSheetHelper;
 
-    // ===================================================================
+    
     @Nullable
     @Override
     public View onCreateView(@NonNull LayoutInflater inflater,
@@ -115,7 +115,7 @@ public class BudgetFragment extends Fragment {
             isWeeklyMode = savedInstanceState.getBoolean("IS_WEEKLY_MODE", false);
         }
 
-        // --- Bind views ---
+        //  Bind views 
         tvTotalBudget = view.findViewById(R.id.tvTotalBudget);
         tvTotalExpense = view.findViewById(R.id.tvTotalExpense);
         tvRemaining = view.findViewById(R.id.tvRemaining);
@@ -134,7 +134,7 @@ public class BudgetFragment extends Fragment {
         tvTabWeek = view.findViewById(R.id.tvTabWeek);
         tvTabMonth = view.findViewById(R.id.tvTabMonth);
 
-        // --- Init DB ---
+        //  Init DB 
         database = PantrySmartDatabase.getInstance(getContext());
         budgetDao = database.budgetDao();
         expenseDao = database.expenseDao();
@@ -143,12 +143,12 @@ public class BudgetFragment extends Fragment {
             executorService = Executors.newSingleThreadExecutor();
         }
 
-        // --- Lấy thời điểm hiện tại để truyền cho helper ---
+        //  Lấy thời điểm hiện tại để truyền cho helper 
         Calendar now = Calendar.getInstance();
         currentMonth = now.get(Calendar.MONTH) + 1;
         currentYear = now.get(Calendar.YEAR);
 
-        // --- Init Helpers ---
+        //  Init Helpers 
         chartHelper = new BudgetChartHelper(barChart, barChartMonthly);
         dialogHelper = new BudgetDialogHelper(getContext(), getActivity(), rootView, pantryItemDao, expenseDao, executorService,
                 () -> loadBudgetData(),
@@ -157,7 +157,7 @@ public class BudgetFragment extends Fragment {
 
 
 
-        // --- RecyclerView: Giao dich gan day ---
+        //  RecyclerView: Giao dich gan day 
         transactionAdapter = new RecentTransactionAdapter(new ArrayList<>(),
                 new RecentTransactionAdapter.CategoryEmojiResolver() {
                     @Override
@@ -193,12 +193,12 @@ public class BudgetFragment extends Fragment {
         rvRecentTransactions.setLayoutManager(new LinearLayoutManager(getContext()));
         rvRecentTransactions.setAdapter(transactionAdapter);
 
-        // --- RecyclerView: Theo danh mục ---
+        //  RecyclerView: Theo danh mục 
         categoryAdapter = new BudgetCategoryAdapter(new ArrayList<>(), new ArrayList<>(), 0);
         rvCategoriesHorizontal.setLayoutManager(new LinearLayoutManager(getContext()));
         rvCategoriesHorizontal.setAdapter(categoryAdapter);
 
-        // --- Click listeners ---
+        //  Click listeners 
         fabAddExpense.setOnClickListener(v -> bottomSheetHelper.showAddExpenseBottomSheet());
         btnEditBudget.setOnClickListener(v -> bottomSheetHelper.showSetBudgetBottomSheet(currentMonth, currentYear));
         btnViewAllTransactions.setOnClickListener(v -> {
@@ -211,16 +211,15 @@ public class BudgetFragment extends Fragment {
             }
         });
 
-        // --- Tab Switcher ---
+        //  Tab Switcher 
         setupTabSwitcher();
 
-        // --- Load tất cả dữ liệu ---
+        //  Load tất cả dữ liệu 
         loadBudgetData();
     }
 
-    // ===================================================================
+    
     // Tab Switcher
-    // ===================================================================
     private void setupTabSwitcher() {
         tvTabWeek.setOnClickListener(v -> {
             if (!isWeeklyMode) {
@@ -263,14 +262,13 @@ public class BudgetFragment extends Fragment {
         }
     }
 
-    // ===================================================================
+    
     // UC8 — Tải và hiển thị thống kê chi tiêu (tháng, tuần, ngày)
-    // ===================================================================
     private void loadBudgetData() {
         executorService.execute(() -> {
             Budget currentBudget = budgetDao.getBudgetForMonth(currentMonth, currentYear);
 
-            // --- Bounds: tháng ---
+            //  Bounds: tháng 
             Calendar mCal = Calendar.getInstance();
             mCal.set(Calendar.DAY_OF_MONTH, 1);
             mCal.set(Calendar.HOUR_OF_DAY, 0);
@@ -281,7 +279,7 @@ public class BudgetFragment extends Fragment {
             mCal.add(Calendar.MONTH, 1);
             long monthEnd = mCal.getTimeInMillis();
 
-            // --- Bounds: tuần (Thứ Hai → Chủ Nhật) ---
+            //  Bounds: tuần (Thứ Hai -> Chủ Nhật) 
             Calendar wCal = Calendar.getInstance();
             int dow = wCal.get(Calendar.DAY_OF_WEEK);
             int daysFromMon = (dow == Calendar.SUNDAY) ? 6 : dow - Calendar.MONDAY;
@@ -294,7 +292,7 @@ public class BudgetFragment extends Fragment {
             wCal.add(Calendar.DAY_OF_MONTH, 7);
             long weekEnd = wCal.getTimeInMillis();
 
-            // --- Bounds: hôm nay ---
+            //  Bounds: hôm nay 
             Calendar dayCal = Calendar.getInstance();
             dayCal.set(Calendar.HOUR_OF_DAY, 0);
             dayCal.set(Calendar.MINUTE, 0);
@@ -304,11 +302,11 @@ public class BudgetFragment extends Fragment {
             dayCal.add(Calendar.DAY_OF_MONTH, 1);
             long dayEnd = dayCal.getTimeInMillis();
 
-            // --- Xác định period hiện tại để lọc giao dịch / danh mục ---
+            // Xác định period hiện tại để lọc giao dịch / danh mục
             long periodStart = isWeeklyMode ? weekStart : monthStart;
             long periodEnd = isWeeklyMode ? weekEnd : monthEnd;
 
-            // --- Query chi tiêu (timestamp-based, không JOIN) ---
+            // Query chi tiêu (timestamp-based, không JOIN)
             double totalMonth = expenseDao.getTotalSpentForPeriod(monthStart, monthEnd);
             double totalWeek = expenseDao.getTotalSpentForPeriod(weekStart, weekEnd);
             double spentToday = expenseDao.getTotalSpentForPeriod(dayStart, dayEnd);
@@ -319,7 +317,7 @@ public class BudgetFragment extends Fragment {
             double monthlyLimit = (currentBudget != null) ? currentBudget.getMonthlyLimit() : 0;
             double weeklyLimit = (currentBudget != null) ? currentBudget.getWeeklyLimit() : 0;
 
-            // --- Query giao dịch gần đây ---
+            // Query giao dịch gần đây
             List<Expense> recentExpenses;
             if (isWeeklyMode) {
                 recentExpenses = expenseDao.getExpensesForPeriod(weekStart, weekEnd);
@@ -327,13 +325,13 @@ public class BudgetFragment extends Fragment {
                 recentExpenses = expenseDao.getRecentExpenses(10);
             }
 
-            // --- Query thống kê theo danh mục ---
+            // Query thống kê theo danh mục
             List<ExpenseDao.CategoryStat> categoryStats = expenseDao.getSpentByCategory(periodStart, periodEnd);
 
-            // --- Query danh sách danh mục (để lấy emoji/label) ---
+            // Query danh sách danh mục (để lấy emoji/label)
             List<ExpenseCategory> allCategories = expenseDao.getAllCategories();
 
-            // --- Query biểu đồ ---
+            // Query biểu đồ
             List<ExpenseDao.DailyStat> dailyStats = expenseDao.getDailySpentForWeek(weekStart, weekEnd);
             List<ExpenseDao.WeeklyStat> weeklyStats = expenseDao.getWeeklySpentForMonth(monthStart, monthEnd);
 
@@ -387,9 +385,7 @@ public class BudgetFragment extends Fragment {
 
 
 
-    // ===================================================================
     // Progress bar ngân sách tháng
-    // ===================================================================
     private void updateProgressUI(double totalSpent, double limit) {
         tvTotalExpense.setText(formatCurrency(totalSpent));
 
@@ -401,16 +397,16 @@ public class BudgetFragment extends Fragment {
 
             if (totalSpent >= limit) {
                 progressBarMonthly.setProgressTintList(
-                        android.content.res.ColorStateList.valueOf(android.graphics.Color.parseColor("#C62828")));
-                tvRemaining.setTextColor(android.graphics.Color.parseColor("#FF6B6B"));
+                        ColorStateList.valueOf(Color.parseColor("#C62828")));
+                tvRemaining.setTextColor(Color.parseColor("#FF6B6B"));
             } else if (totalSpent >= limit * 0.8) {
                 progressBarMonthly.setProgressTintList(
-                        android.content.res.ColorStateList.valueOf(android.graphics.Color.parseColor("#F57C00")));
-                tvRemaining.setTextColor(android.graphics.Color.WHITE);
+                        ColorStateList.valueOf(Color.parseColor("#F57C00")));
+                tvRemaining.setTextColor(Color.WHITE);
             } else {
                 progressBarMonthly.setProgressTintList(
-                        android.content.res.ColorStateList.valueOf(android.graphics.Color.parseColor("#4CAF50")));
-                tvRemaining.setTextColor(android.graphics.Color.WHITE);
+                        ColorStateList.valueOf(Color.parseColor("#4CAF50")));
+                tvRemaining.setTextColor(Color.WHITE);
             }
         } else {
             tvRemaining.setText("—");

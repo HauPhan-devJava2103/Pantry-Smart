@@ -1,7 +1,10 @@
 package hcmute.edu.vn.pantrysmart.fragment;
 
+import android.Manifest;
 import android.app.Dialog;
+import android.content.Context;
 import android.content.Intent;
+import android.content.pm.PackageManager;
 import android.graphics.Bitmap;
 import android.graphics.Color;
 import android.graphics.drawable.ColorDrawable;
@@ -13,6 +16,7 @@ import android.view.Gravity;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
+import android.view.inputmethod.InputMethodManager;
 import android.widget.EditText;
 import android.widget.FrameLayout;
 import android.widget.ImageView;
@@ -123,70 +127,95 @@ public class FridgeFragment extends Fragment {
                 }
             });
 
-    private final ActivityResultLauncher<Intent> cameraLauncher = registerForActivityResult(new ActivityResultContracts.StartActivityForResult(),
-            result -> {
-                if (result.getResultCode() == android.app.Activity.RESULT_OK) {
-                    if (result.getData() != null && result.getData().getExtras() != null) {
-                        android.graphics.Bitmap photo = (android.graphics.Bitmap) result.getData().getExtras().get("data");
+    // URI tạm để lưu ảnh camera (FileProvider)
+    private android.net.Uri cameraPhotoUri;
+
+    private final ActivityResultLauncher<android.net.Uri> cameraLauncher = registerForActivityResult(
+            new ActivityResultContracts.TakePicture(),
+            success -> {
+                Log.d("FridgeAI", "Camera callback: success=" + success + ", uri=" + cameraPhotoUri);
+                if (success && cameraPhotoUri != null) {
+                    try {
+                        // Đọc ảnh từ URI (FileProvider) → Bitmap → Base64
+                        Bitmap photo = MediaStore.Images.Media.getBitmap(
+                                requireContext().getContentResolver(), cameraPhotoUri);
                         if (photo != null) {
                             String base64Image = encodeImage(photo);
-
-                            // Tạo dialog loading
-                            Dialog aiDialog = new Dialog(requireContext());
-                            aiDialog.requestWindowFeature(android.view.Window.FEATURE_NO_TITLE);
-                            aiDialog.setContentView(R.layout.dialog_ai_scanning);
-                            aiDialog.setCancelable(false);
-                            if (aiDialog.getWindow() != null) {
-                                aiDialog.getWindow().setBackgroundDrawable(new ColorDrawable(android.graphics.Color.TRANSPARENT));
-                            }
-                            aiDialog.show();
-
-                            // Gọi AI nhận diện
-                            GeminiFoodRecognitionService.recognizeFood(base64Image, new GeminiFoodRecognitionService.RecognitionCallback() {
-                                @Override
-                                public void onSuccess(List<PantryItem> items) {
-                                    if (getActivity() == null) return;
-                                    getActivity().runOnUiThread(() -> {
-                                        if (aiDialog.isShowing()) aiDialog.dismiss();
-
-                                        if (items != null && !items.isEmpty()) {
-                                            dialogHelper.showAIRecognitionReviewDialog(items);
-                                        } else {
-                                            // TH 1: AI không tìm thấy món nào
-                                            Toast.makeText(requireContext(), "🔍 Không nhận diện được thực phẩm nào. Bạn hãy thử chụp rõ và gần hơn nhé!", Toast.LENGTH_LONG).show();
-                                        }
-                                    });
-                                }
-
-                                @Override
-                                public void onError(String errorMessage) {
-                                    if (getActivity() == null) return;
-                                    getActivity().runOnUiThread(() -> {
-                                        if (aiDialog.isShowing()) aiDialog.dismiss();
-                                        // TH 2: Lỗi kỹ thuật (Mạng, API...)
-                                        Toast.makeText(requireContext(), "⚠️ Lỗi kết nối: Không thể liên hệ với AI lúc này. Vui lòng kiểm tra mạng!", Toast.LENGTH_LONG).show();
-                                    });
-                                }
-                            });
+                            processAIRecognition(base64Image);
                         } else {
-                            // TH 3: Không lấy được dữ liệu ảnh
-                            Toast.makeText(requireContext(), "❌ Lỗi: Không nhận được dữ liệu ảnh từ Camera.", Toast.LENGTH_SHORT).show();
+                            Toast.makeText(requireContext(),
+                                    "Không đọc được ảnh từ Camera.", Toast.LENGTH_SHORT).show();
                         }
+                    } catch (Exception e) {
+                        Log.e("FridgeAI", "Error reading camera photo", e);
+                        Toast.makeText(requireContext(),
+                                "Lỗi xử lý ảnh: " + e.getMessage(), Toast.LENGTH_SHORT).show();
                     }
-                } else if (result.getResultCode() != android.app.Activity.RESULT_CANCELED) {
-                    // TH 4: Lỗi khác khi chụp ảnh
-                    Toast.makeText(requireContext(), "❌ Đã xảy ra lỗi khi chụp ảnh. Vui lòng thử lại!", Toast.LENGTH_SHORT).show();
+                } else if (!success) {
+                    Log.d("FridgeAI", "Camera cancelled or failed");
                 }
             });
 
+    /** Xử lý nhận diện AI sau khi có ảnh base64 */
+    private void processAIRecognition(String base64Image) {
+        // Tạo dialog loading
+        Dialog aiDialog = new Dialog(requireContext());
+        aiDialog.requestWindowFeature(android.view.Window.FEATURE_NO_TITLE);
+        aiDialog.setContentView(R.layout.dialog_ai_scanning);
+        aiDialog.setCancelable(false);
+        if (aiDialog.getWindow() != null) {
+            aiDialog.getWindow().setBackgroundDrawable(new ColorDrawable(android.graphics.Color.TRANSPARENT));
+        }
+        aiDialog.show();
+
+        // Gọi AI nhận diện
+        GeminiFoodRecognitionService.recognizeFood(base64Image, new GeminiFoodRecognitionService.RecognitionCallback() {
+            @Override
+            public void onSuccess(List<PantryItem> items) {
+                if (getActivity() == null) return;
+                getActivity().runOnUiThread(() -> {
+                    if (aiDialog.isShowing()) aiDialog.dismiss();
+
+                    if (items != null && !items.isEmpty()) {
+                        dialogHelper.showAIRecognitionReviewDialog(items);
+                    } else {
+                        Toast.makeText(requireContext(),
+                                "Không nhận diện được thực phẩm nào. Bạn hãy thử chụp rõ và gần hơn nhé!",
+                                Toast.LENGTH_LONG).show();
+                    }
+                });
+            }
+
+            @Override
+            public void onError(String errorMessage) {
+                if (getActivity() == null) return;
+                getActivity().runOnUiThread(() -> {
+                    if (aiDialog.isShowing()) aiDialog.dismiss();
+                    Toast.makeText(requireContext(),
+                            "Lỗi kết nối: Không thể liên hệ với AI lúc này. Vui lòng kiểm tra mạng!",
+                            Toast.LENGTH_LONG).show();
+                });
+            }
+        });
+    }
+
     // Mở Camera sau khi đã có quyền
     private void openCamera() {
-        Intent intent = new Intent(MediaStore.ACTION_IMAGE_CAPTURE);
-        if (intent.resolveActivity(requireContext().getPackageManager()) != null) {
-            cameraLauncher.launch(intent);
-        } else {
+        try {
+            // Tạo file tạm mới MỖI LẦN chụp để tránh cache
+            java.io.File photoFile = new java.io.File(
+                    requireContext().getCacheDir(),
+                    "ai_photo_" + System.currentTimeMillis() + ".jpg");
+            cameraPhotoUri = androidx.core.content.FileProvider.getUriForFile(
+                    requireContext(),
+                    "hcmute.edu.vn.pantrysmart.fileprovider",
+                    photoFile);
+            Log.d("FridgeAI", "Launching camera with URI: " + cameraPhotoUri);
+            cameraLauncher.launch(cameraPhotoUri);
+        } catch (Exception e) {
+            Log.e("FridgeAI", "Error opening camera", e);
             Toast.makeText(requireContext(),
-                    "Không tìm thấy ứng dụng Camera", Toast.LENGTH_SHORT).show();
+                    "Không thể mở Camera: " + e.getMessage(), Toast.LENGTH_SHORT).show();
         }
     }
 
@@ -223,10 +252,10 @@ public class FridgeFragment extends Fragment {
             // Kiểm tra quyền Camera trước khi mở
             if (ContextCompat.checkSelfPermission(
                     requireContext(),
-                    android.Manifest.permission.CAMERA) == android.content.pm.PackageManager.PERMISSION_GRANTED) {
+                    Manifest.permission.CAMERA) == PackageManager.PERMISSION_GRANTED) {
                 openCamera();
             } else {
-                cameraPermissionLauncher.launch(android.Manifest.permission.CAMERA);
+                cameraPermissionLauncher.launch(Manifest.permission.CAMERA);
             }
         });
         loadItems();
@@ -326,8 +355,8 @@ public class FridgeFragment extends Fragment {
                     etSearch.setText(""); // Xóa chữ
                     etSearch.clearFocus();
                     // Ẩn bàn phím
-                    android.view.inputmethod.InputMethodManager imm = (android.view.inputmethod.InputMethodManager) requireContext()
-                            .getSystemService(android.content.Context.INPUT_METHOD_SERVICE);
+                    InputMethodManager imm = (InputMethodManager) requireContext()
+                            .getSystemService(Context.INPUT_METHOD_SERVICE);
                     imm.hideSoftInputFromWindow(etSearch.getWindowToken(), 0);
                 }
             });
@@ -375,9 +404,9 @@ public class FridgeFragment extends Fragment {
         if (searchBar != null) {
             searchBar.setOnClickListener(v -> {
                 etSearch.requestFocus();
-                android.view.inputmethod.InputMethodManager imm = (android.view.inputmethod.InputMethodManager) requireContext()
-                        .getSystemService(android.content.Context.INPUT_METHOD_SERVICE);
-                imm.showSoftInput(etSearch, android.view.inputmethod.InputMethodManager.SHOW_IMPLICIT);
+                InputMethodManager imm = (InputMethodManager) requireContext()
+                        .getSystemService(Context.INPUT_METHOD_SERVICE);
+                imm.showSoftInput(etSearch, InputMethodManager.SHOW_IMPLICIT);
             });
         }
 
@@ -385,8 +414,8 @@ public class FridgeFragment extends Fragment {
         etSearch.setOnEditorActionListener((v, actionId, event) -> {
             if (actionId == android.view.inputmethod.EditorInfo.IME_ACTION_SEARCH) {
                 // Thu nhỏ bàn phím khi nhấn nút Tìm
-                android.view.inputmethod.InputMethodManager imm = (android.view.inputmethod.InputMethodManager) requireContext()
-                        .getSystemService(android.content.Context.INPUT_METHOD_SERVICE);
+                InputMethodManager imm = (InputMethodManager) requireContext()
+                        .getSystemService(Context.INPUT_METHOD_SERVICE);
                 imm.hideSoftInputFromWindow(etSearch.getWindowToken(), 0);
                 return true;
             }
@@ -424,7 +453,7 @@ public class FridgeFragment extends Fragment {
     private void displaySearchResults(List<PantryItem> results) {
         // 1. Thiết lập LayoutManager nếu chưa có
         if (rvSearchResults.getLayoutManager() == null) {
-            rvSearchResults.setLayoutManager(new androidx.recyclerview.widget.LinearLayoutManager(requireContext()));
+            rvSearchResults.setLayoutManager(new LinearLayoutManager(requireContext()));
         }
 
         // 2. Khởi tạo hoặc cập nhật Adapter
@@ -442,7 +471,7 @@ public class FridgeFragment extends Fragment {
             @Override
             public void onDelete(PantryItem item, int position) {
                 // Hiện thông báo xác nhận trước khi xóa
-                new com.google.android.material.dialog.MaterialAlertDialogBuilder(requireContext())
+                new MaterialAlertDialogBuilder(requireContext())
                         .setTitle("Xác nhận xóa")
                         .setMessage("Bạn có chắc muốn xóa '" + item.getName() + "' khỏi tủ lạnh?")
                         .setPositiveButton("Xóa", (dialog, which) -> {

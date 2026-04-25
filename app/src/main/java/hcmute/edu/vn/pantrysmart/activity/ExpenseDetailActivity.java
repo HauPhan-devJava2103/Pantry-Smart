@@ -13,6 +13,7 @@ import com.github.mikephil.charting.data.BarData;
 import com.github.mikephil.charting.data.BarDataSet;
 import com.github.mikephil.charting.data.BarEntry;
 import com.github.mikephil.charting.formatter.ValueFormatter;
+import com.google.android.material.bottomsheet.BottomSheetDialog;
 
 import androidx.annotation.Nullable;
 import androidx.appcompat.app.AppCompatActivity;
@@ -93,7 +94,7 @@ public class ExpenseDetailActivity extends AppCompatActivity {
     }
 
     private void showFilterMenu() {
-        com.google.android.material.bottomsheet.BottomSheetDialog dialog = new com.google.android.material.bottomsheet.BottomSheetDialog(this);
+        BottomSheetDialog dialog = new BottomSheetDialog(this);
         View sheetView = getLayoutInflater().inflate(R.layout.bottom_sheet_period_mode, null);
         dialog.setContentView(sheetView);
 
@@ -106,11 +107,11 @@ public class ExpenseDetailActivity extends AppCompatActivity {
 
         if (isWeeklyMode) {
             btnModeWeek.setBackgroundResource(R.drawable.bg_category_selected);
-            tvModeWeek.setTextColor(android.graphics.Color.parseColor("#00BC7D"));
+            tvModeWeek.setTextColor(Color.parseColor("#00BC7D"));
             iconCheckWeek.setVisibility(View.VISIBLE);
         } else {
             btnModeMonth.setBackgroundResource(R.drawable.bg_category_selected);
-            tvModeMonth.setTextColor(android.graphics.Color.parseColor("#00BC7D"));
+            tvModeMonth.setTextColor(Color.parseColor("#00BC7D"));
             iconCheckMonth.setVisibility(View.VISIBLE);
         }
 
@@ -167,7 +168,7 @@ public class ExpenseDetailActivity extends AppCompatActivity {
     }
 
     private void showViewExpenseBottomSheet(Expense expense) {
-        com.google.android.material.bottomsheet.BottomSheetDialog dialog = new com.google.android.material.bottomsheet.BottomSheetDialog(this);
+        BottomSheetDialog dialog = new BottomSheetDialog(this);
         View view = getLayoutInflater().inflate(R.layout.bottom_sheet_view_expense, null);
         dialog.setContentView(view);
 
@@ -337,10 +338,8 @@ public class ExpenseDetailActivity extends AppCompatActivity {
         });
     }
 
-    // ===================================================================
-    // Chart Methods (Ported from BudgetFragment)
-    // ===================================================================
 
+    // Chart Methods (Ported from BudgetFragment)
     private void updateBarChart(List<ExpenseDao.DailyStat> dailyStats, long weekStart) {
         Map<String, Double> statMap = new HashMap<>();
         SimpleDateFormat dayFmt = new SimpleDateFormat("yyyy-MM-dd", Locale.getDefault());
