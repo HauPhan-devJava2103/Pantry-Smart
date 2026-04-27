@@ -166,7 +166,8 @@ PEXELS_API_KEY="thay_api_key_pexels_cua_ban_vao_day"
 1. Chuyển sang tab **Ngân sách**.
 2. Chọn **Quét hóa đơn** và chụp lại biên lai siêu thị.
 3. AI sẽ tự động đọc giá tiền và các mặt hàng bạn đã mua để tính vào chi phí.
-
+4. Tính năng cảnh báo khi vượt quá ngân sách theo tuần, tháng.
+5. 
 ---
 
 ## 👨‍💻 Thành Viên Phát Triển
